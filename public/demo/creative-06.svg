@@ -1,0 +1,10 @@
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1080 1080' width='1080' height='1080'>
+<defs><radialGradient id='g' cx='.5' cy='.35' r='.8'><stop offset='0' stop-color='#f59e0b' stop-opacity='.35'/><stop offset='1' stop-color='#0b1424' stop-opacity='0'/></radialGradient></defs>
+<rect width='1080' height='1080' fill='#0b1424'/><rect width='1080' height='1080' fill='url(#g)'/>
+<text x='80' y='140' font-family='Manrope, Arial, sans-serif' font-size='30' font-weight='800' letter-spacing='6' fill='#f59e0b'>JANTAR EMPRESARIAL</text>
+<text x='80' y='240' font-family='Manrope, Arial, sans-serif' font-size='64' font-weight='800' fill='#ffffff'>QUEM FOI, RECOMENDA</text>
+<text x='200' y='560' font-family='Manrope, Arial, sans-serif' font-size='280' font-weight='800' fill='#f59e0b' opacity='.5'>“</text><text x='540' y='560' text-anchor='middle' font-family='Manrope, Arial, sans-serif' font-size='44' font-weight='600' fill='#e2e8f0'>Saí do jantar com</text><text x='540' y='620' text-anchor='middle' font-family='Manrope, Arial, sans-serif' font-size='44' font-weight='600' fill='#e2e8f0'>dois novos parceiros.</text><circle cx='540' cy='720' r='44' fill='#94a3b8'/><polygon points='520,690 520,750 570,720' fill='#fff' opacity='.9'/>
+<rect x='0' y='880' width='1080' height='200' fill='#000' opacity='.45'/>
+<text x='80' y='960' font-family='Manrope, Arial, sans-serif' font-size='40' font-weight='700' fill='#fff'>Depoimento ilustrativo</text>
+<text x='80' y='1020' font-family='Manrope, Arial, sans-serif' font-size='26' fill='#cbd5e1'>Criativo 06 · imagem ilustrativa de demonstração</text>
+</svg>

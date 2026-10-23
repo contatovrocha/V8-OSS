@@ -1,0 +1,11 @@
+# Trecho de configuração das Edge Functions (mescle com o config.toml gerado por `supabase init`).
+[functions.meta-oauth]
+# O retorno do OAuth vem do navegador do Facebook, sem JWT do Supabase. A ação de iniciar a
+# conexão (POST) valida o JWT do administrador dentro da própria função.
+verify_jwt = false
+
+[functions.meta-sync]
+verify_jwt = true
+
+[functions.admin-create-user]
+verify_jwt = true
