@@ -347,7 +347,7 @@ function Integrations() {
             <p className="text-sm text-muted mt-1">A autorização é feita via OAuth pela Edge Function <code className="text-ink">meta-oauth</code>. O token de acesso fica apenas no servidor (tabela privada, sem acesso pelo navegador). A conexão só é considerada concluída após uma autorização válida <strong>e</strong> uma sincronização bem-sucedida.</p>
           </div>
           <Button variant="primary" icon={Link2} loading={busy} disabled={!supa} onClick={() => run(async () => {
-            const r = await backend.rpc<{ url: string }>('meta_connect_url', { redirect_to: `${window.location.origin}/configuracoes?aba=integracoes` })
+            const r = await backend.rpc<{ url: string }>('meta_connect_url', { redirect_to: import.meta.env.VITE_ROUTER === 'hash' ? `${window.location.origin}${window.location.pathname}#/configuracoes?aba=integracoes` : `${window.location.origin}/configuracoes?aba=integracoes` })
             window.location.href = r.url
           })}>Conectar conta Meta</Button>
         </div>

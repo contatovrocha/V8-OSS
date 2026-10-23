@@ -1,6 +1,7 @@
 import clsx from 'clsx'
 import { AlertCircle, CheckCircle2, ExternalLink, Image as ImageIcon, LayoutGrid, Link2, Megaphone, PlayCircle, RefreshCw, Table2 } from 'lucide-react'
 import { useMemo, useState } from 'react'
+import { Link as RouterLink } from 'react-router-dom'
 import { Bar, BarChart, CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { useApp } from '@/app/AppContext'
 import { adStatusTone } from '@/app/labels'
@@ -202,7 +203,7 @@ function IntegrationBar({ accounts, isDemo, lastSync }: { accounts: AdAccount[];
     return (
       <div className="flex flex-wrap items-center gap-3 justify-between">
         <DemoBanner><AlertCircle className="size-3.5" />Dados demonstrativos — conecte sua conta de anúncios para visualizar resultados reais.</DemoBanner>
-        {isAdmin && <a href="/configuracoes?aba=integracoes" className="text-xs font-semibold text-primary inline-flex items-center gap-1"><Link2 className="size-3.5" />Conectar Meta Ads</a>}
+        {isAdmin && <RouterLink to="/configuracoes?aba=integracoes" className="text-xs font-semibold text-primary inline-flex items-center gap-1"><Link2 className="size-3.5" />Conectar Meta Ads</RouterLink>}
       </div>
     )
   return (

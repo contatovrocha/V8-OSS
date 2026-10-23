@@ -8,5 +8,7 @@ export default defineConfig({
   resolve: {
     alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
   },
+  // Caminhos relativos: o build funciona na raiz do domínio ou em subpastas (ex.: GitHub Pages).
+  base: './',
   build: { chunkSizeWarningLimit: 1500 },
 })

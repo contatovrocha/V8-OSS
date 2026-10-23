@@ -23,6 +23,13 @@ Sem as variáveis do Supabase, o app roda em **modo local**: os dados ficam no `
 
 Todos os dados de exemplo são fictícios e identificados como **Exemplo / Dados demonstrativos**. Em *Configurações → Demonstração* o administrador restaura o estado inicial sem afetar registros reais.
 
+## Publicação (GitHub Pages)
+
+Cada push na `main` executa `.github/workflows/deploy.yml`: roda os testes, gera o build e publica na branch `gh-pages`.
+Em *Settings → Pages*, a origem deve ser **Deploy from a branch → gh-pages / (root)**. O site fica em
+`https://<usuario>.github.io/<repositorio>/`. Sem as variáveis do Supabase, o site publicado roda em modo demonstrativo
+(cada visitante tem seus próprios dados no navegador).
+
 ## Produção com Supabase
 
 1. Crie um projeto no Supabase e aplique as migrações, em ordem:

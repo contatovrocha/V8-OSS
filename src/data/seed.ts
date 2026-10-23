@@ -1,4 +1,5 @@
 import { addDays, todayISO } from '@/lib/format'
+import { DEMO_IMG } from './demoAssets'
 import type {
   ActivityLog, Ad, AdAccount, AdMetricDaily, AdSet, AppSettings, Campaign, Expense, ExpenseCategory, Expert,
   ExpertPermissions, LaunchPage, Movement, PageType, PhaseHistory, Product, Project, ProjectPhase, Sale,
@@ -124,7 +125,7 @@ export function demoData(adminId: string | null, adminName = 'Administração'):
   })
 
   const experts: Expert[] = [
-    expert(DEMO.expertRafael, 'Rafael Martins', 'Rafael Martins', 'Mentor de negócios e conexões empresariais', '/demo/rafael.svg', {
+    expert(DEMO.expertRafael, 'Rafael Martins', 'Rafael Martins', 'Mentor de negócios e conexões empresariais', DEMO_IMG['rafael'], {
       bio: '<p><strong>Exemplo fictício.</strong> Rafael Martins é mentor de empresários e organiza encontros presenciais que aproximam líderes de negócios de diferentes setores.</p>',
       career_story: 'Empreendedor há 15 anos, fundou duas empresas de serviços e passou a reunir empresários em jantares de networking qualificado. (Dados demonstrativos)',
       value_proposition: 'Conexões estratégicas entre empresários em um ambiente presencial, curado e orientado a negócios.',
@@ -136,7 +137,7 @@ export function demoData(adminId: string | null, adminName = 'Administração'):
       website: 'https://exemplo.com',
       videos: [{ label: 'Apresentação (exemplo)', url: 'https://www.youtube.com/watch?v=exemplo' }],
     }),
-    expert(DEMO.expertCamila, 'Camila Duarte', 'Camila Duarte', 'Mentora de liderança', '/demo/camila.svg', {
+    expert(DEMO.expertCamila, 'Camila Duarte', 'Camila Duarte', 'Mentora de liderança', DEMO_IMG['camila'], {
       bio: '<p><strong>Exemplo fictício</strong> usado para testar o isolamento entre experts.</p>',
       value_proposition: 'Desenvolvimento de lideranças femininas em empresas de médio porte.',
       target_audience: 'Gestoras e executivas.',
@@ -157,7 +158,7 @@ export function demoData(adminId: string | null, adminName = 'Administração'):
       category: 'Evento presencial', launch_type: 'Jantar Empresarial',
       start_date: d(-40), end_date: d(30), event_date: d(21),
       revenue_goal: 50000, sales_goal: 100, traffic_budget: 5000, status: 'ativo', current_phase: 3,
-      cover_url: '/demo/cover-jantar.svg', ad_account_id: DEMO.adAccount,
+      cover_url: DEMO_IMG['cover-jantar'], ad_account_id: DEMO.adAccount,
       links: [{ label: 'Drive do projeto (exemplo)', url: 'https://drive.google.com' }],
       internal_notes: 'Dados demonstrativos. Restaurante pré-reservado para 120 lugares.',
       team: ['Ana (gestão)', 'Bruno (tráfego)', 'Carla (design)'],
@@ -167,13 +168,13 @@ export function demoData(adminId: string | null, adminName = 'Administração'):
       description: 'Programa de mentoria em grupo para empresários participantes do jantar.',
       category: 'Mentoria', launch_type: 'Lançamento interno', start_date: d(10), end_date: d(90),
       revenue_goal: 120000, sales_goal: 20, traffic_budget: 8000, status: 'estruturacao', current_phase: 1,
-      cover_url: '/demo/cover-mentoria.svg', team: ['Ana (gestão)'],
+      cover_url: DEMO_IMG['cover-mentoria'], team: ['Ana (gestão)'],
     }),
     project(DEMO.projectCamila, DEMO.expertCamila, {
       name: 'Imersão Liderança — Edição Piloto',
       description: 'Imersão presencial de um dia para gestoras.',
       category: 'Evento presencial', launch_type: 'Imersão', start_date: d(-20), end_date: d(40), event_date: d(35),
-      revenue_goal: 30000, sales_goal: 60, traffic_budget: 3000, status: 'ativo', current_phase: 2, cover_url: '/demo/cover-camila.svg',
+      revenue_goal: 30000, sales_goal: 60, traffic_budget: 3000, status: 'ativo', current_phase: 2, cover_url: DEMO_IMG['cover-camila'],
     }),
   ]
 
@@ -216,9 +217,9 @@ export function demoData(adminId: string | null, adminName = 'Administração'):
     sort_order: order, external_url: url, expert_editable: false, is_demo: true, created_at: ts, updated_at: ts,
   })
   const movements = [
-    mv('Jantar Empresarial', 'Encontro presencial de networking entre empresários.', 'Evento', DEMO.projectJantar, '/demo/cover-jantar.svg', 1),
-    mv('Mentoria Executiva', 'Programa de acompanhamento em grupo para empresários.', 'Mentoria', DEMO.projectMentoria, '/demo/cover-mentoria.svg', 2),
-    mv('Podcast Conexões', 'Conversas com empresários convidados (exemplo).', 'Conteúdo', null, '/demo/cover-podcast.svg', 3, 'publicado', 'https://exemplo.com/podcast'),
+    mv('Jantar Empresarial', 'Encontro presencial de networking entre empresários.', 'Evento', DEMO.projectJantar, DEMO_IMG['cover-jantar'], 1),
+    mv('Mentoria Executiva', 'Programa de acompanhamento em grupo para empresários.', 'Mentoria', DEMO.projectMentoria, DEMO_IMG['cover-mentoria'], 2),
+    mv('Podcast Conexões', 'Conversas com empresários convidados (exemplo).', 'Conteúdo', null, DEMO_IMG['cover-podcast'], 3, 'publicado', 'https://exemplo.com/podcast'),
   ]
 
   const pt = (n: number) => `c0000000-0000-4000-8000-${String(n).padStart(12, '0')}`
@@ -228,11 +229,11 @@ export function demoData(adminId: string | null, adminName = 'Administração'):
     notes: 'Página demonstrativa.', preview_url: preview, archived: false, is_demo: true, created_at: ts, updated_at: ts,
   })
   const pages = [
-    page('Apresentação do evento', 8, 'publicada', 'https://exemplo.com/jantar', -18, 35, 31.2, '/demo/page-evento.svg'),
-    page('Inscrição — lista de interesse', 3, 'publicada', 'https://exemplo.com/jantar/inscricao', -16, 40, 42.5, '/demo/page-inscricao.svg'),
-    page('Checkout — ingressos', 4, 'publicada', 'https://exemplo.com/jantar/checkout', -14, 12, 9.8, '/demo/page-checkout.svg'),
-    page('Confirmação de inscrição', 5, 'revisao', 'https://exemplo.com/jantar/confirmacao', null, null, null, '/demo/page-confirmacao.svg'),
-    page('Aplicação para a mentoria', 7, 'planejada', '', null, 20, null, '/demo/page-inscricao.svg', DEMO.projectMentoria),
+    page('Apresentação do evento', 8, 'publicada', 'https://exemplo.com/jantar', -18, 35, 31.2, DEMO_IMG['page-evento']),
+    page('Inscrição — lista de interesse', 3, 'publicada', 'https://exemplo.com/jantar/inscricao', -16, 40, 42.5, DEMO_IMG['page-inscricao']),
+    page('Checkout — ingressos', 4, 'publicada', 'https://exemplo.com/jantar/checkout', -14, 12, 9.8, DEMO_IMG['page-checkout']),
+    page('Confirmação de inscrição', 5, 'revisao', 'https://exemplo.com/jantar/confirmacao', null, null, null, DEMO_IMG['page-confirmacao']),
+    page('Aplicação para a mentoria', 7, 'planejada', '', null, 20, null, DEMO_IMG['page-inscricao'], DEMO.projectMentoria),
   ]
 
   const ad_accounts: AdAccount[] = [{
@@ -272,7 +273,7 @@ export function demoData(adminId: string | null, adminName = 'Administração'):
     ads.push({
       id: adId, ad_set_id: p.set, campaign_id: p.camp, ad_account_id: DEMO.adAccount, project_id: DEMO.projectJantar,
       external_id: `demo_ad_${i + 1}`, name: p.name, status: p.status, platform: 'Meta (Instagram/Facebook)', placement: p.placement,
-      creative_type: p.type, thumbnail_url: `/demo/creative-0${i + 1}.svg`, video_url: null, primary_text: p.text, headline: p.headline,
+      creative_type: p.type, thumbnail_url: DEMO_IMG[`creative-0${i + 1}`], video_url: null, primary_text: p.text, headline: p.headline,
       description: 'Anúncio demonstrativo — não veiculado.', is_demo: true, created_at: ts,
     })
     for (let off = p.start; off <= p.end; off++) {
@@ -380,7 +381,7 @@ export function demoData(adminId: string | null, adminName = 'Administração'):
     created_at: ts, updated_at: ts,
   }]
   const section_records: SectionRecord[] = [
-    { id: id(), section_id: secId, project_id: DEMO.projectJantar, expert_id: DEMO.expertRafael, data: { nome: 'Vinícola Exemplo', tipo: 'Permuta', valor: 2400, projeto: DEMO.projectJantar, site: 'https://exemplo.com', logo: '/demo/cover-podcast.svg' }, created_by: adminId ?? 'seed', created_at: ts, updated_at: ts },
+    { id: id(), section_id: secId, project_id: DEMO.projectJantar, expert_id: DEMO.expertRafael, data: { nome: 'Vinícola Exemplo', tipo: 'Permuta', valor: 2400, projeto: DEMO.projectJantar, site: 'https://exemplo.com', logo: DEMO_IMG['cover-podcast'] }, created_by: adminId ?? 'seed', created_at: ts, updated_at: ts },
     { id: id(), section_id: secId, project_id: DEMO.projectJantar, expert_id: DEMO.expertRafael, data: { nome: 'Banco Fictício S.A.', tipo: 'Patrocínio', valor: 5000, projeto: DEMO.projectJantar, site: 'https://exemplo.com' }, created_by: adminId ?? 'seed', created_at: ts, updated_at: ts },
   ]
 
