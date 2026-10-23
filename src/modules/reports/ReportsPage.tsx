@@ -11,7 +11,7 @@ import { PeriodPicker } from '@/components/layout/PeriodPicker'
 import { DataTable, type Column } from '@/components/ui/DataTable'
 import { Button, Card, Select } from '@/components/ui/primitives'
 import { useRows } from '@/data/store'
-import { downloadCSV } from '@/lib/csv'
+import { CAN_EXPORT, downloadCSV } from '@/lib/csv'
 import { consolidate, productRanking, TRAFFIC_CATEGORY } from '@/lib/finance'
 import { date, money, moneyShort, num, pct, ratio, shortDate } from '@/lib/format'
 import { kpis, sumMetrics } from '@/lib/metrics'
@@ -46,7 +46,7 @@ export default function ReportsPage() {
 
   return (
     <div>
-      <PageHeader eyebrow="Análise" title="Relatórios" subtitle="Mesmos critérios de cálculo dos módulos de origem" actions={<Button icon={Printer} onClick={() => window.print()}>Imprimir / PDF</Button>} />
+      <PageHeader eyebrow="Análise" title="Relatórios" subtitle="Mesmos critérios de cálculo dos módulos de origem" actions={CAN_EXPORT && <Button icon={Printer} onClick={() => window.print()}>Imprimir / PDF</Button>} />
       <div className="grid lg:grid-cols-[260px_1fr] gap-5">
         <Card className="p-2 h-fit no-print">
           {REPORTS.map((r) => (
@@ -86,7 +86,7 @@ function Section<T extends { id: string }>({ chart, rows, columns, csv, filename
       {chart && <Card className="p-5"><div className="h-72">{chart}</div></Card>}
       <Card className="p-5">
         <div className="flex justify-end mb-3 no-print">
-          <Button size="sm" icon={Download} disabled={!rows.length} onClick={() => downloadCSV(filename, csv.headers, rows.map(csv.row))}>Exportar CSV</Button>
+          {CAN_EXPORT && <Button size="sm" icon={Download} disabled={!rows.length} onClick={() => downloadCSV(filename, csv.headers, rows.map(csv.row))}>Exportar CSV</Button>}
         </div>
         <DataTable rows={rows} columns={columns} pageSize={25} />
       </Card>

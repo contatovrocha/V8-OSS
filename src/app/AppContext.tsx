@@ -1,3 +1,4 @@
+import { storage } from '@/lib/storage'
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { useAuth } from '@/auth/AuthContext'
 import { useRows } from '@/data/store'
@@ -31,7 +32,7 @@ export const useApp = () => useContext(Ctx)
 const LS = 'launchos:ui:v1'
 function loadUi(): { preset?: PeriodPreset; from?: string; to?: string; expertId?: string; projectId?: string } {
   try {
-    return JSON.parse(localStorage.getItem(LS) ?? '{}')
+    return JSON.parse(storage.get(LS) ?? '{}')
   } catch {
     return {}
   }
@@ -60,7 +61,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [settings])
 
   useEffect(() => {
-    localStorage.setItem(LS, JSON.stringify({ preset: period.preset, from: period.from, to: period.to, expertId, projectId }))
+    try {
+      storage.set(LS, JSON.stringify({ preset: period.preset, from: period.from, to: period.to, expertId, projectId }))
+    } catch {
+      /* preferência opcional */
+    }
   }, [period, expertId, projectId])
 
   const experts = expertsRows.rows

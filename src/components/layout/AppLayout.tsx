@@ -1,3 +1,4 @@
+import { storage } from '@/lib/storage'
 import clsx from 'clsx'
 import { ChevronsLeft, ChevronsRight, LogOut, Menu, PanelTop, PanelLeft, X, Database } from 'lucide-react'
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
@@ -91,14 +92,14 @@ export function AppLayout({ children }: { children: ReactNode }) {
   const app = useApp()
   const [prefs, setPrefs] = useState<{ collapsed: boolean; mode: 'side' | 'top' }>(() => {
     try {
-      return { collapsed: false, mode: 'side', ...JSON.parse(localStorage.getItem(LS) ?? '{}') }
+      return { collapsed: false, mode: 'side', ...JSON.parse(storage.get(LS) ?? '{}') }
     } catch {
       return { collapsed: false, mode: 'side' }
     }
   })
   const [mobileOpen, setMobileOpen] = useState(false)
   const loc = useLocation()
-  useEffect(() => localStorage.setItem(LS, JSON.stringify(prefs)), [prefs])
+  useEffect(() => { try { storage.set(LS, JSON.stringify(prefs)) } catch { /* preferência opcional */ } }, [prefs])
   useEffect(() => setMobileOpen(false), [loc.pathname])
 
   const top = prefs.mode === 'top'

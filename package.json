@@ -9,7 +9,8 @@
     "lint": "oxlint",
     "preview": "vite preview",
     "test": "vitest run",
-    "e2e": "node e2e/acceptance.mjs"
+    "e2e": "node e2e/acceptance.mjs",
+    "build:artifact": "VITE_TARGET=artifact VITE_ROUTER=memory vite build"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.118.0",
@@ -32,6 +33,7 @@
     "tailwindcss": "^4.3.3",
     "typescript": "~6.0.3",
     "vite": "^8.3.4",
+    "vite-plugin-singlefile": "^2.3.4",
     "vitest": "^5.0.5"
   }
 }

@@ -1,3 +1,6 @@
+/** Downloads e impressão são bloqueados quando o app roda dentro do visualizador do claude.ai. */
+export const CAN_EXPORT = import.meta.env.VITE_TARGET !== 'artifact'
+
 /** Exporta CSV compatível com Excel em português (separador ;, BOM UTF-8, decimal com vírgula). */
 export function downloadCSV(filename: string, headers: string[], rows: (string | number | null | undefined)[][]) {
   const cell = (v: string | number | null | undefined) => {

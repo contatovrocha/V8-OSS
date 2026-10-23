@@ -1,3 +1,4 @@
+import { storage } from '@/lib/storage'
 import { applyPhaseAction, phaseDef, type PhaseAction } from '@/lib/phases'
 import { validateRecord } from '@/lib/sections'
 import { BackendError, type Backend, type ChangeEvent, type Filter, type NewUserInput, type RpcName } from '../backend'
@@ -73,7 +74,7 @@ export class LocalBackend implements Backend {
   }
 
   private async init() {
-    const raw = localStorage.getItem(DB_KEY)
+    const raw = storage.get(DB_KEY)
     if (raw) {
       this.db = JSON.parse(raw)
       for (const t of TABLES) this.db[t] ??= [] as never
@@ -83,7 +84,7 @@ export class LocalBackend implements Backend {
   }
 
   private reload() {
-    const raw = localStorage.getItem(DB_KEY)
+    const raw = storage.get(DB_KEY)
     if (raw) this.db = JSON.parse(raw)
   }
 
@@ -110,13 +111,13 @@ export class LocalBackend implements Backend {
       if (u.expert) db.user_experts.push({ id: uuid(), user_id: prof.id, expert_id: u.expert })
     }
     this.db = db
-    localStorage.setItem(CRED_KEY, JSON.stringify(creds))
+    storage.set(CRED_KEY, JSON.stringify(creds))
     this.persist([])
   }
 
   private persist(tables: TableName[]) {
     try {
-      localStorage.setItem(DB_KEY, JSON.stringify(this.db))
+      storage.set(DB_KEY, JSON.stringify(this.db))
     } catch {
       throw new BackendError('Armazenamento local cheio. Remova imagens grandes ou use o backend Supabase.', 'quota')
     }
@@ -129,7 +130,7 @@ export class LocalBackend implements Backend {
   // ---------------------------------------------------------------- auth
   private async me(): Promise<Profile> {
     await this.ready
-    const id = localStorage.getItem(SESSION_KEY)
+    const id = storage.get(SESSION_KEY)
     const p = this.db.profiles.find((x) => x.id === id)
     if (!p) throw new BackendError('Sessão expirada. Entre novamente.', 'auth')
     return p
@@ -137,24 +138,24 @@ export class LocalBackend implements Backend {
 
   async currentUser() {
     await this.ready
-    const id = localStorage.getItem(SESSION_KEY)
+    const id = storage.get(SESSION_KEY)
     return this.db.profiles.find((x) => x.id === id) ?? null
   }
 
   async signIn(email: string, password: string) {
     await this.ready
-    const creds: Creds = JSON.parse(localStorage.getItem(CRED_KEY) ?? '{}')
+    const creds: Creds = JSON.parse(storage.get(CRED_KEY) ?? '{}')
     const c = creds[email.trim().toLowerCase()]
     if (!c || c.hash !== (await hash(password))) throw new BackendError('E-mail ou senha incorretos.', 'auth')
     const p = this.db.profiles.find((x) => x.id === c.user_id)
     if (!p) throw new BackendError('Usuário desativado.', 'auth')
-    localStorage.setItem(SESSION_KEY, p.id)
+    storage.set(SESSION_KEY, p.id)
     this.authListeners.forEach((l) => l(p))
     return p
   }
 
   async signOut() {
-    localStorage.removeItem(SESSION_KEY)
+    storage.remove(SESSION_KEY)
     this.authListeners.forEach((l) => l(null))
   }
 
@@ -390,14 +391,14 @@ export class LocalBackend implements Backend {
         if (!ctx.isAdmin) throw new BackendError('Somente administradores criam usuários.', 'forbidden')
         const input = args as unknown as NewUserInput
         const email = input.email.trim().toLowerCase()
-        const creds: Creds = JSON.parse(localStorage.getItem(CRED_KEY) ?? '{}')
+        const creds: Creds = JSON.parse(storage.get(CRED_KEY) ?? '{}')
         if (creds[email]) throw new BackendError('Já existe um usuário com este e-mail.', 'duplicate')
         if (input.password.length < 6) throw new BackendError('A senha deve ter pelo menos 6 caracteres.', 'validation')
         const p: Profile = { id: uuid(), email, full_name: input.full_name, role: input.role, avatar_url: null, created_at: nowIso() }
         this.db.profiles.push(p)
         for (const eid of input.expert_ids) this.db.user_experts.push({ id: uuid(), user_id: p.id, expert_id: eid })
         creds[email] = { user_id: p.id, hash: await hash(input.password) }
-        localStorage.setItem(CRED_KEY, JSON.stringify(creds))
+        storage.set(CRED_KEY, JSON.stringify(creds))
         this.log(user, { entity_type: 'profiles', entity_id: p.id, action: 'create_user', summary: `Usuário criado: ${email} (${input.role})`, is_audit: true })
         this.persist(['profiles', 'user_experts', 'activity_log'])
         return p as R
