@@ -1,5 +1,5 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
-import { BackendError, type Backend, type ChangeEvent, type Filter, type RpcName } from '../backend'
+import { BackendError, type Backend, type ChangeEvent, type Filter, type NewUserInput, type RpcName } from '../backend'
 import type { Profile, Row, TableName } from '../types'
 
 const FUNCTION_RPCS: RpcName[] = ['create_user', 'meta_connect_url', 'meta_sync']
@@ -22,8 +22,35 @@ export class SupabaseBackend implements Backend {
   readonly mode = 'supabase' as const
   readonly client: SupabaseClient
 
+  private readonly url: string
+  private readonly anonKey: string
+
   constructor(url: string, anonKey: string) {
+    this.url = url
+    this.anonKey = anonKey
     this.client = createClient(url, anonKey, { auth: { persistSession: true, autoRefreshToken: true } })
+  }
+
+  /**
+   * Criação de usuário sem a Edge Function admin-create-user (ainda não publicada):
+   * cadastra pelo Auth em um cliente separado, para não trocar a sessão do administrador,
+   * e o administrador define papel e acessos (permitido pelas políticas RLS de admin).
+   */
+  private async createUserViaSignUp(input: NewUserInput): Promise<Profile> {
+    const tmp = createClient(this.url, this.anonKey, { auth: { persistSession: false, autoRefreshToken: false, storageKey: 'launchos-signup' } })
+    const { data, error } = await tmp.auth.signUp({ email: input.email.trim().toLowerCase(), password: input.password, options: { data: { full_name: input.full_name } } })
+    if (error) throw new BackendError(/registered|exists/i.test(error.message) ? 'Já existe um usuário com este e-mail.' : error.message, 'auth')
+    const id = data.user?.id
+    if (!id || data.user?.identities?.length === 0) throw new BackendError('Já existe um usuário com este e-mail.', 'duplicate')
+    let profile: Profile | null = null
+    for (let i = 0; i < 5 && !profile; i++) {
+      profile = await this.profile(id)
+      if (!profile) await new Promise((r) => setTimeout(r, 400))
+    }
+    if (!profile) throw new BackendError('Usuário criado, mas o perfil não foi encontrado. Verifique se o setup.sql foi executado.', 'auth')
+    const updated = await this.update('profiles', id, { role: input.role, full_name: input.full_name })
+    if (input.role === 'expert' && input.expert_ids.length) await this.insertMany('user_experts', input.expert_ids.map((expert_id) => ({ user_id: id, expert_id })))
+    return updated
   }
 
   private async profile(userId: string): Promise<Profile | null> {
@@ -115,6 +142,9 @@ export class SupabaseBackend implements Backend {
       const fn = name === 'create_user' ? 'admin-create-user' : name === 'meta_connect_url' ? 'meta-oauth' : 'meta-sync'
       const { data, error } = await this.client.functions.invoke(fn, { body: { action: name, ...args } })
       if (error) {
+        const status = (error as { context?: Response }).context?.status
+        const notDeployed = status === 404 || error.name === 'FunctionsFetchError' || error.name === 'FunctionsRelayError'
+        if (name === 'create_user' && notDeployed) return (await this.createUserViaSignUp(args as unknown as NewUserInput)) as R
         let msg = error.message
         try {
           const body = await (error as { context?: Response }).context?.json()
