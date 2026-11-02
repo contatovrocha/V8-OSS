@@ -1,6 +1,5 @@
 # Publica o app no GitHub Pages (branch gh-pages) a cada push na main.
-# Para usar o Supabase em produção, cadastre VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY
-# em Settings → Secrets and variables → Actions → Variables. Sem elas, o site roda em modo demonstrativo.
+# O projeto Supabase de produção vem de .env.production.
 name: Deploy GitHub Pages
 
 on:
@@ -29,8 +28,6 @@ jobs:
       - run: npm run build
         env:
           VITE_ROUTER: hash
-          VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
-          VITE_SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY }}
       - name: Publicar na branch gh-pages
         run: |
           cd dist
