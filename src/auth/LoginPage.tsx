@@ -40,8 +40,8 @@ export function LoginPage() {
         </div>
         <div>
           <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#ff7a1a] mb-3">V8 Aceleração · Sistema operacional</p>
-          <h1 className="text-5xl font-extrabold tracking-tight leading-[1.05]">Cada fase da aceleração,<br />sob controle.</h1>
-          <p className="text-white/75 mt-4 max-w-md">Escada de evolução V1–V8, tráfego, financeiro, páginas e entregas em um único cockpit.</p>
+          <h1 className="text-5xl font-extrabold tracking-tight leading-[1.05]">Cada fase do lançamento<br />sob controle.</h1>
+          <p className="text-white/75 mt-4 max-w-md">Acompanhe, centralize e acelere seu lançamento com o sistema V8 OS.</p>
         </div>
         <p className="text-xs text-white/50">© {new Date().getFullYear()} V8 OS · V8 Aceleração</p>
       </div>
