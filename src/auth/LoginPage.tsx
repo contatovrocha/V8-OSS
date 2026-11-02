@@ -4,6 +4,8 @@ import { backend } from '@/data/client'
 import { LOCAL_DEMO_USERS } from '@/data/local/LocalBackend'
 import { Button, Field, Input } from '@/components/ui/primitives'
 import { useAuth } from './AuthContext'
+import loginBg from '@/assets/brand/login-bg.jpg'
+import v8Logo from '@/assets/brand/v8-logo.png'
 
 export function LoginPage() {
   const { signIn } = useAuth()
@@ -28,28 +30,27 @@ export function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen grid lg:grid-cols-2">
-      <div className="hidden lg:flex flex-col justify-between p-12 border-r border-line relative overflow-hidden">
-        <div className="flex items-center gap-2.5">
-          <div className="size-10 rounded-xl bg-primary grid place-items-center">
-            <svg viewBox="0 0 64 64" className="size-7"><path d="M18 46 L46 18" stroke="#f97316" strokeWidth="6" strokeLinecap="round" /><path d="M36 18h10v10" fill="none" stroke="#fff" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round" /><circle cx="24" cy="40" r="4.5" fill="#fff" /><circle cx="32" cy="32" r="4.5" fill="#fff" /></svg>
-          </div>
-          <span className="font-extrabold tracking-[0.16em] uppercase">Launch OS</span>
+    <div className="min-h-screen relative grid lg:grid-cols-[1.15fr_1fr] bg-[#07070a] text-white">
+      <img src={loginBg} alt="" aria-hidden className="absolute inset-0 size-full object-cover" />
+      <div className="absolute inset-0 bg-[linear-gradient(100deg,rgba(7,7,10,.55)_0%,rgba(7,7,10,.72)_45%,rgba(7,7,10,.94)_75%)]" aria-hidden />
+      <div className="hidden lg:flex flex-col justify-between p-12 relative">
+        <div className="flex items-center gap-3">
+          <img src={v8Logo} alt="V8" className="h-11 w-auto" />
+          <span className="font-extrabold tracking-[0.3em] text-lg">OS</span>
         </div>
         <div>
-          <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary mb-3">Gestão de lançamentos</p>
-          <h1 className="text-5xl font-extrabold tracking-tight leading-[1.05]">Cada fase do lançamento,<br />sob controle.</h1>
-          <p className="text-muted mt-4 max-w-md">Escada de evolução V1–V8, tráfego, financeiro, páginas e entregas do expert em um único cockpit.</p>
+          <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#ff7a1a] mb-3">V8 Aceleração · Sistema operacional</p>
+          <h1 className="text-5xl font-extrabold tracking-tight leading-[1.05]">Cada fase da aceleração,<br />sob controle.</h1>
+          <p className="text-white/75 mt-4 max-w-md">Escada de evolução V1–V8, tráfego, financeiro, páginas e entregas em um único cockpit.</p>
         </div>
-        <svg viewBox="0 0 300 300" className="absolute -right-10 bottom-10 w-80 opacity-30" aria-hidden>
-          <line x1="80" y1="290" x2="220" y2="20" stroke="url(#lg)" strokeWidth="6" strokeLinecap="round" />
-          <defs><linearGradient id="lg" x1="0" y1="1" x2="0" y2="0"><stop stopColor="#f97316" /><stop offset="1" stopColor="#ef4444" /></linearGradient></defs>
-          {Array.from({ length: 8 }, (_, i) => <circle key={i} cx={80 + (140 * (i + 1)) / 9} cy={290 - (270 * (i + 1)) / 9} r="7" fill="#c7d2fe" />)}
-        </svg>
-        <p className="text-xs text-faint">© {new Date().getFullYear()} Launch OS</p>
+        <p className="text-xs text-white/50">© {new Date().getFullYear()} V8 OS · V8 Aceleração</p>
       </div>
-      <div className="flex items-center justify-center p-6">
-        <form onSubmit={submit} className="w-full max-w-sm space-y-4" noValidate>
+      <div className="relative flex items-center justify-center p-6">
+        <form onSubmit={submit} className="w-full max-w-sm space-y-4 rounded-3xl border border-white/10 bg-[#0d0d12]/85 backdrop-blur-xl p-7 shadow-2xl" noValidate>
+          <div className="flex items-center gap-2.5 lg:hidden mb-2">
+            <img src={v8Logo} alt="V8" className="h-9 w-auto" />
+            <span className="font-extrabold tracking-[0.3em]">OS</span>
+          </div>
           <div>
             <h2 className="text-2xl font-extrabold">Entrar</h2>
             <p className="text-sm text-muted mt-1">Acesse o painel da sua operação.</p>
@@ -61,7 +62,7 @@ export function LoginPage() {
             <Input type="password" autoComplete="current-password" value={password} onChange={(e) => setPassword(e.target.value)} />
           </Field>
           {error && <p className="text-sm text-danger">{error}</p>}
-          <Button type="submit" variant="primary" className="w-full" loading={busy}>Entrar <ArrowRight className="size-4" /></Button>
+          <Button type="submit" variant="primary" className="w-full bg-[#ff6a00]! hover:bg-[#ff7d24]! shadow-[0_10px_30px_-10px_#ff6a00]!" loading={busy}>Entrar <ArrowRight className="size-4" /></Button>
 
           {backend.mode === 'local' && (
             <div className="card p-4 text-sm space-y-3">

@@ -55,7 +55,7 @@ export function baseConfig() {
 
   const settings: AppSettings = {
     id: 'c2000000-0000-4000-8000-000000000001',
-    brand_name: 'Launch OS',
+    brand_name: 'V8 OS',
     operation_name: 'Operação de Lançamentos',
     primary_color: '#3b82f6',
     success_color: '#22c55e',

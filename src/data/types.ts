@@ -1,4 +1,4 @@
-// Entidades do Launch OS. Os nomes das tabelas e colunas espelham o schema do Supabase
+// Entidades do V8 OS. Os nomes das tabelas e colunas espelham o schema do Supabase
 // (supabase/migrations/0001_schema.sql), para que os dois backends sejam intercambiáveis.
 
 export type Role = 'admin' | 'expert'

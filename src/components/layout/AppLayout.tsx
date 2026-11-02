@@ -10,6 +10,7 @@ import { backend } from '@/data/client'
 import { useRows } from '@/data/store'
 import { Avatar, Select } from '../ui/primitives'
 import { PeriodPicker } from './PeriodPicker'
+import v8Logo from '@/assets/brand/v8-logo.png'
 
 const LS = 'launchos:nav:v1'
 
@@ -33,11 +34,9 @@ function Brand({ compact }: { compact?: boolean }) {
       {settings.logo_url ? (
         <img src={settings.logo_url} alt="" className="size-9 rounded-xl object-cover" />
       ) : (
-        <div className="size-9 rounded-xl bg-primary grid place-items-center shrink-0 shadow-[0_8px_24px_-10px_var(--brand-primary)]">
-          <svg viewBox="0 0 64 64" className="size-6"><path d="M18 46 L46 18" stroke="var(--brand-accent)" strokeWidth="6" strokeLinecap="round" /><path d="M36 18h10v10" fill="none" stroke="#fff" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round" /><circle cx="24" cy="40" r="4.5" fill="#fff" /><circle cx="32" cy="32" r="4.5" fill="#fff" /></svg>
-        </div>
+        <img src={v8Logo} alt="V8" className={compact ? 'h-6 w-auto shrink-0' : 'h-8 w-auto shrink-0'} />
       )}
-      {!compact && <span className="font-extrabold tracking-[0.14em] uppercase text-sm truncate">{settings.brand_name}</span>}
+      {!compact && <span className="font-extrabold tracking-[0.14em] uppercase text-sm truncate">{settings.logo_url ? settings.brand_name : settings.brand_name.replace(/^V8\s*/i, '') || settings.brand_name}</span>}
     </div>
   )
 }

@@ -48,7 +48,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [expertId, setExpertId] = useState<string | 'all'>(ui.expertId ?? 'all')
   const [projectId, setProjectId] = useState<string | 'all'>(ui.projectId ?? 'all')
 
-  const settings = settingsRows.rows[0] ?? baseConfig().settings
+  const settings = useMemo(() => {
+    const row = settingsRows.rows[0] ?? baseConfig().settings
+    // Instalações criadas antes da troca de nome mantêm o nome antigo salvo.
+    return row.brand_name === 'Launch OS' ? { ...row, brand_name: 'V8 OS' } : row
+  }, [settingsRows.rows])
 
   useEffect(() => {
     const root = document.documentElement.style

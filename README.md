@@ -1,4 +1,4 @@
-# Launch OS
+# V8 OS
 
 Plataforma de gestão de lançamentos para experts: escada de evolução V1–V8, posicionamento, projetos, páginas, tráfego pago (Meta Ads), financeiro, tarefas, relatórios e seções dinâmicas.
 
