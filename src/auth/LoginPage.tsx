@@ -5,6 +5,7 @@ import { LOCAL_DEMO_USERS } from '@/data/local/LocalBackend'
 import { Button, Field, Input } from '@/components/ui/primitives'
 import { useAuth } from './AuthContext'
 import { AuthShell } from './AuthShell'
+import { ROLE_LABEL } from '@/lib/funcoes'
 
 type Mode = 'entrar' | 'criar' | 'esqueci'
 
@@ -158,7 +159,7 @@ export function LoginPage() {
                   <div className="grid gap-2">
                     {LOCAL_DEMO_USERS.map((u) => (
                       <button key={u.email} type="button" onClick={() => { setEmail(u.email); setPassword(u.password) }} className="text-left rounded-xl border border-line hover:border-primary px-3 py-2 transition">
-                        <div className="font-semibold">{u.name} <span className="text-xs text-muted font-normal">· {u.role === 'admin' ? 'Administrador' : 'Expert'}</span></div>
+                        <div className="font-semibold">{u.name} <span className="text-xs text-muted font-normal">· {ROLE_LABEL[u.role]}</span></div>
                         <div className="text-xs text-faint">{u.email} / {u.password}</div>
                       </button>
                     ))}

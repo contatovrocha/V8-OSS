@@ -1,7 +1,11 @@
 // Entidades do V8 OS. Os nomes das tabelas e colunas espelham o schema do Supabase
 // (supabase/migrations/0001_schema.sql), para que os dois backends sejam intercambiáveis.
 
-export type Role = 'admin' | 'expert'
+/** Camadas de acesso: owner (dono) > admin (todos os experts) > expert (membro: só experts vinculados). */
+export type Role = 'owner' | 'admin' | 'expert'
+
+/** Função da pessoa no time. Informativa: não concede permissão. */
+export type Funcao = 'expert' | 'estrategista' | 'gestor_trafego' | 'closer' | 'sdr' | 'social_seller' | 'gerente_projeto'
 
 export interface Profile {
   id: string
@@ -9,6 +13,9 @@ export interface Profile {
   full_name: string
   role: Role
   avatar_url?: string | null
+  funcao?: Funcao | null
+  /** Primeiro acesso (convite aceito). null = convite pendente. */
+  activated_at?: string | null
   created_at: string
 }
 
@@ -59,6 +66,19 @@ export interface UserExpert {
   id: string
   user_id: string
   expert_id: string
+  funcao?: Funcao | null
+  /** Pode adicionar e remover colaboradores na equipe deste expert. */
+  can_manage_team?: boolean
+  added_by?: string | null
+  created_at?: string
+}
+
+/** Links importantes do projeto: visíveis e editáveis somente pelo dono. */
+export interface ProjectLinks {
+  id: string
+  project_id: string
+  links: LinkItem[]
+  updated_at?: string
 }
 
 export type ProjectStatus = 'ativo' | 'inativo' | 'estruturacao'
@@ -426,6 +446,8 @@ export interface SectionConfig {
   expert_can_edit: boolean
   active: boolean
   fields: FieldConfig[]
+  /** Preenchido = a seção tem link público somente leitura (galeria compartilhável). */
+  share_token?: string | null
   created_at: string
   updated_at: string
 }
@@ -486,6 +508,7 @@ export interface TableMap {
   section_configs: SectionConfig
   section_records: SectionRecord
   app_settings: AppSettings
+  project_links: ProjectLinks
 }
 
 export type TableName = keyof TableMap

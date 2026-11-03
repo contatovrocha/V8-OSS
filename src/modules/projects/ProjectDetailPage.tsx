@@ -149,12 +149,7 @@ function Summary({ project }: { project: Project }) {
           <h3 className="font-bold mb-2">Equipe responsável</h3>
           {project.team.length ? <div className="flex flex-wrap gap-2">{project.team.map((t) => <Badge key={t}>{t}</Badge>)}</div> : <p className="text-sm text-muted">Nenhum membro cadastrado.</p>}
         </Card>
-        <Card className="p-5">
-          <h3 className="font-bold mb-2">Links importantes</h3>
-          {project.links.length ? (
-            <ul className="space-y-1.5 text-sm">{project.links.map((l, i) => <li key={i}><a href={l.url} target="_blank" rel="noreferrer" className="text-primary hover:underline inline-flex items-center gap-1.5">{l.label || l.url}<ExternalLink className="size-3" /></a></li>)}</ul>
-          ) : <p className="text-sm text-muted">Nenhum link cadastrado.</p>}
-        </Card>
+        <PrivateLinks projectId={project.id} />
       </div>
     </div>
   )
@@ -220,6 +215,22 @@ function ProjectHistory({ project }: { project: Project }) {
           ))}
         </ol>
       )}
+    </Card>
+  )
+}
+
+/** Links importantes: visíveis somente para o dono do sistema (tabela project_links, RLS só do dono). */
+function PrivateLinks({ projectId }: { projectId: string }) {
+  const { isOwner } = useAuth()
+  const rows = useRows('project_links')
+  if (!isOwner) return null
+  const links = rows.rows.find((r) => r.project_id === projectId)?.links ?? []
+  return (
+    <Card className="p-5">
+      <h3 className="font-bold mb-2 flex items-center gap-2">Links importantes <Badge tone="primary">Só você vê</Badge></h3>
+      {links.length ? (
+        <ul className="space-y-1.5 text-sm">{links.map((l, i) => <li key={i}><a href={l.url} target="_blank" rel="noreferrer" className="text-primary hover:underline inline-flex items-center gap-1.5">{l.label || l.url}<ExternalLink className="size-3" /></a></li>)}</ul>
+      ) : <p className="text-sm text-muted">Nenhum link cadastrado.</p>}
     </Card>
   )
 }

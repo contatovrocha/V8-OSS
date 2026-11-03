@@ -1,5 +1,5 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
-import { BackendError, type Backend, type ChangeEvent, type Filter, type NewUserInput, type RpcName, type SignUpInput } from '../backend'
+import { BackendError, type Backend, type ChangeEvent, type Filter, type NewUserInput, type PublicGallery, type RpcName, type SignUpInput } from '../backend'
 import type { Profile, Row, TableName } from '../types'
 
 const FUNCTION_RPCS: RpcName[] = ['create_user', 'meta_connect_url', 'meta_sync']
@@ -115,6 +115,13 @@ export class SupabaseBackend implements Backend {
   async updatePassword(password: string) {
     const { error } = await this.client.auth.updateUser({ password })
     if (error) throw new BackendError(/should be different/i.test(error.message) ? 'A nova senha deve ser diferente da anterior.' : /password/i.test(error.message) ? 'Senha fraca: use pelo menos 6 caracteres.' : error.message, 'auth')
+  }
+
+  async publicGallery(token: string) {
+    if (!/^[0-9a-f-]{36}$/i.test(token)) return null
+    const { data, error } = await this.client.rpc('public_section_gallery', { token })
+    if (error) throw new BackendError('Não foi possível carregar a galeria.', 'error')
+    return (data as PublicGallery | null) ?? null
   }
 
   onPasswordRecovery(cb: () => void) {

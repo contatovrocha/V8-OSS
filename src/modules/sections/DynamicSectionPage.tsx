@@ -1,4 +1,4 @@
-import { Eye, LayoutGrid, List, Pencil, Plus, ShieldOff, Trash2 } from 'lucide-react'
+import { Copy, ExternalLink, Eye, Images, LayoutGrid, Link2Off, List, Pencil, Plus, Share2, ShieldOff, Trash2 } from 'lucide-react'
 import { useMemo, useState, type ReactNode } from 'react'
 import { useParams } from 'react-router-dom'
 import { useApp } from '@/app/AppContext'
@@ -14,6 +14,7 @@ import { invalidate, useRows } from '@/data/store'
 import type { FieldConfig, SectionConfig, SectionRecord } from '@/data/types'
 import { date, dateTime, money, num } from '@/lib/format'
 import { validateRecord } from '@/lib/sections'
+import { GalleryGrid, Lightbox, type GalleryData } from './Gallery'
 
 export default function DynamicSectionPage() {
   const { slug } = useParams()
@@ -54,7 +55,10 @@ function SectionView({ section }: { section: SectionConfig }) {
   const { run } = useAction()
   const confirm = useConfirm()
   const display = useDisplay()
-  const [view, setView] = useState<'cards' | 'table'>('cards')
+  const hasImage = section.fields.some((f) => f.type === 'image')
+  const [view, setView] = useState<'galeria' | 'cards' | 'table'>(hasImage ? 'galeria' : 'cards')
+  const [zoom, setZoom] = useState<number | null>(null)
+  const [sharing, setSharing] = useState(false)
   const [filters, setFilters] = useState<Record<string, string>>({})
   const [editing, setEditing] = useState<SectionRecord | 'new' | null>(null)
   const [viewing, setViewing] = useState<SectionRecord | null>(null)
@@ -78,6 +82,17 @@ function SectionView({ section }: { section: SectionConfig }) {
   const optionsFor = (f: FieldConfig) =>
     f.type === 'project' ? app.projects.map((p) => [p.id, p.name]) : f.type === 'expert' ? app.experts.map((e) => [e.id, e.full_name]) : f.type === 'checkbox' ? [['true', 'Sim'], ['false', 'Não']] : f.options.map((o) => [o, o])
 
+  const meta = (d: GalleryData) => {
+    const text = fields.find((f) => f.type === 'textarea' && f.show_in_card)
+    const chips = fields.filter((f) => ['select', 'status', 'multiselect'].includes(f.type) && f.show_in_card && d[f.key])
+    return (
+      <div className="space-y-2">
+        {text && d[text.key] ? <p className="text-sm text-muted leading-relaxed">{String(d[text.key])}</p> : null}
+        {chips.length > 0 && <div className="flex flex-wrap gap-1.5">{chips.flatMap((f) => (Array.isArray(d[f.key]) ? (d[f.key] as string[]) : [String(d[f.key])]).map((v) => <Badge key={f.key + v}>{v}</Badge>))}</div>}
+      </div>
+    )
+  }
+
   const remove = async (r: SectionRecord) => {
     if (!(await confirm({ title: 'Excluir registro?', message: 'O registro será excluído permanentemente.', tone: 'danger', confirmLabel: 'Excluir' }))) return
     run(async () => { await backend.remove('section_records', r.id); await invalidate('section_records', 'activity_log') }, 'Registro excluído.')
@@ -96,7 +111,10 @@ function SectionView({ section }: { section: SectionConfig }) {
         eyebrow="Seção personalizada"
         title={<span className="inline-flex items-center gap-3"><Icon className="size-8 text-primary" />{section.name}</span>}
         subtitle={section.description}
-        actions={canEdit && <Button variant="primary" icon={Plus} onClick={() => setEditing('new')}>Novo registro</Button>}
+        actions={<>
+          {isAdmin && <Button icon={Share2} onClick={() => setSharing(true)}>Compartilhar{section.share_token ? ' · público' : ''}</Button>}
+          {canEdit && <Button variant="primary" icon={Plus} onClick={() => setEditing('new')}>Novo registro</Button>}
+        </>}
       />
       <div className="flex flex-wrap items-center gap-2 mb-5">
         {fields.filter((f) => f.filterable).map((f) => (
@@ -105,10 +123,12 @@ function SectionView({ section }: { section: SectionConfig }) {
             {optionsFor(f).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
           </Select>
         ))}
-        <div className="ml-auto"><Segmented size="sm" value={view} onChange={setView} options={[{ value: 'cards', label: 'Cards', icon: LayoutGrid }, { value: 'table', label: 'Tabela', icon: List }]} /></div>
+        <div className="ml-auto"><Segmented size="sm" value={view} onChange={setView} options={[...(hasImage ? [{ value: 'galeria' as const, label: 'Galeria', icon: Images }] : []), { value: 'cards' as const, label: 'Cards', icon: LayoutGrid }, { value: 'table' as const, label: 'Tabela', icon: List }]} /></div>
       </div>
       {records.loading ? <Skeleton className="h-64" /> : list.length === 0 ? (
         <Card><EmptyState icon={Icon} title="Nenhum registro" description={canEdit ? 'Cadastre o primeiro registro desta seção.' : 'Ainda não há registros publicados.'} action={canEdit && <Button variant="primary" icon={Plus} onClick={() => setEditing('new')}>Cadastrar</Button>} /></Card>
+      ) : view === 'galeria' ? (
+        <GalleryGrid fields={fields} items={list.map((r) => r.data)} onOpen={setZoom} renderMeta={meta} actions={(i) => actions(list[i])} />
       ) : view === 'cards' ? (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {list.map((r) => (
@@ -135,6 +155,8 @@ function SectionView({ section }: { section: SectionConfig }) {
           ]}
         />
       )}
+      {zoom !== null && list[zoom] && <Lightbox fields={fields} items={list.map((r) => r.data)} index={zoom} onIndex={setZoom} onClose={() => setZoom(null)} renderMeta={meta} />}
+      {sharing && <ShareModal section={section} onClose={() => setSharing(false)} />}
       {editing && <RecordForm section={section} record={editing === 'new' ? null : editing} onClose={() => setEditing(null)} />}
       {viewing && (
         <Modal open onClose={() => setViewing(null)} title={String(viewing.data[titleField?.key] ?? section.name)} subtitle={`Atualizado em ${dateTime(viewing.updated_at)}`} footer={canEdit && <Button icon={Pencil} onClick={() => { setEditing(viewing); setViewing(null) }}>Editar</Button>}>
@@ -144,6 +166,39 @@ function SectionView({ section }: { section: SectionConfig }) {
         </Modal>
       )}
     </div>
+  )
+}
+
+export const shareUrl = (token: string) => `${window.location.origin}${window.location.pathname}#/compartilhado/${token}`
+
+/** Link público somente leitura desta seção (galeria). As demais áreas continuam exigindo login. */
+function ShareModal({ section, onClose }: { section: SectionConfig; onClose: () => void }) {
+  const { run, busy } = useAction()
+  const token = section.share_token
+  const setToken = (t: string | null) =>
+    run(async () => { await backend.update('section_configs', section.id, { share_token: t }); await invalidate('section_configs') }, t ? 'Link público criado.' : 'Link público desativado.')
+  const [copied, setCopied] = useState(false)
+  const copy = async () => {
+    try { await navigator.clipboard.writeText(shareUrl(token!)); setCopied(true); setTimeout(() => setCopied(false), 2000) } catch { /* sem permissão de área de transferência */ }
+  }
+  return (
+    <Modal open onClose={onClose} title={`Compartilhar · ${section.name}`} subtitle="Quem tiver o link vê e baixa somente esta galeria, sem precisar de conta.">
+      {token ? (
+        <div className="space-y-4">
+          <div className="flex gap-2"><Input readOnly value={shareUrl(token)} onFocus={(e) => e.currentTarget.select()} /><Button icon={Copy} onClick={copy}>{copied ? 'Copiado!' : 'Copiar'}</Button></div>
+          <div className="flex flex-wrap gap-2">
+            <a href={shareUrl(token)} target="_blank" rel="noreferrer"><Button icon={ExternalLink}>Abrir página pública</Button></a>
+            <Button variant="ghost" icon={Link2Off} loading={busy} onClick={() => setToken(null)}>Desativar link</Button>
+          </div>
+          <p className="text-xs text-muted">Ao desativar, o link para de funcionar na hora. Gerar de novo cria um endereço diferente.</p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          <p className="text-sm text-muted">Esta seção ainda não tem link público. Todas as outras áreas do sistema continuam protegidas por login.</p>
+          <Button variant="primary" icon={Share2} loading={busy} onClick={() => setToken(crypto.randomUUID())}>Gerar link público</Button>
+        </div>
+      )}
+    </Modal>
   )
 }
 

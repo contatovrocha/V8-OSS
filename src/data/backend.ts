@@ -1,4 +1,4 @@
-import type { Profile, Role, Row, TableName } from './types'
+import type { FieldConfig, Profile, Role, Row, TableName } from './types'
 
 export type Filter<T extends TableName> = Partial<Record<keyof Row<T>, unknown>>
 
@@ -41,6 +41,14 @@ export interface SignUpResult {
   confirmEmail: boolean
 }
 
+export interface PublicGallery {
+  name: string
+  description: string
+  icon: string
+  fields: FieldConfig[]
+  records: Record<string, unknown>[]
+}
+
 export interface Backend {
   readonly mode: 'supabase' | 'local'
 
@@ -54,6 +62,8 @@ export interface Backend {
   requestPasswordReset(email: string): Promise<void>
   /** Troca a senha do usuário logado (usado após abrir o link de recuperação). */
   updatePassword(password: string): Promise<void>
+  /** Galeria pública de uma seção pelo token do link compartilhado (não exige login). null = link inválido ou desativado. */
+  publicGallery(token: string): Promise<PublicGallery | null>
   /** Avisa quando o usuário chegou pelo link de recuperação de senha. */
   onPasswordRecovery(cb: () => void): () => void
   signOut(): Promise<void>

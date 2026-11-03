@@ -10,16 +10,17 @@ export type DB = { [K in TableName]: TableMap[K][] }
 export interface Ctx {
   user: Profile
   isAdmin: boolean
+  isOwner: boolean
   expertIds: Set<string>
   projectIds: Set<string>
   experts: Map<string, Expert>
 }
 
 export function buildCtx(db: DB, user: Profile): Ctx {
-  const isAdmin = user.role === 'admin'
+  const isAdmin = user.role === 'admin' || user.role === 'owner'
   const expertIds = new Set(db.user_experts.filter((u) => u.user_id === user.id).map((u) => u.expert_id))
   const projectIds = new Set(db.projects.filter((p) => isAdmin || expertIds.has(p.expert_id)).map((p) => p.id))
-  return { user, isAdmin, expertIds, projectIds, experts: new Map(db.experts.map((e) => [e.id, e])) }
+  return { user, isAdmin, isOwner: user.role === 'owner', expertIds, projectIds, experts: new Map(db.experts.map((e) => [e.id, e])) }
 }
 
 const MODULE_OF: Partial<Record<TableName, string>> = {
@@ -69,6 +70,7 @@ function projectOf(db: DB, table: TableName, row: Record<string, unknown>): stri
 }
 
 export function canRead<T extends TableName>(db: DB, ctx: Ctx, table: T, row: Row<T>): boolean {
+  if (table === 'project_links') return ctx.isOwner
   if (ctx.isAdmin) return true
   const r = row as unknown as Record<string, unknown>
   switch (table) {
@@ -119,6 +121,7 @@ export type Op = 'insert' | 'update' | 'delete'
 
 /** Retorna null quando permitido, ou a mensagem de recusa. */
 export function writeDenied<T extends TableName>(db: DB, ctx: Ctx, table: T, op: Op, row: Row<T>, old?: Row<T>): string | null {
+  if (table === 'project_links') return ctx.isOwner ? null : 'Somente o dono acessa os links importantes.'
   if (ctx.isAdmin) return null
   const r = row as unknown as Record<string, unknown>
   const deny = 'Seu perfil não tem permissão para esta ação.'

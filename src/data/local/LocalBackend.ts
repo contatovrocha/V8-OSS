@@ -14,7 +14,7 @@ const SESSION_KEY = 'launchos:session:v1'
 const TABLES: TableName[] = [
   'profiles', 'experts', 'user_experts', 'projects', 'project_phases', 'phase_history', 'movements', 'page_types', 'pages',
   'ad_accounts', 'campaigns', 'ad_sets', 'ads', 'ad_metrics_daily', 'products', 'sales', 'expense_categories', 'expenses',
-  'tasks', 'task_comments', 'task_templates', 'files', 'activity_log', 'section_configs', 'section_records', 'app_settings',
+  'tasks', 'task_comments', 'task_templates', 'files', 'activity_log', 'section_configs', 'section_records', 'app_settings', 'project_links',
 ]
 
 /** Dependências (filhos) usadas para exclusão em cascata, como ON DELETE CASCADE no Postgres. */
@@ -41,7 +41,7 @@ const clone = <T,>(v: T): T => JSON.parse(JSON.stringify(v))
 type Creds = Record<string, { user_id: string; hash: string }>
 
 export const LOCAL_DEMO_USERS = [
-  { email: 'admin@launchos.demo', password: 'admin123', name: 'Ana Operações', role: 'admin' as const, expert: null },
+  { email: 'admin@launchos.demo', password: 'admin123', name: 'Ana Operações', role: 'owner' as const, expert: null },
   { email: 'rafael@launchos.demo', password: 'expert123', name: 'Rafael Martins', role: 'expert' as const, expert: DEMO.expertRafael },
   { email: 'camila@launchos.demo', password: 'expert123', name: 'Camila Duarte', role: 'expert' as const, expert: DEMO.expertCamila },
 ]
@@ -100,7 +100,7 @@ export class LocalBackend implements Backend {
     let adminId = ''
     for (const u of LOCAL_DEMO_USERS) {
       const pid = uuid()
-      if (u.role === 'admin') adminId = pid
+      if (u.role === 'owner') adminId = pid
       db.profiles.push({ id: pid, email: u.email, full_name: u.name, role: u.role, avatar_url: null, created_at: nowIso() })
       creds[u.email] = { user_id: pid, hash: await hash(u.password) }
     }
@@ -161,7 +161,7 @@ export class LocalBackend implements Backend {
     if (creds[email]) throw new BackendError('Já existe uma conta com este e-mail. Use "Entrar".', 'duplicate')
     if (input.password.length < 6) throw new BackendError('Senha fraca: use pelo menos 6 caracteres.', 'validation')
     // Mesma regra do trigger handle_new_user: o primeiro usuário é administrador.
-    const role = this.db.profiles.length ? 'expert' : 'admin'
+    const role = this.db.profiles.length ? 'expert' : 'owner'
     const p: Profile = { id: uuid(), email, full_name: input.full_name.trim(), role, avatar_url: null, created_at: nowIso() }
     this.db.profiles.push(p)
     creds[email] = { user_id: p.id, hash: await hash(input.password) }
@@ -186,6 +186,14 @@ export class LocalBackend implements Backend {
     const creds: Creds = JSON.parse(storage.get(CRED_KEY) ?? '{}')
     creds[user.email] = { user_id: user.id, hash: await hash(password) }
     storage.set(CRED_KEY, JSON.stringify(creds))
+  }
+
+  async publicGallery(token: string) {
+    await this.ready
+    const s = this.db.section_configs.find((x) => x.share_token && x.share_token === token && x.active)
+    if (!s) return null
+    const records = this.db.section_records.filter((r) => r.section_id === s.id).sort((a, b) => a.created_at.localeCompare(b.created_at)).map((r) => r.data)
+    return { name: s.name, description: s.description, icon: s.icon, fields: s.fields, records }
   }
 
   onPasswordRecovery() {

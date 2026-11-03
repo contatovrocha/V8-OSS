@@ -7,6 +7,7 @@ import { Button, Checkbox, Field, Input, Select, Textarea } from '@/components/u
 import { backend } from '@/data/client'
 import { invalidate, useRows } from '@/data/store'
 import type { Project } from '@/data/types'
+import { useAuth } from '@/auth/AuthContext'
 import { addDays } from '@/lib/format'
 
 type Draft = Omit<Project, 'id' | 'created_at' | 'updated_at' | 'is_demo' | 'archived' | 'current_phase'>
@@ -22,6 +23,14 @@ export function ProjectForm({ project, onClose, onSaved }: { project?: Project |
   const templates = useRows('task_templates')
   const { run, busy } = useAction()
   const [d, setD] = useState<Draft>(() => (project ? { ...project } : empty(app.expertId !== 'all' ? app.expertId : app.experts[0]?.id ?? '')))
+  const { isOwner } = useAuth()
+  const linkRows = useRows('project_links')
+  const privateLinks = project ? linkRows.rows.find((r) => r.project_id === project.id) : undefined
+  const [linksLoaded, setLinksLoaded] = useState(false)
+  if (isOwner && !linksLoaded && !linkRows.loading) {
+    setLinksLoaded(true)
+    if (privateLinks?.links.length) setD((s) => ({ ...s, links: privateLinks.links }))
+  }
   const [applyTemplates, setApplyTemplates] = useState(true)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const set = <K extends keyof Draft>(k: K, v: Draft[K]) => setD((s) => ({ ...s, [k]: v }))
@@ -40,7 +49,9 @@ export function ProjectForm({ project, onClose, onSaved }: { project?: Project |
   const save = () => {
     if (!validate()) return
     run(async () => {
-      const payload = { ...d, name: d.name.trim(), links: d.links.filter((l) => l.url) }
+      // Os links importantes ficam em project_links (somente o dono); projects.links fica sempre vazio.
+      const links = d.links.filter((l) => l.url)
+      const payload = { ...d, name: d.name.trim(), links: [] }
       let saved: Project
       if (project) saved = await backend.update('projects', project.id, payload)
       else {
@@ -54,7 +65,12 @@ export function ProjectForm({ project, onClose, onSaved }: { project?: Project |
           })))
         }
       }
-      await invalidate('projects', 'project_phases', 'tasks', 'activity_log')
+      if (isOwner) {
+        const existing = linkRows.rows.find((r) => r.project_id === saved.id)
+        if (existing) await backend.update('project_links', existing.id, { links })
+        else if (links.length) await backend.insert('project_links', { project_id: saved.id, links })
+      }
+      await invalidate('projects', 'project_phases', 'tasks', 'activity_log', 'project_links')
       onSaved?.(saved)
       onClose()
     }, project ? 'Projeto atualizado.' : 'Projeto criado.')
@@ -98,7 +114,7 @@ export function ProjectForm({ project, onClose, onSaved }: { project?: Project |
         <Field label="Orçamento de tráfego"><MoneyInput value={d.traffic_budget} onChange={(v) => set('traffic_budget', v ?? 0)} /></Field>
         <Field label="Equipe responsável"><TagInput value={d.team} onChange={(v) => set('team', v)} placeholder="Nome e função, Enter para adicionar" /></Field>
         <Field label="Fotografia de capa" className="sm:col-span-2"><ImageUpload value={d.cover_url} aspect={16 / 9} folder="projects" onChange={(v) => set('cover_url', v)} /></Field>
-        <Field label="Links importantes" error={errors.links} className="sm:col-span-2"><LinkListInput value={d.links} onChange={(v) => set('links', v)} /></Field>
+        {isOwner && <Field label="Links importantes (só você vê)" error={errors.links} className="sm:col-span-2"><LinkListInput value={d.links} onChange={(v) => set('links', v)} /></Field>}
         <Field label="Observações internas" hint="Visíveis apenas para a administração e para o expert do projeto." className="sm:col-span-2"><Textarea value={d.internal_notes} onChange={(e) => set('internal_notes', e.target.value)} /></Field>
         {!project && templates.rows.length > 0 && (
           <div className="sm:col-span-2"><Checkbox checked={applyTemplates} onChange={setApplyTemplates} label={`Criar tarefas a partir dos ${templates.rows.length} modelos de tarefas por fase`} /></div>

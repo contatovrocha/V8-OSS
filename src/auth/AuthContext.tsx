@@ -3,11 +3,15 @@ import { backend } from '@/data/client'
 import { resetStore } from '@/data/store'
 import type { Profile } from '@/data/types'
 import type { SignUpInput, SignUpResult } from '@/data/backend'
+import { isAdminRole } from '@/lib/funcoes'
 
 interface AuthState {
   user: Profile | null
   loading: boolean
+  /** Dono ou administrador: acesso a todos os experts. */
   isAdmin: boolean
+  /** Dono do sistema (super administrador). */
+  isOwner: boolean
   signIn: (email: string, password: string) => Promise<void>
   signUp: (input: SignUpInput) => Promise<SignUpResult>
   signInWithGoogle: () => Promise<void>
@@ -49,7 +53,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       value={{
         user,
         loading,
-        isAdmin: user?.role === 'admin',
+        isAdmin: isAdminRole(user?.role),
+        isOwner: user?.role === 'owner',
         signIn: async (email, password) => {
           resetStore()
           setUser(await backend.signIn(email, password))
