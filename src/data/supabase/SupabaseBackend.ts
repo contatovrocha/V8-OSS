@@ -2,7 +2,7 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import { BackendError, type Backend, type ChangeEvent, type Filter, type NewUserInput, type PublicGallery, type RpcName, type SignUpInput } from '../backend'
 import type { Profile, Row, TableName } from '../types'
 
-const FUNCTION_RPCS: RpcName[] = ['create_user', 'meta_connect_url', 'meta_sync']
+const FUNCTION_RPCS: RpcName[] = ['create_user', 'meta_connect_url', 'meta_sync', 'invite_member', 'invite_link']
 const PAGE = 1000
 
 function wrap(e: { message: string; code?: string } | null): never | void {
@@ -24,12 +24,39 @@ export class SupabaseBackend implements Backend {
 
   private readonly url: string
   private readonly anonKey: string
+  private readonly redirectHandled: Promise<void>
+
+  /** Conclui o login vindo de um link (Google, confirmação, recuperação, convite) e limpa a URL. */
+  private async consumeRedirect() {
+    const url = new URL(window.location.href)
+    const code = url.searchParams.get('code')
+    const hash = new URLSearchParams(url.hash.replace(/^#\/?/, ''))
+    try {
+      if (code) {
+        url.searchParams.delete('code')
+        await this.client.auth.exchangeCodeForSession(code)
+      } else if (hash.get('access_token') && hash.get('refresh_token')) {
+        await this.client.auth.setSession({ access_token: hash.get('access_token')!, refresh_token: hash.get('refresh_token')! })
+        // Convite e link de acesso: a pessoa define a senha em seguida.
+        if (['invite', 'magiclink', 'recovery'].includes(hash.get('type') ?? '')) url.searchParams.set('reset', '1')
+        url.hash = ''
+      } else if (hash.get('error_code') || hash.get('error')) {
+        url.searchParams.set('reset', '1') // a tela de login avisa que o link expirou
+        url.hash = ''
+      } else return
+    } catch {
+      url.searchParams.set('reset', '1')
+    }
+    window.history.replaceState(null, '', url.toString())
+  }
 
   constructor(url: string, anonKey: string) {
     this.url = url
     this.anonKey = anonKey
-    // PKCE: o retorno do Google e da confirmação de e-mail chega em ?code=, sem conflitar com as rotas em #/.
-    this.client = createClient(url, anonKey, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, flowType: 'pkce' } })
+    // PKCE: o retorno do Google, da confirmação e da recuperação chega em ?code=. Convites gerados pelo servidor
+    // chegam com #access_token=. Os dois são tratados em consumeRedirect (o HashRouter usa o # para as rotas).
+    this.client = createClient(url, anonKey, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false, flowType: 'pkce' } })
+    this.redirectHandled = this.consumeRedirect()
   }
 
   /**
@@ -61,6 +88,7 @@ export class SupabaseBackend implements Backend {
   }
 
   async currentUser() {
+    await this.redirectHandled
     const { data } = await this.client.auth.getSession()
     return data.session ? this.profile(data.session.user.id) : null
   }
@@ -77,7 +105,7 @@ export class SupabaseBackend implements Backend {
     const { data, error } = await this.client.auth.signUp({
       email: input.email.trim().toLowerCase(),
       password: input.password,
-      options: { data: { full_name: input.full_name.trim() }, emailRedirectTo: window.location.origin + window.location.pathname },
+      options: { data: { full_name: input.full_name.trim(), funcao: input.funcao }, emailRedirectTo: window.location.origin + window.location.pathname },
     })
     if (error) {
       if (/registered|exists/i.test(error.message)) throw new BackendError('Já existe uma conta com este e-mail. Use "Entrar".', 'duplicate')
@@ -196,7 +224,7 @@ export class SupabaseBackend implements Backend {
 
   async rpc<R = unknown>(name: RpcName, args: Record<string, unknown>): Promise<R> {
     if (FUNCTION_RPCS.includes(name)) {
-      const fn = name === 'create_user' ? 'admin-create-user' : name === 'meta_connect_url' ? 'meta-oauth' : 'meta-sync'
+      const fn = name === 'create_user' ? 'admin-create-user' : name === 'meta_connect_url' ? 'meta-oauth' : name === 'invite_member' || name === 'invite_link' ? 'invite-member' : 'meta-sync'
       const { data, error } = await this.client.functions.invoke(fn, { body: { action: name, ...args } })
       if (error) {
         const status = (error as { context?: Response }).context?.status

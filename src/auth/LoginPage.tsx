@@ -2,10 +2,11 @@ import { ArrowRight, Info, MailCheck } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
 import { backend } from '@/data/client'
 import { LOCAL_DEMO_USERS } from '@/data/local/LocalBackend'
-import { Button, Field, Input } from '@/components/ui/primitives'
+import { Button, Field, Input, Select } from '@/components/ui/primitives'
 import { useAuth } from './AuthContext'
 import { AuthShell } from './AuthShell'
-import { ROLE_LABEL } from '@/lib/funcoes'
+import { FUNCOES, ROLE_LABEL } from '@/lib/funcoes'
+import type { Funcao } from '@/data/types'
 
 type Mode = 'entrar' | 'criar' | 'esqueci'
 
@@ -27,6 +28,7 @@ export function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
+  const [funcao, setFuncao] = useState<Funcao | ''>('')
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const [sent, setSent] = useState<{ kind: 'confirm' | 'reset'; email: string } | null>(null)
@@ -54,6 +56,7 @@ export function LoginPage() {
       return
     }
     if (mode === 'criar' && name.trim().length < 3) return setError('Informe seu nome completo.')
+    if (mode === 'criar' && !funcao) return setError('Selecione a sua função.')
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.trim())) return setError('Informe um e-mail válido.')
     if (!password) return setError('Informe sua senha.')
     if (mode === 'criar' && password.length < 6) return setError('A senha deve ter pelo menos 6 caracteres.')
@@ -63,7 +66,7 @@ export function LoginPage() {
     try {
       if (mode === 'entrar') await signIn(email, password)
       else {
-        const r = await signUp({ full_name: name, email, password })
+        const r = await signUp({ full_name: name, email, password, funcao: funcao as Funcao })
         if (r.confirmEmail) setSent({ kind: 'confirm', email: email.trim().toLowerCase() })
       }
     } catch (err) {
@@ -124,9 +127,17 @@ export function LoginPage() {
               )}
 
               {mode === 'criar' && (
-                <Field label="Nome completo">
-                  <Input autoComplete="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Seu nome" />
-                </Field>
+                <>
+                  <Field label="Nome completo">
+                    <Input autoComplete="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Seu nome" />
+                  </Field>
+                  <Field label="Qual é a sua função?">
+                    <Select value={funcao} onChange={(e) => setFuncao(e.target.value as Funcao)}>
+                      <option value="">Selecione...</option>
+                      {FUNCOES.map((f) => <option key={f.value} value={f.value}>{f.label}</option>)}
+                    </Select>
+                  </Field>
+                </>
               )}
               <Field label="E-mail">
                 <Input type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="voce@empresa.com" />

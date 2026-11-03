@@ -20,6 +20,8 @@ interface AuthState {
   recovery: boolean
   finishRecovery: (password: string) => Promise<void>
   signOut: () => Promise<void>
+  /** Recarrega o perfil do usuário logado (após mudar função, por exemplo). */
+  refreshUser: () => Promise<void>
 }
 
 const Ctx = createContext<AuthState>(null as unknown as AuthState)
@@ -33,6 +35,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     backend.currentUser().then((u) => {
       setUser(u)
+      // O link de convite/recuperação pode ter marcado ?reset=1 durante o login por URL.
+      if (new URLSearchParams(window.location.search).get('reset') === '1') setRecovery(true)
       setLoading(false)
     }).catch(() => setLoading(false))
     let current: string | null = null
@@ -73,6 +77,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setRecovery(false)
           window.history.replaceState(null, '', window.location.pathname + window.location.hash)
         },
+        refreshUser: async () => setUser(await backend.currentUser()),
         signOut: async () => {
           await backend.signOut()
           resetStore()

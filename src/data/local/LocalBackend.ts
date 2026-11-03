@@ -1,7 +1,7 @@
 import { storage } from '@/lib/storage'
 import { applyPhaseAction, phaseDef, type PhaseAction } from '@/lib/phases'
 import { validateRecord } from '@/lib/sections'
-import { BackendError, type Backend, type ChangeEvent, type Filter, type NewUserInput, type RpcName, type SignUpInput } from '../backend'
+import { BackendError, type Backend, type ChangeEvent, type Filter, type InviteInput, type NewUserInput, type RpcName, type SignUpInput } from '../backend'
 import { baseConfig, demoData, DEMO_INSERT_ORDER, DEMO } from '../seed'
 import type { ActivityLog, Profile, Project, Row, TableName, UserExpert } from '../types'
 import { buildCtx, canRead, writeDenied, type DB, type Op } from './policies'
@@ -162,7 +162,7 @@ export class LocalBackend implements Backend {
     if (input.password.length < 6) throw new BackendError('Senha fraca: use pelo menos 6 caracteres.', 'validation')
     // Mesma regra do trigger handle_new_user: o primeiro usuário é administrador.
     const role = this.db.profiles.length ? 'expert' : 'owner'
-    const p: Profile = { id: uuid(), email, full_name: input.full_name.trim(), role, avatar_url: null, created_at: nowIso() }
+    const p: Profile = { id: uuid(), email, full_name: input.full_name.trim(), role, funcao: input.funcao, avatar_url: null, created_at: nowIso() }
     this.db.profiles.push(p)
     creds[email] = { user_id: p.id, hash: await hash(input.password) }
     storage.set(CRED_KEY, JSON.stringify(creds))
@@ -449,6 +449,32 @@ export class LocalBackend implements Backend {
         this.persist(['profiles', 'user_experts', 'activity_log'])
         return p as R
       }
+      case 'invite_member': {
+        // Modo local: cria o perfil e os vínculos; não há envio de e-mail.
+        const input = args as unknown as InviteInput
+        const email = input.email.trim().toLowerCase()
+        let p = this.db.profiles.find((x) => x.email === email)
+        if (!ctx.isAdmin && (input.make_admin || input.can_manage_team)) throw new BackendError('Somente administradores definem camadas e gestores.', 'forbidden')
+        if (input.make_admin && !ctx.isOwner) throw new BackendError('Somente o dono cria administradores.', 'forbidden')
+        if (!ctx.isAdmin && !input.expert_ids.every((e) => this.db.user_experts.some((l) => l.user_id === user.id && l.expert_id === e && l.can_manage_team)))
+          throw new BackendError('Você só adiciona pessoas na equipe dos experts que gerencia.', 'forbidden')
+        const status = p ? 'linked' : 'invited'
+        if (!p) {
+          p = { id: uuid(), email, full_name: input.full_name.trim(), role: 'expert', funcao: input.funcao, activated_at: null, avatar_url: null, created_at: nowIso() }
+          this.db.profiles.push(p)
+        }
+        if (input.make_admin && p.role === 'expert') p.role = 'admin'
+        else if (p.role === 'expert')
+          for (const eid of input.expert_ids) {
+            const ex = this.db.user_experts.find((l) => l.user_id === p!.id && l.expert_id === eid)
+            if (ex) Object.assign(ex, { funcao: input.funcao })
+            else this.db.user_experts.push({ id: uuid(), user_id: p.id, expert_id: eid, funcao: input.funcao, can_manage_team: ctx.isAdmin && !!input.can_manage_team, added_by: user.id, created_at: nowIso() })
+          }
+        this.persist(['profiles', 'user_experts'])
+        return { user_id: p.id, status, email_sent: false, link: null } as R
+      }
+      case 'invite_link':
+        throw new BackendError('Links de convite só funcionam com o Supabase configurado.', 'integration_pending')
       case 'meta_connect_url':
       case 'meta_sync':
         throw new BackendError('A integração com o Meta Ads exige o backend Supabase com as Edge Functions publicadas e as credenciais do app Meta configuradas. No modo local, o tráfego usa dados demonstrativos.', 'integration_pending')

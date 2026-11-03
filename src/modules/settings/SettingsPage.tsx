@@ -1,8 +1,9 @@
-import { AlertCircle, CheckCircle2, Link2, Plus, RefreshCw, RotateCcw, Save, Trash2, UserPlus } from 'lucide-react'
+import { AlertCircle, CheckCircle2, Link2, Plus, RefreshCw, RotateCcw, Save, Trash2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useApp } from '@/app/AppContext'
 import { NATIVE_NAV } from '@/app/nav'
+import { UsersAdmin } from '../team/UsersAdmin'
 import { TASK_PRIORITY } from '@/app/labels'
 import { PageHeader } from '@/components/layout/AppLayout'
 import { DataTable } from '@/components/ui/DataTable'
@@ -12,7 +13,7 @@ import { Avatar, Badge, Button, Card, Checkbox, Field, IconButton, Input, Select
 import { backend } from '@/data/client'
 import { invalidate, useRows } from '@/data/store'
 import { ALL_MODULES, defaultPermissions, demoData, DEMO_INSERT_ORDER } from '@/data/seed'
-import type { AppSettings, Expert, ExpertPermissions, Role, TaskTemplate } from '@/data/types'
+import type { AppSettings, Expert, ExpertPermissions, TaskTemplate } from '@/data/types'
 import { dateTime, relative } from '@/lib/format'
 import { PHASES } from '@/lib/phases'
 import { SectionBuilder } from '../sections/SectionBuilder'
@@ -45,7 +46,7 @@ export default function SettingsPage() {
   )
 }
 
-const MODULE_LABEL = Object.fromEntries(NATIVE_NAV.map((n) => [n.key, n.label]))
+const MODULE_LABEL = Object.fromEntries(NATIVE_NAV.filter((n) => n.key !== 'equipe').map((n) => [n.key, n.label]))
 
 function General() {
   const { settings } = useApp()
@@ -97,13 +98,9 @@ function General() {
 
 function ExpertsUsers() {
   const app = useApp()
-  const profiles = useRows('profiles')
-  const links = useRows('user_experts')
   const { run, busy } = useAction()
   const confirm = useConfirm()
   const [expert, setExpert] = useState<Partial<Expert> | null>(null)
-  const [user, setUser] = useState<{ email: string; password: string; full_name: string; role: Role; expert_ids: string[] } | null>(null)
-  const [linking, setLinking] = useState<string | null>(null)
 
   return (
     <div className="grid xl:grid-cols-2 gap-5">
@@ -128,27 +125,7 @@ function ExpertsUsers() {
           ))}
         </ul>
       </Card>
-      <Card className="p-5">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="font-bold">Usuários</h3>
-          <Button size="sm" variant="primary" icon={UserPlus} onClick={() => setUser({ email: '', password: '', full_name: '', role: 'expert', expert_ids: [] })}>Novo usuário</Button>
-        </div>
-        <ul className="divide-y divide-line">
-          {profiles.rows.map((p) => {
-            const mine = links.rows.filter((l) => l.user_id === p.id).map((l) => app.experts.find((e) => e.id === l.expert_id)?.full_name).filter(Boolean)
-            return (
-              <li key={p.id} className="py-3 flex items-center gap-3">
-                <Avatar name={p.full_name} size={36} />
-                <div className="flex-1 min-w-0">
-                  <div className="font-semibold truncate">{p.full_name} <Badge tone={p.role === 'admin' ? 'primary' : 'neutral'} className="ml-1">{p.role === 'admin' ? 'Admin' : 'Expert'}</Badge></div>
-                  <div className="text-xs text-muted truncate">{p.email}{p.role === 'expert' && ` · acesso a: ${mine.join(', ') || 'nenhum expert'}`}</div>
-                </div>
-                {p.role === 'expert' && <Button size="sm" variant="ghost" onClick={() => setLinking(p.id)}>Acessos</Button>}
-              </li>
-            )
-          })}
-        </ul>
-      </Card>
+      <UsersAdmin />
 
       {expert && (
         <Modal open onClose={() => setExpert(null)} title={expert.id ? 'Editar expert' : 'Novo expert'} footer={<><Button variant="ghost" onClick={() => setExpert(null)}>Cancelar</Button><Button variant="primary" loading={busy} onClick={() => run(async () => {
@@ -163,38 +140,6 @@ function ExpertsUsers() {
             <Field label="Nome completo" required><Input value={expert.full_name} onChange={(e) => setExpert({ ...expert, full_name: e.target.value })} /></Field>
             <Field label="Nome profissional"><Input value={expert.professional_name} onChange={(e) => setExpert({ ...expert, professional_name: e.target.value })} /></Field>
             <Field label="Cargo ou especialidade"><Input value={expert.title} onChange={(e) => setExpert({ ...expert, title: e.target.value })} /></Field>
-          </div>
-        </Modal>
-      )}
-      {user && (
-        <Modal open onClose={() => setUser(null)} title="Novo usuário" subtitle={backend.mode === 'supabase' ? 'Criado com segurança pela função admin-create-user (service role no servidor).' : undefined} footer={<><Button variant="ghost" onClick={() => setUser(null)}>Cancelar</Button><Button variant="primary" loading={busy} onClick={() => run(async () => {
-          if (!user.full_name.trim() || !user.email.includes('@')) throw new Error('Informe nome e e-mail válidos.')
-          if (user.password.length < 6) throw new Error('A senha deve ter pelo menos 6 caracteres.')
-          if (user.role === 'expert' && !user.expert_ids.length) throw new Error('Vincule o usuário a pelo menos um expert.')
-          await backend.rpc('create_user', user)
-          await invalidate('profiles', 'user_experts', 'activity_log')
-          setUser(null)
-        }, 'Usuário criado.')}>Criar usuário</Button></>}>
-          <div className="space-y-4">
-            <Field label="Nome" required><Input value={user.full_name} onChange={(e) => setUser({ ...user, full_name: e.target.value })} /></Field>
-            <Field label="E-mail" required><Input type="email" value={user.email} onChange={(e) => setUser({ ...user, email: e.target.value })} /></Field>
-            <Field label="Senha inicial" required hint="Mínimo de 6 caracteres. Oriente o usuário a trocá-la no primeiro acesso."><Input type="text" value={user.password} onChange={(e) => setUser({ ...user, password: e.target.value })} /></Field>
-            <Field label="Perfil"><Select value={user.role} onChange={(e) => setUser({ ...user, role: e.target.value as Role })}><option value="expert">Expert</option><option value="admin">Administrador</option></Select></Field>
-            {user.role === 'expert' && <Field label="Experts que este usuário pode acessar"><div className="space-y-2">{app.experts.map((e) => <Checkbox key={e.id} checked={user.expert_ids.includes(e.id)} onChange={(v) => setUser({ ...user, expert_ids: v ? [...user.expert_ids, e.id] : user.expert_ids.filter((x) => x !== e.id) })} label={e.full_name} />)}</div></Field>}
-          </div>
-        </Modal>
-      )}
-      {linking && (
-        <Modal open onClose={() => setLinking(null)} title="Acessos do usuário" subtitle="Defina quais experts (e seus projetos) este usuário pode visualizar.">
-          <div className="space-y-2">
-            {app.experts.map((e) => {
-              const link = links.rows.find((l) => l.user_id === linking && l.expert_id === e.id)
-              return <Checkbox key={e.id} checked={!!link} label={e.full_name} onChange={(v) => run(async () => {
-                if (v) await backend.insert('user_experts', { user_id: linking, expert_id: e.id })
-                else if (link) await backend.remove('user_experts', link.id)
-                await invalidate('user_experts', 'activity_log')
-              }, 'Acesso atualizado.')} />
-            })}
           </div>
         </Modal>
       )}

@@ -13,16 +13,29 @@ export function admin(): SupabaseClient {
   return createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!, { auth: { persistSession: false } })
 }
 
-/** Valida o JWT do chamador e exige perfil administrador. */
-export async function requireAdmin(req: Request): Promise<{ id: string; full_name: string }> {
+export interface Caller {
+  id: string
+  full_name: string
+  role: 'owner' | 'admin' | 'expert'
+}
+
+/** Valida o JWT do chamador e devolve o perfil. */
+export async function requireUser(req: Request): Promise<Caller> {
   const token = req.headers.get('Authorization')?.replace(/^Bearer\s+/i, '')
   if (!token) throw new HttpError(401, 'Sessão ausente.')
   const sb = admin()
   const { data, error } = await sb.auth.getUser(token)
   if (error || !data.user) throw new HttpError(401, 'Sessão inválida ou expirada.')
   const { data: profile } = await sb.from('profiles').select('id, full_name, role').eq('id', data.user.id).single()
-  if (profile?.role !== 'admin') throw new HttpError(403, 'Somente administradores podem executar esta ação.')
-  return profile
+  if (!profile) throw new HttpError(403, 'Perfil não encontrado.')
+  return profile as Caller
+}
+
+/** Exige dono ou administrador. */
+export async function requireAdmin(req: Request): Promise<Caller> {
+  const caller = await requireUser(req)
+  if (caller.role !== 'owner' && caller.role !== 'admin') throw new HttpError(403, 'Somente administradores podem executar esta ação.')
+  return caller
 }
 
 export class HttpError extends Error {

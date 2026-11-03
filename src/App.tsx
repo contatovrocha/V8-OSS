@@ -4,6 +4,7 @@ import { AppProvider, useApp } from './app/AppContext'
 import { AuthProvider, useAuth } from './auth/AuthContext'
 import { LoginPage } from './auth/LoginPage'
 import { NewPasswordPage } from './auth/NewPasswordPage'
+import { AccessGate } from './auth/AccessGate'
 import { AppLayout } from './components/layout/AppLayout'
 import { ConfirmProvider, ToastProvider } from './components/ui/overlay'
 import { EmptyState, Spinner } from './components/ui/primitives'
@@ -21,6 +22,7 @@ const Reports = lazy(() => import('./modules/reports/ReportsPage'))
 const SettingsPage = lazy(() => import('./modules/settings/SettingsPage'))
 const DynamicSection = lazy(() => import('./modules/sections/DynamicSectionPage'))
 const PublicGallery = lazy(() => import('./modules/sections/PublicGalleryPage'))
+const Team = lazy(() => import('./modules/team/TeamPage'))
 
 function Loading() {
   return <div className="min-h-[50vh] grid place-items-center"><Spinner className="size-7" /></div>
@@ -44,6 +46,7 @@ function Shell() {
   if (!user) return <LoginPage />
   if (recovery) return <NewPasswordPage />
   return (
+    <AccessGate>
     <AppProvider>
       <AppLayout>
         <Suspense fallback={<Loading />}>
@@ -57,6 +60,7 @@ function Shell() {
             <Route path="/financeiro" element={<Guard module="financeiro"><Finance /></Guard>} />
             <Route path="/tarefas" element={<Guard module="tarefas"><Tasks /></Guard>} />
             <Route path="/relatorios" element={<Guard module="relatorios"><Reports /></Guard>} />
+            <Route path="/equipe" element={<Guard module="equipe"><Team /></Guard>} />
             <Route path="/configuracoes" element={<Guard module="configuracoes"><SettingsPage /></Guard>} />
             <Route path="/secoes/:slug" element={<DynamicSection />} />
             <Route path="*" element={<Navigate to="/" replace />} />
@@ -64,6 +68,7 @@ function Shell() {
         </Suspense>
       </AppLayout>
     </AppProvider>
+    </AccessGate>
   )
 }
 

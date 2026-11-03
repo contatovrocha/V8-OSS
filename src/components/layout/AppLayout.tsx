@@ -11,6 +11,7 @@ import { useRows } from '@/data/store'
 import { Avatar, Select } from '../ui/primitives'
 import { PeriodPicker } from './PeriodPicker'
 import v8Logo from '@/assets/brand/v8-logo.png'
+import { funcaoLabel, ROLE_LABEL } from '@/lib/funcoes'
 
 const LS = 'launchos:nav:v1'
 
@@ -159,7 +160,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
             <div className="flex items-center gap-2.5 pl-1">
               <div className="hidden sm:block text-right leading-tight">
                 <div className="text-sm font-bold truncate max-w-40">{user?.full_name}</div>
-                <div className="text-[10px] uppercase tracking-widest text-muted">{isAdmin ? 'Administrador' : 'Expert'}</div>
+                <div className="text-[10px] uppercase tracking-widest text-muted">{user ? (user.role === 'expert' ? funcaoLabel(user.funcao) : ROLE_LABEL[user.role]) : ''}</div>
               </div>
               <Avatar src={user?.avatar_url ?? (!isAdmin ? app.experts[0]?.photo_url : null)} name={user?.full_name ?? ''} size={36} />
               <button onClick={signOut} className="size-9 grid place-items-center rounded-full text-muted hover:text-ink hover:bg-surface-3" title="Sair" aria-label="Sair"><LogOut className="size-4" /></button>

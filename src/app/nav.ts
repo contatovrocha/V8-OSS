@@ -21,6 +21,7 @@ export const NATIVE_NAV: NavItem[] = [
   { key: 'financeiro', label: 'Financeiro', path: '/financeiro', icon: Wallet, position: 6 },
   { key: 'tarefas', label: 'Tarefas', path: '/tarefas', icon: CheckSquare, position: 7 },
   { key: 'relatorios', label: 'Relatórios', path: '/relatorios', icon: BarChart3, position: 8 },
+  { key: 'equipe', label: 'Equipe', path: '/equipe', icon: Users, position: 9 },
 ]
 
 export const SETTINGS_NAV: NavItem = { key: 'configuracoes', label: 'Configurações', path: '/configuracoes', icon: Settings, position: 99 }

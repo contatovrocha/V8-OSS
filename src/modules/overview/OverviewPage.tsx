@@ -21,6 +21,7 @@ import { delta } from '@/lib/metrics'
 import { daysOf, inPeriod, PERIOD_LABEL, previousPeriod } from '@/lib/period'
 import { phaseLabel, phaseProgress } from '@/lib/phases'
 import { LadderPanel } from '../phases/LadderPanel'
+import { AdminCockpit } from './AdminCockpit'
 
 export default function OverviewPage() {
   const app = useApp()
@@ -36,6 +37,8 @@ export default function OverviewPage() {
   const focus: Project | null = app.selectedProject ?? byUpcoming.find((p) => p.status === 'ativo') ?? byUpcoming[0] ?? null
 
   if (app.loading) return <div className="space-y-4"><Skeleton className="h-40" /><Skeleton className="h-96" /></div>
+  // Administrador sem expert/projeto selecionado: todos os experts + vendas de todos os projetos.
+  if (isAdmin && app.expertId === 'all' && !app.selectedProject && app.experts.length) return <AdminCockpit />
   if (!focus)
     return (
       <EmptyState

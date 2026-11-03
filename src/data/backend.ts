@@ -1,4 +1,4 @@
-import type { FieldConfig, Profile, Role, Row, TableName } from './types'
+import type { FieldConfig, Funcao, Profile, Role, Row, TableName } from './types'
 
 export type Filter<T extends TableName> = Partial<Record<keyof Row<T>, unknown>>
 
@@ -10,6 +10,8 @@ export type RpcName =
   | 'create_user'
   | 'meta_connect_url'
   | 'meta_sync'
+  | 'invite_member'
+  | 'invite_link'
 
 export interface NewUserInput {
   email: string
@@ -17,6 +19,26 @@ export interface NewUserInput {
   full_name: string
   role: Role
   expert_ids: string[]
+}
+
+/** Convite de colaborador (Edge Function invite-member). */
+export interface InviteInput {
+  email: string
+  full_name: string
+  funcao: Funcao
+  expert_ids: string[]
+  /** Só o dono: cria administrador (acesso a todos os experts). */
+  make_admin?: boolean
+  /** Só administradores: a pessoa pode montar a equipe destes experts. */
+  can_manage_team?: boolean
+}
+
+export interface InviteResult {
+  user_id: string
+  status: 'invited' | 'linked' | 'already_admin'
+  email_sent: boolean
+  /** Link para enviar manualmente quando o e-mail não pôde ser enviado. */
+  link: string | null
 }
 
 export interface ChangeEvent {
@@ -33,6 +55,7 @@ export interface SignUpInput {
   full_name: string
   email: string
   password: string
+  funcao: Funcao
 }
 
 /** profile = null quando o Supabase exige confirmação por e-mail antes do primeiro acesso. */
