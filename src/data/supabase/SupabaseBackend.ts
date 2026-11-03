@@ -1,5 +1,5 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
-import { BackendError, type Backend, type ChangeEvent, type Filter, type NewUserInput, type RpcName } from '../backend'
+import { BackendError, type Backend, type ChangeEvent, type Filter, type NewUserInput, type RpcName, type SignUpInput } from '../backend'
 import type { Profile, Row, TableName } from '../types'
 
 const FUNCTION_RPCS: RpcName[] = ['create_user', 'meta_connect_url', 'meta_sync']
@@ -28,7 +28,8 @@ export class SupabaseBackend implements Backend {
   constructor(url: string, anonKey: string) {
     this.url = url
     this.anonKey = anonKey
-    this.client = createClient(url, anonKey, { auth: { persistSession: true, autoRefreshToken: true } })
+    // PKCE: o retorno do Google e da confirmação de e-mail chega em ?code=, sem conflitar com as rotas em #/.
+    this.client = createClient(url, anonKey, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, flowType: 'pkce' } })
   }
 
   /**
@@ -70,6 +71,39 @@ export class SupabaseBackend implements Backend {
     const p = await this.profile(data.user.id)
     if (!p) throw new BackendError('Perfil não encontrado. Peça a um administrador para concluir seu cadastro.', 'auth')
     return p
+  }
+
+  async signUp(input: SignUpInput) {
+    const { data, error } = await this.client.auth.signUp({
+      email: input.email.trim().toLowerCase(),
+      password: input.password,
+      options: { data: { full_name: input.full_name.trim() }, emailRedirectTo: window.location.origin + window.location.pathname },
+    })
+    if (error) {
+      if (/registered|exists/i.test(error.message)) throw new BackendError('Já existe uma conta com este e-mail. Use "Entrar".', 'duplicate')
+      if (/password/i.test(error.message)) throw new BackendError('Senha fraca: use pelo menos 6 caracteres.', 'validation')
+      throw new BackendError(error.message, 'auth')
+    }
+    if (!data.user || data.user.identities?.length === 0) throw new BackendError('Já existe uma conta com este e-mail. Use "Entrar".', 'duplicate')
+    if (!data.session) return { profile: null, confirmEmail: true }
+    let profile: Profile | null = null
+    for (let i = 0; i < 5 && !profile; i++) {
+      profile = await this.profile(data.user.id)
+      if (!profile) await new Promise((r) => setTimeout(r, 400))
+    }
+    if (!profile) throw new BackendError('Conta criada, mas o perfil não foi encontrado. Tente entrar novamente em instantes.', 'auth')
+    return { profile, confirmEmail: false }
+  }
+
+  async signInWithGoogle() {
+    const { error } = await this.client.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: window.location.origin + window.location.pathname, queryParams: { prompt: 'select_account' } },
+    })
+    if (error) {
+      if (/provider is not enabled|Unsupported provider/i.test(error.message)) throw new BackendError('O login com Google ainda não foi ativado no Supabase (Authentication → Providers → Google).', 'integration_pending')
+      throw new BackendError(error.message, 'auth')
+    }
   }
 
   async signOut() {

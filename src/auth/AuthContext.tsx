@@ -2,12 +2,15 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from '
 import { backend } from '@/data/client'
 import { resetStore } from '@/data/store'
 import type { Profile } from '@/data/types'
+import type { SignUpInput, SignUpResult } from '@/data/backend'
 
 interface AuthState {
   user: Profile | null
   loading: boolean
   isAdmin: boolean
   signIn: (email: string, password: string) => Promise<void>
+  signUp: (input: SignUpInput) => Promise<SignUpResult>
+  signInWithGoogle: () => Promise<void>
   signOut: () => Promise<void>
 }
 
@@ -41,6 +44,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           resetStore()
           setUser(await backend.signIn(email, password))
         },
+        signUp: async (input) => {
+          resetStore()
+          const r = await backend.signUp(input)
+          if (r.profile) setUser(r.profile)
+          return r
+        },
+        signInWithGoogle: () => backend.signInWithGoogle(),
         signOut: async () => {
           await backend.signOut()
           resetStore()

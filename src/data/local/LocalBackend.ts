@@ -1,7 +1,7 @@
 import { storage } from '@/lib/storage'
 import { applyPhaseAction, phaseDef, type PhaseAction } from '@/lib/phases'
 import { validateRecord } from '@/lib/sections'
-import { BackendError, type Backend, type ChangeEvent, type Filter, type NewUserInput, type RpcName } from '../backend'
+import { BackendError, type Backend, type ChangeEvent, type Filter, type NewUserInput, type RpcName, type SignUpInput } from '../backend'
 import { baseConfig, demoData, DEMO_INSERT_ORDER, DEMO } from '../seed'
 import type { ActivityLog, Profile, Project, Row, TableName, UserExpert } from '../types'
 import { buildCtx, canRead, writeDenied, type DB, type Op } from './policies'
@@ -152,6 +152,28 @@ export class LocalBackend implements Backend {
     storage.set(SESSION_KEY, p.id)
     this.authListeners.forEach((l) => l(p))
     return p
+  }
+
+  async signUp(input: SignUpInput) {
+    await this.ready
+    const email = input.email.trim().toLowerCase()
+    const creds: Creds = JSON.parse(storage.get(CRED_KEY) ?? '{}')
+    if (creds[email]) throw new BackendError('Já existe uma conta com este e-mail. Use "Entrar".', 'duplicate')
+    if (input.password.length < 6) throw new BackendError('Senha fraca: use pelo menos 6 caracteres.', 'validation')
+    // Mesma regra do trigger handle_new_user: o primeiro usuário é administrador.
+    const role = this.db.profiles.length ? 'expert' : 'admin'
+    const p: Profile = { id: uuid(), email, full_name: input.full_name.trim(), role, avatar_url: null, created_at: nowIso() }
+    this.db.profiles.push(p)
+    creds[email] = { user_id: p.id, hash: await hash(input.password) }
+    storage.set(CRED_KEY, JSON.stringify(creds))
+    this.persist(['profiles'])
+    storage.set(SESSION_KEY, p.id)
+    this.authListeners.forEach((l) => l(p))
+    return { profile: p, confirmEmail: false }
+  }
+
+  async signInWithGoogle() {
+    throw new BackendError('O login com Google só funciona com o Supabase configurado.', 'integration_pending')
   }
 
   async signOut() {

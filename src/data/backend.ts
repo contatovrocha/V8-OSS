@@ -29,11 +29,27 @@ export interface ChangeEvent {
  *  - LocalBackend: modo demonstrativo sem servidor (localStorage). Emula as mesmas
  *    políticas de acesso para que o comportamento da interface seja idêntico.
  */
+export interface SignUpInput {
+  full_name: string
+  email: string
+  password: string
+}
+
+/** profile = null quando o Supabase exige confirmação por e-mail antes do primeiro acesso. */
+export interface SignUpResult {
+  profile: Profile | null
+  confirmEmail: boolean
+}
+
 export interface Backend {
   readonly mode: 'supabase' | 'local'
 
   currentUser(): Promise<Profile | null>
   signIn(email: string, password: string): Promise<Profile>
+  /** Cadastro pela tela de login. O primeiro usuário vira administrador; os demais entram sem acesso até o admin liberar. */
+  signUp(input: SignUpInput): Promise<SignUpResult>
+  /** Login com conta Google (OAuth). Redireciona o navegador; só existe no modo Supabase. */
+  signInWithGoogle(): Promise<void>
   signOut(): Promise<void>
   onAuthChange(cb: (p: Profile | null) => void): () => void
 
