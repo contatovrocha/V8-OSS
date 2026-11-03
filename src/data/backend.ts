@@ -70,6 +70,9 @@ export interface PublicGallery {
   icon: string
   fields: FieldConfig[]
   records: Record<string, unknown>[]
+  /** Projeto e expert do link (null quando o link é da seção inteira). */
+  project?: string | null
+  expert?: string | null
 }
 
 export interface Backend {

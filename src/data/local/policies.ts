@@ -79,6 +79,8 @@ export function canRead<T extends TableName>(db: DB, ctx: Ctx, table: T, row: Ro
     case 'expense_categories':
     case 'task_templates':
       return true
+    case 'section_shares':
+      return false
     case 'profiles':
       return r.id === ctx.user.id
     case 'user_experts':

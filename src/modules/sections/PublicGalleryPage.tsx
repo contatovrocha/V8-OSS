@@ -16,7 +16,7 @@ export default function PublicGalleryPage({ token }: { token: string }) {
   useEffect(() => {
     backend.publicGallery(token).then(setG).catch(() => setG(null))
   }, [token])
-  useEffect(() => { if (g) document.title = `${g.name} · V8` }, [g])
+  useEffect(() => { if (g) document.title = `${g.project ? `${g.name} · ${g.project}` : g.name} · V8` }, [g])
 
   const filterable = useMemo(() => (g?.fields ?? []).filter((f) => f.filterable && ['select', 'status'].includes(f.type)), [g])
   const items = useMemo(() => (g?.records ?? []).filter((d) => Object.entries(filter).every(([k, v]) => !v || String(d[k] ?? '') === v)), [g, filter])
@@ -63,8 +63,8 @@ export default function PublicGalleryPage({ token }: { token: string }) {
           </div>
         ) : (
           <>
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#ff7a1a] mb-2">Galeria compartilhada</p>
-            <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight">{g.name}</h1>
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#ff7a1a] mb-2">{g.expert ? `${g.expert} · ` : ''}Galeria compartilhada</p>
+            <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight">{g.project ? `${g.name} · ${g.project}` : g.name}</h1>
             {g.description && <p className="text-white/70 mt-2 max-w-2xl">{g.description}</p>}
             {filterable.length > 0 && (
               <div className="flex flex-wrap gap-2 mt-6">

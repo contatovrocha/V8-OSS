@@ -73,6 +73,15 @@ export interface UserExpert {
   created_at?: string
 }
 
+/** Link público somente leitura de uma seção: de um projeto (project_id) ou da seção inteira (null). */
+export interface SectionShare {
+  id: string
+  section_id: string
+  project_id: string | null
+  token: string
+  created_at: string
+}
+
 /** Links importantes do projeto: visíveis e editáveis somente pelo dono. */
 export interface ProjectLinks {
   id: string
@@ -509,6 +518,7 @@ export interface TableMap {
   section_records: SectionRecord
   app_settings: AppSettings
   project_links: ProjectLinks
+  section_shares: SectionShare
 }
 
 export type TableName = keyof TableMap

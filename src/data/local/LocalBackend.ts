@@ -14,7 +14,7 @@ const SESSION_KEY = 'launchos:session:v1'
 const TABLES: TableName[] = [
   'profiles', 'experts', 'user_experts', 'projects', 'project_phases', 'phase_history', 'movements', 'page_types', 'pages',
   'ad_accounts', 'campaigns', 'ad_sets', 'ads', 'ad_metrics_daily', 'products', 'sales', 'expense_categories', 'expenses',
-  'tasks', 'task_comments', 'task_templates', 'files', 'activity_log', 'section_configs', 'section_records', 'app_settings', 'project_links',
+  'tasks', 'task_comments', 'task_templates', 'files', 'activity_log', 'section_configs', 'section_records', 'app_settings', 'project_links', 'section_shares',
 ]
 
 /** Dependências (filhos) usadas para exclusão em cascata, como ON DELETE CASCADE no Postgres. */
@@ -190,10 +190,15 @@ export class LocalBackend implements Backend {
 
   async publicGallery(token: string) {
     await this.ready
-    const s = this.db.section_configs.find((x) => x.share_token && x.share_token === token && x.active)
-    if (!s) return null
-    const records = this.db.section_records.filter((r) => r.section_id === s.id).sort((a, b) => a.created_at.localeCompare(b.created_at)).map((r) => r.data)
-    return { name: s.name, description: s.description, icon: s.icon, fields: s.fields, records }
+    const share = this.db.section_shares.find((x) => x.token === token)
+    const s = share && this.db.section_configs.find((x) => x.id === share.section_id && x.active)
+    if (!share || !s) return null
+    const records = this.db.section_records
+      .filter((r) => r.section_id === s.id && (!share.project_id || r.project_id === share.project_id))
+      .sort((a, b) => a.created_at.localeCompare(b.created_at)).map((r) => r.data)
+    const project = this.db.projects.find((p) => p.id === share.project_id)
+    const expert = project && this.db.experts.find((e) => e.id === project.expert_id)
+    return { name: s.name, description: s.description, icon: s.icon, fields: s.fields, records, project: project?.name ?? null, expert: expert?.full_name ?? null }
   }
 
   onPasswordRecovery() {

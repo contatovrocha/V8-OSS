@@ -112,7 +112,7 @@ function SectionView({ section }: { section: SectionConfig }) {
         title={<span className="inline-flex items-center gap-3"><Icon className="size-8 text-primary" />{section.name}</span>}
         subtitle={section.description}
         actions={<>
-          {isAdmin && <Button icon={Share2} onClick={() => setSharing(true)}>Compartilhar{section.share_token ? ' · público' : ''}</Button>}
+          {isAdmin && <Button icon={Share2} onClick={() => setSharing(true)}>Compartilhar</Button>}
           {canEdit && <Button variant="primary" icon={Plus} onClick={() => setEditing('new')}>Novo registro</Button>}
         </>}
       />
@@ -171,33 +171,64 @@ function SectionView({ section }: { section: SectionConfig }) {
 
 export const shareUrl = (token: string) => `${window.location.origin}${window.location.pathname}#/compartilhado/${token}`
 
-/** Link público somente leitura desta seção (galeria). As demais áreas continuam exigindo login. */
+/**
+ * Links públicos somente leitura: um por projeto (cada link mostra só os registros daquele projeto).
+ * Registros sem projeto ganham um link da seção inteira. As demais áreas continuam exigindo login.
+ */
 function ShareModal({ section, onClose }: { section: SectionConfig; onClose: () => void }) {
+  const app = useApp()
+  const records = useRows('section_records')
+  const shares = useRows('section_shares')
   const { run, busy } = useAction()
-  const token = section.share_token
-  const setToken = (t: string | null) =>
-    run(async () => { await backend.update('section_configs', section.id, { share_token: t }); await invalidate('section_configs') }, t ? 'Link público criado.' : 'Link público desativado.')
+  const mine = records.rows.filter((r) => r.section_id === section.id)
+  // Escopos possíveis: projetos com registros nesta seção (+ seção inteira para registros sem projeto).
+  const scopes = useMemo(() => {
+    const ids = [...new Set(mine.map((r) => r.project_id).filter(Boolean))] as string[]
+    const list: { key: string; projectId: string | null; label: string; count: number }[] = ids.map((id) => {
+      const p = app.projects.find((x) => x.id === id)
+      const e = p && app.experts.find((x) => x.id === p.expert_id)
+      return { key: id, projectId: id, label: p ? `${p.name}${e ? ` · ${e.full_name}` : ''}` : 'Projeto removido', count: mine.filter((r) => r.project_id === id).length }
+    }).sort((a, b) => a.label.localeCompare(b.label))
+    const loose = mine.filter((r) => !r.project_id).length
+    if (loose || !list.length) list.push({ key: 'all', projectId: null, label: 'Seção inteira (sem projeto)', count: loose })
+    return list
+  }, [mine, app.projects, app.experts])
+  const [scopeKey, setScopeKey] = useState(() => scopes.find((x) => x.projectId === app.selectedProject?.id)?.key ?? scopes[0]?.key ?? 'all')
+  const scope = scopes.find((x) => x.key === scopeKey) ?? scopes[0]
+  const share = shares.rows.find((x) => x.section_id === section.id && (x.project_id ?? null) === (scope?.projectId ?? null))
   const [copied, setCopied] = useState(false)
+  const create = () => run(async () => {
+    await backend.insert('section_shares', { section_id: section.id, project_id: scope?.projectId ?? null, token: crypto.randomUUID() })
+    await invalidate('section_shares')
+  }, 'Link público criado.')
+  const disable = () => run(async () => { await backend.remove('section_shares', share!.id); await invalidate('section_shares') }, 'Link público desativado.')
   const copy = async () => {
-    try { await navigator.clipboard.writeText(shareUrl(token!)); setCopied(true); setTimeout(() => setCopied(false), 2000) } catch { /* sem permissão de área de transferência */ }
+    try { await navigator.clipboard.writeText(shareUrl(share!.token)); setCopied(true); setTimeout(() => setCopied(false), 2000) } catch { /* sem permissão de área de transferência */ }
   }
   return (
-    <Modal open onClose={onClose} title={`Compartilhar · ${section.name}`} subtitle="Quem tiver o link vê e baixa somente esta galeria, sem precisar de conta.">
-      {token ? (
-        <div className="space-y-4">
-          <div className="flex gap-2"><Input readOnly value={shareUrl(token)} onFocus={(e) => e.currentTarget.select()} /><Button icon={Copy} onClick={copy}>{copied ? 'Copiado!' : 'Copiar'}</Button></div>
-          <div className="flex flex-wrap gap-2">
-            <a href={shareUrl(token)} target="_blank" rel="noreferrer"><Button icon={ExternalLink}>Abrir página pública</Button></a>
-            <Button variant="ghost" icon={Link2Off} loading={busy} onClick={() => setToken(null)}>Desativar link</Button>
-          </div>
-          <p className="text-xs text-muted">Ao desativar, o link para de funcionar na hora. Gerar de novo cria um endereço diferente.</p>
-        </div>
-      ) : (
-        <div className="space-y-4">
-          <p className="text-sm text-muted">Esta seção ainda não tem link público. Todas as outras áreas do sistema continuam protegidas por login.</p>
-          <Button variant="primary" icon={Share2} loading={busy} onClick={() => setToken(crypto.randomUUID())}>Gerar link público</Button>
-        </div>
-      )}
+    <Modal open onClose={onClose} title={`Compartilhar · ${section.name}`} subtitle="Cada projeto tem o seu link. Quem abrir vê e baixa só os itens daquele projeto, sem precisar de conta.">
+      <div className="space-y-4">
+        <Field label="Projeto">
+          <Select value={scope?.key ?? ''} onChange={(e) => { setScopeKey(e.target.value); setCopied(false) }}>
+            {scopes.map((x) => <option key={x.key} value={x.key}>{x.label} ({x.count}){shares.rows.some((sh) => sh.section_id === section.id && (sh.project_id ?? null) === x.projectId) ? ' · link ativo' : ''}</option>)}
+          </Select>
+        </Field>
+        {share ? (
+          <>
+            <div className="flex gap-2"><Input readOnly value={shareUrl(share.token)} onFocus={(e) => e.currentTarget.select()} /><Button icon={Copy} onClick={copy}>{copied ? 'Copiado!' : 'Copiar'}</Button></div>
+            <div className="flex flex-wrap gap-2">
+              <a href={shareUrl(share.token)} target="_blank" rel="noreferrer"><Button icon={ExternalLink}>Abrir página pública</Button></a>
+              <Button variant="ghost" icon={Link2Off} loading={busy} onClick={disable}>Desativar link</Button>
+            </div>
+            <p className="text-xs text-muted">Ao desativar, o link para de funcionar na hora. Gerar de novo cria um endereço diferente.</p>
+          </>
+        ) : (
+          <>
+            <p className="text-sm text-muted">Este projeto ainda não tem link público. Todas as outras áreas do sistema continuam protegidas por login.</p>
+            <Button variant="primary" icon={Share2} loading={busy} disabled={!scope} onClick={create}>Gerar link público deste projeto</Button>
+          </>
+        )}
+      </div>
     </Modal>
   )
 }
