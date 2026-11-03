@@ -38,7 +38,7 @@ export default function OverviewPage() {
 
   if (app.loading) return <div className="space-y-4"><Skeleton className="h-40" /><Skeleton className="h-96" /></div>
   // Administrador sem expert/projeto selecionado: todos os experts + vendas de todos os projetos.
-  if (isAdmin && app.expertId === 'all' && !app.selectedProject && app.experts.length) return <AdminCockpit />
+  if (isAdmin && app.expertId === 'all' && app.experts.length) return <AdminCockpit />
   if (!focus)
     return (
       <EmptyState

@@ -135,7 +135,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
             <div className="min-w-0 flex-1 xl:flex-none">
               <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-primary truncate">{owner || app.settings.brand_name}</div>
               <div className="flex items-center gap-2 min-w-0">
-                {isAdmin && app.experts.length > 1 && (
+                {isAdmin && app.experts.length > 0 && (
                   <Select className="hidden sm:block !h-7 !w-auto max-w-40 !text-xs !rounded-full !bg-transparent !border-transparent hover:!border-line font-semibold !pl-0" value={app.expertId} onChange={(e) => app.setExpertId(e.target.value)} aria-label="Expert">
                     <option value="all">Todos os experts</option>
                     {app.experts.map((e) => <option key={e.id} value={e.id}>{e.full_name}</option>)}

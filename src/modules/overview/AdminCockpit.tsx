@@ -1,5 +1,5 @@
 import { ArrowUpRight, CircleDollarSign, Coins, Megaphone, PiggyBank, Receipt, ShoppingBag, TrendingUp, Users } from 'lucide-react'
-import { useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { useApp } from '@/app/AppContext'
@@ -22,6 +22,8 @@ export function AdminCockpit() {
   const app = useApp()
   const navigate = useNavigate()
   const { period, scopeProjectIds } = app
+  // O cockpit geral soma todos os projetos: limpa um projeto que tenha ficado selecionado.
+  useEffect(() => { if (app.projectId !== 'all') app.setProjectId('all') }, [app])
   const prev = previousPeriod(period)
   const fin = useFinance(period, scopeProjectIds)
   const finPrev = useFinance(prev ?? period, scopeProjectIds)
