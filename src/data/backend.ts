@@ -50,6 +50,12 @@ export interface Backend {
   signUp(input: SignUpInput): Promise<SignUpResult>
   /** Login com conta Google (OAuth). Redireciona o navegador; só existe no modo Supabase. */
   signInWithGoogle(): Promise<void>
+  /** Envia o e-mail com o link para criar uma senha nova. */
+  requestPasswordReset(email: string): Promise<void>
+  /** Troca a senha do usuário logado (usado após abrir o link de recuperação). */
+  updatePassword(password: string): Promise<void>
+  /** Avisa quando o usuário chegou pelo link de recuperação de senha. */
+  onPasswordRecovery(cb: () => void): () => void
   signOut(): Promise<void>
   onAuthChange(cb: (p: Profile | null) => void): () => void
 

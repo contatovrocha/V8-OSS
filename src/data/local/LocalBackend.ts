@@ -176,6 +176,22 @@ export class LocalBackend implements Backend {
     throw new BackendError('O login com Google só funciona com o Supabase configurado.', 'integration_pending')
   }
 
+  async requestPasswordReset() {
+    throw new BackendError('A recuperação de senha por e-mail só funciona com o Supabase configurado.', 'integration_pending')
+  }
+
+  async updatePassword(password: string) {
+    const user = await this.me()
+    if (password.length < 6) throw new BackendError('Senha fraca: use pelo menos 6 caracteres.', 'validation')
+    const creds: Creds = JSON.parse(storage.get(CRED_KEY) ?? '{}')
+    creds[user.email] = { user_id: user.id, hash: await hash(password) }
+    storage.set(CRED_KEY, JSON.stringify(creds))
+  }
+
+  onPasswordRecovery() {
+    return () => {}
+  }
+
   async signOut() {
     storage.remove(SESSION_KEY)
     this.authListeners.forEach((l) => l(null))

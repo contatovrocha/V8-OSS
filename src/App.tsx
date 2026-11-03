@@ -3,6 +3,7 @@ import { Navigate, Route, Routes } from 'react-router-dom'
 import { AppProvider, useApp } from './app/AppContext'
 import { AuthProvider, useAuth } from './auth/AuthContext'
 import { LoginPage } from './auth/LoginPage'
+import { NewPasswordPage } from './auth/NewPasswordPage'
 import { AppLayout } from './components/layout/AppLayout'
 import { ConfirmProvider, ToastProvider } from './components/ui/overlay'
 import { EmptyState, Spinner } from './components/ui/primitives'
@@ -33,9 +34,10 @@ function Guard({ module, children }: { module: string; children: ReactNode }) {
 }
 
 function Shell() {
-  const { user, loading } = useAuth()
+  const { user, loading, recovery } = useAuth()
   if (loading) return <div className="min-h-screen grid place-items-center"><Spinner className="size-8" /></div>
   if (!user) return <LoginPage />
+  if (recovery) return <NewPasswordPage />
   return (
     <AppProvider>
       <AppLayout>

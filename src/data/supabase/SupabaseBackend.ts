@@ -106,6 +106,22 @@ export class SupabaseBackend implements Backend {
     }
   }
 
+  async requestPasswordReset(email: string) {
+    // ?reset=1 marca o retorno do link para o app abrir a tela de nova senha.
+    const { error } = await this.client.auth.resetPasswordForEmail(email.trim().toLowerCase(), { redirectTo: `${window.location.origin}${window.location.pathname}?reset=1` })
+    if (error) throw new BackendError(/rate limit|security purposes/i.test(error.message) ? 'Muitas tentativas. Aguarde alguns minutos e tente de novo.' : error.message, 'auth')
+  }
+
+  async updatePassword(password: string) {
+    const { error } = await this.client.auth.updateUser({ password })
+    if (error) throw new BackendError(/should be different/i.test(error.message) ? 'A nova senha deve ser diferente da anterior.' : /password/i.test(error.message) ? 'Senha fraca: use pelo menos 6 caracteres.' : error.message, 'auth')
+  }
+
+  onPasswordRecovery(cb: () => void) {
+    const { data } = this.client.auth.onAuthStateChange((e) => { if (e === 'PASSWORD_RECOVERY') cb() })
+    return () => data.subscription.unsubscribe()
+  }
+
   async signOut() {
     await this.client.auth.signOut()
   }

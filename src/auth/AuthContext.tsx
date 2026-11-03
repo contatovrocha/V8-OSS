@@ -11,6 +11,10 @@ interface AuthState {
   signIn: (email: string, password: string) => Promise<void>
   signUp: (input: SignUpInput) => Promise<SignUpResult>
   signInWithGoogle: () => Promise<void>
+  requestPasswordReset: (email: string) => Promise<void>
+  /** true quando o usuário abriu o link de recuperação e precisa definir a senha nova. */
+  recovery: boolean
+  finishRecovery: (password: string) => Promise<void>
   signOut: () => Promise<void>
 }
 
@@ -20,6 +24,7 @@ export const useAuth = () => useContext(Ctx)
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<Profile | null>(null)
   const [loading, setLoading] = useState(true)
+  const [recovery, setRecovery] = useState(() => new URLSearchParams(window.location.search).get('reset') === '1')
 
   useEffect(() => {
     backend.currentUser().then((u) => {
@@ -27,11 +32,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(false)
     }).catch(() => setLoading(false))
     let current: string | null = null
-    return backend.onAuthChange((u) => {
+    const offRecovery = backend.onPasswordRecovery(() => setRecovery(true))
+    const offAuth = backend.onAuthChange((u) => {
       if ((u?.id ?? null) !== current) resetStore()
       current = u?.id ?? null
       setUser(u)
     })
+    return () => {
+      offRecovery()
+      offAuth()
+    }
   }, [])
 
   return (
@@ -51,6 +61,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           return r
         },
         signInWithGoogle: () => backend.signInWithGoogle(),
+        requestPasswordReset: (email) => backend.requestPasswordReset(email),
+        recovery,
+        finishRecovery: async (password) => {
+          await backend.updatePassword(password)
+          setRecovery(false)
+          window.history.replaceState(null, '', window.location.pathname + window.location.hash)
+        },
         signOut: async () => {
           await backend.signOut()
           resetStore()
