@@ -82,6 +82,81 @@ export interface SectionShare {
   created_at: string
 }
 
+/** Banco de fotos para criativos e páginas: qualquer expert ou convidado. */
+export interface CreativePerson {
+  id: string
+  name: string
+  title: string
+  photo_url: string
+  expert_id: string | null
+  created_by?: string | null
+  created_at: string
+}
+
+export type EventFormat = 'online' | 'presencial'
+
+/** Uma atualização de campanha (versão): informações do evento que alimentam página e criativos. */
+export interface ProjectUpdate {
+  id: string
+  project_id: string
+  status: 'rascunho' | 'publicado'
+  event_date: string | null
+  event_time: string
+  format: EventFormat
+  city: string
+  venue: string
+  platform: string
+  with_price: boolean
+  price: number | null
+  full_price: number | null
+  checkout_url: string
+  promise: string
+  headline: string
+  subheadline: string
+  cta_label: string
+  spots: number | null
+  extras: { bonus?: string; garantia?: string; whatsapp?: string }
+  hero_person_id: string | null
+  published_at: string | null
+  created_by?: string | null
+  created_at: string
+  updated_at: string
+}
+
+export type CreativeFormat = 'feed' | 'stories'
+export type CreativeLayout = 'destaque' | 'dividido' | 'convite' | 'grupo'
+
+/** Conteúdo de um criativo: tudo o que o modelo precisa para ser desenhado de novo. */
+export interface CreativeContent {
+  kicker: string
+  headline: string
+  subheadline: string
+  show_price: boolean
+  price: number | null
+  full_price: number | null
+  date_label: string
+  format_label: string
+  location_label: string
+  cta: string
+  person_ids: string[]
+}
+
+export interface Creative {
+  id: string
+  project_id: string
+  update_id: string | null
+  format: CreativeFormat
+  layout: CreativeLayout
+  angle: string
+  content: CreativeContent
+  image_url: string | null
+  status: 'rascunho' | 'aprovado' | 'ajuste'
+  notes: string
+  created_by?: string | null
+  created_at: string
+  updated_at: string
+}
+
 /** Links importantes do projeto: visíveis e editáveis somente pelo dono. */
 export interface ProjectLinks {
   id: string
@@ -118,6 +193,10 @@ export interface Project {
   internal_notes: string
   team: string[]
   ad_account_id: string | null
+  /** Endereço da página pública do evento (/e/<slug>). */
+  public_slug?: string | null
+  /** Token do link público dos criativos aprovados do projeto. */
+  creatives_share_token?: string | null
   is_demo: boolean
   created_at: string
   updated_at: string
@@ -519,6 +598,9 @@ export interface TableMap {
   app_settings: AppSettings
   project_links: ProjectLinks
   section_shares: SectionShare
+  creative_people: CreativePerson
+  project_updates: ProjectUpdate
+  creatives: Creative
 }
 
 export type TableName = keyof TableMap

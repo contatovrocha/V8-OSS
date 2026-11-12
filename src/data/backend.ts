@@ -1,4 +1,4 @@
-import type { FieldConfig, Funcao, Profile, Role, Row, TableName } from './types'
+import type { FieldConfig, Funcao, Profile, ProjectUpdate, Role, Row, TableName } from './types'
 
 export type Filter<T extends TableName> = Partial<Record<keyof Row<T>, unknown>>
 
@@ -12,6 +12,7 @@ export type RpcName =
   | 'meta_sync'
   | 'invite_member'
   | 'invite_link'
+  | 'publish_campaign_page'
 
 export interface NewUserInput {
   email: string
@@ -75,6 +76,14 @@ export interface PublicGallery {
   expert?: string | null
 }
 
+export interface PublicEventPage {
+  project: string
+  expert: string
+  expert_title: string
+  photo: string | null
+  update: ProjectUpdate
+}
+
 export interface Backend {
   readonly mode: 'supabase' | 'local'
 
@@ -90,6 +99,10 @@ export interface Backend {
   updatePassword(password: string): Promise<void>
   /** Galeria pública de uma seção pelo token do link compartilhado (não exige login). null = link inválido ou desativado. */
   publicGallery(token: string): Promise<PublicGallery | null>
+  /** Galeria pública dos criativos aprovados de um projeto (link do projeto). */
+  publicProjectCreatives(token: string): Promise<PublicGallery | null>
+  /** Página pública do evento: última campanha publicada do projeto. */
+  publicEventPage(slug: string): Promise<PublicEventPage | null>
   /** Avisa quando o usuário chegou pelo link de recuperação de senha. */
   onPasswordRecovery(cb: () => void): () => void
   signOut(): Promise<void>

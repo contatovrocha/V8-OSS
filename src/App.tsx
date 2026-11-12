@@ -23,6 +23,7 @@ const SettingsPage = lazy(() => import('./modules/settings/SettingsPage'))
 const DynamicSection = lazy(() => import('./modules/sections/DynamicSectionPage'))
 const PublicGallery = lazy(() => import('./modules/sections/PublicGalleryPage'))
 const Team = lazy(() => import('./modules/team/TeamPage'))
+const PublicEvent = lazy(() => import('./modules/creatives/PublicEventPage'))
 
 function Loading() {
   return <div className="min-h-[50vh] grid place-items-center"><Spinner className="size-7" /></div>
@@ -39,7 +40,11 @@ function Guard({ module, children }: { module: string; children: ReactNode }) {
 function Shell() {
   const { user, loading, recovery } = useAuth()
   const { pathname } = useLocation()
-  // Única área pública: galeria compartilhada por link (não exige conta).
+  // Áreas públicas (sem conta): página do evento e galerias compartilhadas por link.
+  const event = pathname.match(/^\/e\/([a-z0-9-]+)/)
+  if (event) return <Suspense fallback={<Loading />}><PublicEvent slug={event[1]} /></Suspense>
+  const sharedProject = pathname.match(/^\/compartilhado\/p\/([\w-]+)/)
+  if (sharedProject) return <Suspense fallback={<Loading />}><PublicGallery token={sharedProject[1]} source="project" /></Suspense>
   const shared = pathname.match(/^\/compartilhado\/([\w-]+)/)
   if (shared) return <Suspense fallback={<Loading />}><PublicGallery token={shared[1]} /></Suspense>
   if (loading) return <div className="min-h-screen grid place-items-center"><Spinner className="size-8" /></div>

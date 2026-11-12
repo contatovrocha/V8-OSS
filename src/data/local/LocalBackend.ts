@@ -1,7 +1,7 @@
 import { storage } from '@/lib/storage'
 import { applyPhaseAction, phaseDef, type PhaseAction } from '@/lib/phases'
 import { validateRecord } from '@/lib/sections'
-import { BackendError, type Backend, type ChangeEvent, type Filter, type InviteInput, type NewUserInput, type RpcName, type SignUpInput } from '../backend'
+import { BackendError, type Backend, type ChangeEvent, type Filter, type InviteInput, type NewUserInput, type PublicGallery, type RpcName, type SignUpInput } from '../backend'
 import { baseConfig, demoData, DEMO_INSERT_ORDER, DEMO } from '../seed'
 import type { ActivityLog, Profile, Project, Row, TableName, UserExpert } from '../types'
 import { buildCtx, canRead, writeDenied, type DB, type Op } from './policies'
@@ -14,7 +14,7 @@ const SESSION_KEY = 'launchos:session:v1'
 const TABLES: TableName[] = [
   'profiles', 'experts', 'user_experts', 'projects', 'project_phases', 'phase_history', 'movements', 'page_types', 'pages',
   'ad_accounts', 'campaigns', 'ad_sets', 'ads', 'ad_metrics_daily', 'products', 'sales', 'expense_categories', 'expenses',
-  'tasks', 'task_comments', 'task_templates', 'files', 'activity_log', 'section_configs', 'section_records', 'app_settings', 'project_links', 'section_shares',
+  'tasks', 'task_comments', 'task_templates', 'files', 'activity_log', 'section_configs', 'section_records', 'app_settings', 'project_links', 'section_shares', 'creative_people', 'project_updates', 'creatives',
 ]
 
 /** Dependências (filhos) usadas para exclusão em cascata, como ON DELETE CASCADE no Postgres. */
@@ -199,6 +199,33 @@ export class LocalBackend implements Backend {
     const project = this.db.projects.find((p) => p.id === share.project_id)
     const expert = project && this.db.experts.find((e) => e.id === project.expert_id)
     return { name: s.name, description: s.description, icon: s.icon, fields: s.fields, records, project: project?.name ?? null, expert: expert?.full_name ?? null }
+  }
+
+  async publicProjectCreatives(token: string) {
+    await this.ready
+    const p = this.db.projects.find((x) => x.creatives_share_token === token)
+    if (!p) return null
+    const expert = this.db.experts.find((e) => e.id === p.expert_id)
+    const fields = [
+      { key: 'titulo', type: 'text', label: 'Criativo', options: [], required: true, filterable: false, show_in_card: true, show_in_table: true },
+      { key: 'imagem', type: 'image', label: 'Imagem', options: [], required: true, filterable: false, show_in_card: true, show_in_table: true },
+      { key: 'headline', type: 'textarea', label: 'Headline', options: [], required: false, filterable: false, show_in_card: true, show_in_table: true },
+    ] as PublicGallery['fields']
+    const records = this.db.creatives.filter((c) => c.project_id === p.id && c.status === 'aprovado' && c.image_url)
+      .sort((a, b) => a.created_at.localeCompare(b.created_at))
+      .map((c) => ({ titulo: `${c.layout} · ${c.angle}`, imagem: c.image_url, headline: c.content.headline }))
+    return { name: 'Criativos', description: '', icon: 'Image', fields, records, project: p.name, expert: expert?.full_name ?? null }
+  }
+
+  async publicEventPage(slug: string) {
+    await this.ready
+    const p = this.db.projects.find((x) => x.public_slug === slug && !x.archived)
+    if (!p) return null
+    const u = this.db.project_updates.filter((x) => x.project_id === p.id && x.status === 'publicado').sort((a, b) => (b.published_at ?? '').localeCompare(a.published_at ?? ''))[0]
+    if (!u) return null
+    const e = this.db.experts.find((x) => x.id === p.expert_id)
+    const hero = this.db.creative_people.find((x) => x.id === u.hero_person_id)
+    return { project: p.name, expert: e?.full_name ?? '', expert_title: e?.title ?? '', photo: hero?.photo_url ?? e?.photo_url ?? null, update: u }
   }
 
   onPasswordRecovery() {
@@ -477,6 +504,23 @@ export class LocalBackend implements Backend {
           }
         this.persist(['profiles', 'user_experts'])
         return { user_id: p.id, status, email_sent: false, link: null } as R
+      }
+      case 'publish_campaign_page': {
+        // Mesma regra da função publish_campaign_page do banco.
+        const a = args as { project_id: string; slug: string; event_date: string | null; url: string; note: string }
+        const p = this.db.projects.find((x) => x.id === a.project_id)
+        if (!p) throw new BackendError('Projeto não encontrado.', 'not_found')
+        const manages = ctx.isAdmin || this.db.user_experts.some((l) => l.user_id === user.id && l.expert_id === p.expert_id && l.can_manage_team)
+        if (!manages) throw new BackendError('Somente administradores ou o gestor da equipe publicam a campanha.', 'forbidden')
+        let slug = p.public_slug ?? a.slug
+        for (let n = 2; !p.public_slug && this.db.projects.some((x) => x.public_slug === slug && x.id !== p.id); n++) slug = `${a.slug}-${n}`
+        Object.assign(p, { public_slug: slug, event_date: a.event_date ?? p.event_date, updated_at: nowIso() })
+        const url = a.url.replace('{slug}', slug)
+        const page = this.db.pages.find((x) => x.project_id === p.id && x.tool === 'V8 OS' && x.name === 'Página do evento (automática)')
+        if (page) Object.assign(page, { published_url: url, preview_url: url, status: 'publicada', notes: a.note, updated_at: nowIso() })
+        else this.db.pages.push({ id: uuid(), project_id: p.id, name: 'Página do evento (automática)', page_type_id: 'c0000000-0000-4000-8000-000000000002', published_url: url, preview_url: url, edit_url: '', tool: 'V8 OS', owner: user.full_name, status: 'publicada', published_at: nowIso(), conversion_goal: null, conversion_current: null, notes: a.note, archived: false, is_demo: false, created_at: nowIso(), updated_at: nowIso() })
+        this.persist(['projects', 'pages'])
+        return slug as R
       }
       case 'invite_link':
         throw new BackendError('Links de convite só funcionam com o Supabase configurado.', 'integration_pending')

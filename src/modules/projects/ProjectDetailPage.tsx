@@ -1,4 +1,4 @@
-import { ArrowLeft, ExternalLink, FileText, History, Pencil, Trash2 } from 'lucide-react'
+import { ArrowLeft, ExternalLink, FileText, History, Pencil, Rocket, Trash2 } from 'lucide-react'
 import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { useApp } from '@/app/AppContext'
@@ -16,6 +16,9 @@ import { projectGoalProgress } from '@/lib/finance'
 import { PHASE_STATUS_LABEL } from '@/lib/phases'
 import { LadderPanel } from '../phases/LadderPanel'
 import { ProjectForm } from './ProjectForm'
+import { CampaignWizard } from '../creatives/CampaignWizard'
+import { CreativesTab } from '../creatives/CreativesTab'
+import { useCanManageProject } from '../creatives/PhotoBank'
 import { ProjectMenu, StatusSelect } from './ProjectsPage'
 
 const PagesView = lazy(() => import('../pages/PagesPage').then((m) => ({ default: m.PagesView })))
@@ -23,7 +26,7 @@ const TrafficView = lazy(() => import('../traffic/TrafficPage').then((m) => ({ d
 const FinanceView = lazy(() => import('../finance/FinancePage').then((m) => ({ default: m.FinanceView })))
 const TasksView = lazy(() => import('../tasks/TasksPage').then((m) => ({ default: m.TasksView })))
 
-type Tab = 'resumo' | 'fases' | 'paginas' | 'trafego' | 'financeiro' | 'tarefas' | 'arquivos' | 'historico'
+type Tab = 'resumo' | 'fases' | 'paginas' | 'trafego' | 'financeiro' | 'tarefas' | 'arquivos' | 'historico' | 'criativos'
 
 export default function ProjectDetailPage() {
   const { id } = useParams()
@@ -34,7 +37,9 @@ export default function ProjectDetailPage() {
   const tab = (params.get('aba') as Tab) ?? 'resumo'
   const setTab = (t: Tab) => setParams({ aba: t }, { replace: true })
   const [editing, setEditing] = useState(false)
+  const [campaign, setCampaign] = useState(false)
   const { isAdmin } = useAuth()
+  const canCampaign = useCanManageProject(project)
 
   // Preserva o contexto: o projeto aberto passa a ser o selecionado no cabeçalho.
   useEffect(() => {
@@ -53,6 +58,7 @@ export default function ProjectDetailPage() {
   const tabs: { value: Tab; label: string }[] = [
     { value: 'resumo', label: 'Resumo' },
     { value: 'fases', label: 'Fases' },
+    { value: 'criativos', label: 'Criativos' },
     ...(visible('paginas') ? [{ value: 'paginas' as Tab, label: 'Páginas' }] : []),
     ...(visible('trafego') ? [{ value: 'trafego' as Tab, label: 'Tráfego' }] : []),
     ...(visible('financeiro') ? [{ value: 'financeiro' as Tab, label: 'Financeiro' }] : []),
@@ -79,6 +85,7 @@ export default function ProjectDetailPage() {
             <div className="flex items-center gap-2">
               {project.is_demo && <Badge tone="warning">Dados demonstrativos</Badge>}
               {project.archived && <Badge>Arquivado</Badge>}
+              {canCampaign && <Button size="sm" variant="primary" icon={Rocket} onClick={() => setCampaign(true)}>Atualizar campanha</Button>}
               <StatusSelect project={project} disabled={!isAdmin} />
               {isAdmin && <Button size="sm" icon={Pencil} onClick={() => setEditing(true)}>Editar</Button>}
               {isAdmin && <ProjectMenu project={project} onEdit={() => setEditing(true)} />}
@@ -91,6 +98,7 @@ export default function ProjectDetailPage() {
       <Suspense fallback={<div className="py-10 grid place-items-center"><Spinner /></div>}>
         {tab === 'resumo' && <Summary project={project} />}
         {tab === 'fases' && <LadderPanel project={project} />}
+        {tab === 'criativos' && <CreativesTab project={project} />}
         {tab === 'paginas' && <PagesView fixedProjectId={project.id} />}
         {tab === 'trafego' && <TrafficView fixedProjectId={project.id} />}
         {tab === 'financeiro' && <FinanceView fixedProjectId={project.id} />}
@@ -99,6 +107,7 @@ export default function ProjectDetailPage() {
         {tab === 'historico' && <ProjectHistory project={project} />}
       </Suspense>
       {editing && <ProjectForm project={project} onClose={() => setEditing(false)} />}
+      {campaign && <CampaignWizard project={project} onClose={() => setCampaign(false)} onDone={() => { setCampaign(false); setTab('criativos') }} />}
     </div>
   )
 }

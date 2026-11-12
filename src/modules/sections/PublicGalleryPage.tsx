@@ -7,15 +7,15 @@ import v8Logo from '@/assets/brand/v8-logo.png'
 import { downloadItem, GalleryGrid, Lightbox, type GalleryData } from './Gallery'
 
 /** Página pública (sem login) de uma galeria compartilhada. Mostra somente esta seção. */
-export default function PublicGalleryPage({ token }: { token: string }) {
+export default function PublicGalleryPage({ token, source = 'section' }: { token: string; source?: 'section' | 'project' }) {
   const [g, setG] = useState<PublicGallery | null | undefined>(undefined)
   const [zoom, setZoom] = useState<number | null>(null)
   const [filter, setFilter] = useState<Record<string, string>>({})
   const [downloading, setDownloading] = useState(false)
 
   useEffect(() => {
-    backend.publicGallery(token).then(setG).catch(() => setG(null))
-  }, [token])
+    ;(source === 'project' ? backend.publicProjectCreatives(token) : backend.publicGallery(token)).then(setG).catch(() => setG(null))
+  }, [token, source])
   useEffect(() => { if (g) document.title = `${g.project ? `${g.name} · ${g.project}` : g.name} · V8` }, [g])
 
   const filterable = useMemo(() => (g?.fields ?? []).filter((f) => f.filterable && ['select', 'status'].includes(f.type)), [g])

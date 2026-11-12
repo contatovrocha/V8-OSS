@@ -1,5 +1,5 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
-import { BackendError, type Backend, type ChangeEvent, type Filter, type NewUserInput, type PublicGallery, type RpcName, type SignUpInput } from '../backend'
+import { BackendError, type Backend, type ChangeEvent, type Filter, type NewUserInput, type PublicEventPage, type PublicGallery, type RpcName, type SignUpInput } from '../backend'
 import type { Profile, Row, TableName } from '../types'
 
 const FUNCTION_RPCS: RpcName[] = ['create_user', 'meta_connect_url', 'meta_sync', 'invite_member', 'invite_link']
@@ -150,6 +150,20 @@ export class SupabaseBackend implements Backend {
     const { data, error } = await this.client.rpc('public_section_gallery', { token })
     if (error) throw new BackendError('Não foi possível carregar a galeria.', 'error')
     return (data as PublicGallery | null) ?? null
+  }
+
+  async publicProjectCreatives(token: string) {
+    if (!/^[0-9a-f-]{36}$/i.test(token)) return null
+    const { data, error } = await this.client.rpc('public_project_creatives', { token })
+    if (error) throw new BackendError('Não foi possível carregar a galeria.', 'error')
+    return (data as PublicGallery | null) ?? null
+  }
+
+  async publicEventPage(slug: string) {
+    if (!/^[a-z0-9-]{1,80}$/.test(slug)) return null
+    const { data, error } = await this.client.rpc('public_event_page', { slug })
+    if (error) throw new BackendError('Não foi possível carregar a página.', 'error')
+    return (data as PublicEventPage | null) ?? null
   }
 
   onPasswordRecovery(cb: () => void) {
