@@ -14,7 +14,7 @@ const SESSION_KEY = 'launchos:session:v1'
 const TABLES: TableName[] = [
   'profiles', 'experts', 'user_experts', 'projects', 'project_phases', 'phase_history', 'movements', 'page_types', 'pages',
   'ad_accounts', 'campaigns', 'ad_sets', 'ads', 'ad_metrics_daily', 'products', 'sales', 'expense_categories', 'expenses',
-  'tasks', 'task_comments', 'task_templates', 'files', 'activity_log', 'section_configs', 'section_records', 'app_settings', 'project_links', 'section_shares', 'creative_people', 'project_updates', 'creatives',
+  'tasks', 'task_comments', 'task_templates', 'files', 'activity_log', 'section_configs', 'section_records', 'app_settings', 'project_links', 'section_shares', 'creative_people', 'project_updates', 'creatives', 'launch_stages', 'brand_docs',
 ]
 
 /** Dependências (filhos) usadas para exclusão em cascata, como ON DELETE CASCADE no Postgres. */
@@ -226,6 +226,26 @@ export class LocalBackend implements Backend {
     const e = this.db.experts.find((x) => x.id === p.expert_id)
     const hero = this.db.creative_people.find((x) => x.id === u.hero_person_id)
     return { project: p.name, expert: e?.full_name ?? '', expert_title: e?.title ?? '', photo: hero?.photo_url ?? e?.photo_url ?? null, update: u }
+  }
+
+  async publicBrandDoc(token: string) {
+    await this.ready
+    const d = this.db.brand_docs.find((x) => x.token === token)
+    if (!d) return null
+    const e = this.db.experts.find((x) => x.id === d.expert_id)
+    return { expert: e?.professional_name || e?.full_name || '', photo: e?.photo_url ?? null, status: d.status, answers: d.answers, respondent_name: d.respondent_name, submitted_at: d.submitted_at }
+  }
+
+  async submitBrandDoc(token: string, answers: Record<string, string>, respondent: string, final: boolean) {
+    await this.ready
+    this.reload()
+    const d = this.db.brand_docs.find((x) => x.token === token)
+    if (!d) throw new BackendError('Link inválido.', 'error')
+    const clean = Object.fromEntries(Object.entries(answers).filter(([k, v]) => /^[a-z0-9_]{1,40}$/.test(k) && typeof v === 'string').map(([k, v]) => [k, v.slice(0, 8000)]))
+    const status = final || d.status === 'respondido' ? 'respondido' : 'rascunho'
+    Object.assign(d, { answers: clean, respondent_name: respondent.trim().slice(0, 120), status, submitted_at: final ? nowIso() : d.submitted_at, last_saved_at: nowIso(), updated_at: nowIso() })
+    this.persist(['brand_docs'])
+    return status
   }
 
   onPasswordRecovery() {

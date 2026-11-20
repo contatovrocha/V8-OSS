@@ -6,19 +6,51 @@
   --brand-accent: #f97316;
   --brand-danger: #ef4444;
   color-scheme: dark;
+  /* Tela preta (padrão) */
+  --c-bg: #060a14;
+  --c-surface: #0c1322;
+  --c-surface-2: #111a2d;
+  --c-surface-3: #172238;
+  --c-line: #1d2943;
+  --c-line-strong: #2a3a5c;
+  --c-ink: #e8edf7;
+  --c-muted: #8b97b1;
+  --c-faint: #5d6a86;
+  --ladder-on: #c7d2fe;
+  --glow-1: 16%;
+  --glow-2: 10%;
+  --card-shadow: 0 1px 0 rgba(255,255,255,.03) inset, 0 12px 32px -18px rgba(0,0,0,.6);
+}
+
+/* Tela branca */
+:root[data-theme="light"] {
+  color-scheme: light;
+  --c-bg: #f3f5f9;
+  --c-surface: #ffffff;
+  --c-surface-2: #f6f8fb;
+  --c-surface-3: #e9edf4;
+  --c-line: #e1e6ef;
+  --c-line-strong: #c9d1de;
+  --c-ink: #0f172a;
+  --c-muted: #556178;
+  --c-faint: #8a94a8;
+  --ladder-on: #6b7a99;
+  --glow-1: 9%;
+  --glow-2: 5%;
+  --card-shadow: 0 1px 2px rgba(15,23,42,.04), 0 12px 32px -20px rgba(15,23,42,.18);
 }
 
 @theme inline {
   --font-sans: "Manrope", ui-sans-serif, system-ui, sans-serif;
-  --color-bg: #060a14;
-  --color-surface: #0c1322;
-  --color-surface-2: #111a2d;
-  --color-surface-3: #172238;
-  --color-line: #1d2943;
-  --color-line-strong: #2a3a5c;
-  --color-ink: #e8edf7;
-  --color-muted: #8b97b1;
-  --color-faint: #5d6a86;
+  --color-bg: var(--c-bg);
+  --color-surface: var(--c-surface);
+  --color-surface-2: var(--c-surface-2);
+  --color-surface-3: var(--c-surface-3);
+  --color-line: var(--c-line);
+  --color-line-strong: var(--c-line-strong);
+  --color-ink: var(--c-ink);
+  --color-muted: var(--c-muted);
+  --color-faint: var(--c-faint);
   --color-primary: var(--brand-primary);
   --color-success: var(--brand-success);
   --color-accent: var(--brand-accent);
@@ -31,16 +63,17 @@ body {
   margin: 0;
   background: var(--color-bg);
   background-image:
-    radial-gradient(1200px 600px at 70% -10%, color-mix(in srgb, var(--brand-primary) 16%, transparent), transparent 60%),
-    radial-gradient(900px 500px at -10% 110%, color-mix(in srgb, #7c3aed 10%, transparent), transparent 60%);
+    radial-gradient(1200px 600px at 70% -10%, color-mix(in srgb, var(--brand-primary) var(--glow-1), transparent), transparent 60%),
+    radial-gradient(900px 500px at -10% 110%, color-mix(in srgb, #7c3aed var(--glow-2), transparent), transparent 60%);
   background-attachment: fixed;
   color: var(--color-ink);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
 }
 
-* { scrollbar-width: thin; scrollbar-color: #2a3a5c transparent; }
+* { scrollbar-width: thin; scrollbar-color: var(--c-line-strong) transparent; }
 input[type="date"]::-webkit-calendar-picker-indicator, input[type="datetime-local"]::-webkit-calendar-picker-indicator { filter: invert(0.7); }
+:root[data-theme="light"] input[type="date"]::-webkit-calendar-picker-indicator, :root[data-theme="light"] input[type="datetime-local"]::-webkit-calendar-picker-indicator { filter: none; }
 
 @keyframes fade-up { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 @keyframes pulse-ring { 0% { transform: scale(1); opacity: .55; } 100% { transform: scale(2.2); opacity: 0; } }
@@ -55,7 +88,7 @@ input[type="date"]::-webkit-calendar-picker-indicator, input[type="datetime-loca
 .pulse-ring { transform-box: fill-box; transform-origin: center; animation: pulse-ring 1.8s ease-out infinite; }
 .dash-flow { animation: dash-flow 1.2s linear infinite; }
 
-.card { background: color-mix(in srgb, var(--color-surface) 88%, transparent); border: 1px solid var(--color-line); border-radius: 18px; box-shadow: 0 1px 0 rgba(255,255,255,.03) inset, 0 12px 32px -18px rgba(0,0,0,.6); }
+.card { background: color-mix(in srgb, var(--color-surface) 88%, transparent); border: 1px solid var(--color-line); border-radius: 18px; box-shadow: var(--card-shadow); }
 .rich p { margin: 0 0 .6em; }
 .rich ul { list-style: disc; padding-left: 1.2em; }
 .rich ol { list-style: decimal; padding-left: 1.2em; }
@@ -65,3 +98,6 @@ input[type="date"]::-webkit-calendar-picker-indicator, input[type="datetime-loca
   .no-print { display: none !important; }
   .card { border-color: #ccc; box-shadow: none; background: #fff; }
 }
+
+/* Tela branca: o logo da V8 (com o "8" claro) ganha uma base escura para continuar legível. */
+:root[data-theme="light"] .brand-logo { background: #0b0b0d; padding: 4px 8px; border-radius: 9px; box-sizing: content-box; }

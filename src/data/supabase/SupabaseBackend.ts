@@ -1,5 +1,5 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
-import { BackendError, type Backend, type ChangeEvent, type Filter, type NewUserInput, type PublicEventPage, type PublicGallery, type RpcName, type SignUpInput } from '../backend'
+import { BackendError, type Backend, type ChangeEvent, type Filter, type NewUserInput, type PublicBrandDoc, type PublicEventPage, type PublicGallery, type RpcName, type SignUpInput } from '../backend'
 import type { Profile, Row, TableName } from '../types'
 
 const FUNCTION_RPCS: RpcName[] = ['create_user', 'meta_connect_url', 'meta_sync', 'invite_member', 'invite_link']
@@ -164,6 +164,19 @@ export class SupabaseBackend implements Backend {
     const { data, error } = await this.client.rpc('public_event_page', { slug })
     if (error) throw new BackendError('Não foi possível carregar a página.', 'error')
     return (data as PublicEventPage | null) ?? null
+  }
+
+  async publicBrandDoc(token: string) {
+    if (!/^[0-9a-f-]{36}$/i.test(token)) return null
+    const { data, error } = await this.client.rpc('public_brand_doc', { token })
+    if (error) throw new BackendError('Não foi possível carregar o formulário.', 'error')
+    return (data as PublicBrandDoc | null) ?? null
+  }
+
+  async submitBrandDoc(token: string, answers: Record<string, string>, respondent: string, final: boolean) {
+    const { data, error } = await this.client.rpc('submit_brand_doc', { token, answers, respondent, final })
+    if (error) throw new BackendError(error.message || 'Não foi possível salvar as respostas.', 'error')
+    return data as 'rascunho' | 'respondido'
   }
 
   onPasswordRecovery(cb: () => void) {

@@ -8,8 +8,8 @@ import { PHASES, PHASE_STATUS_LABEL } from '@/lib/phases'
 const STATUS_COLOR: Record<PhaseStatus, string> = {
   concluida: 'var(--brand-success)',
   andamento: 'var(--brand-accent)',
-  disponivel: '#c7d2fe',
-  bloqueada: '#3b4a6b',
+  disponivel: 'var(--ladder-on)',
+  bloqueada: 'var(--color-faint)',
 }
 
 interface Props {
@@ -74,7 +74,7 @@ function DiagonalLadder({ phases, currentPhase, onSelect }: Props) {
       </defs>
 
       {/* trilha completa (futuro) */}
-      <line x1={START.x} y1={START.y} x2={END.x} y2={END.y} stroke="#24324f" strokeWidth="7" strokeLinecap="round" />
+      <line x1={START.x} y1={START.y} x2={END.x} y2={END.y} stroke="var(--color-line-strong)" strokeWidth="7" strokeLinecap="round" />
       {/* trilha conquistada */}
       <line
         x1={START.x} y1={START.y} x2={END.x} y2={END.y}
@@ -88,7 +88,7 @@ function DiagonalLadder({ phases, currentPhase, onSelect }: Props) {
         <line x1={fillEnd.x} y1={fillEnd.y} x2={cur.x} y2={cur.y} stroke="#f97316" strokeWidth="4" strokeDasharray="8 8" className="dash-flow" opacity="0.8" />
       )}
       {/* seta de direção */}
-      <path d={`M ${END.x} ${END.y - 18} L ${END.x - 15} ${END.y + 12} L ${END.x + 12} ${END.y + 4} Z`} fill={done === 8 ? '#ef4444' : '#24324f'} style={{ transition: 'fill .6s' }} />
+      <path d={`M ${END.x} ${END.y - 18} L ${END.x - 15} ${END.y + 12} L ${END.x + 12} ${END.y + 4} Z`} fill={done === 8 ? '#ef4444' : 'var(--color-line-strong)'} style={{ transition: 'fill .6s' }} />
 
       {PHASES.map((def, i) => {
         const p = get(def.number)
@@ -113,15 +113,15 @@ function DiagonalLadder({ phases, currentPhase, onSelect }: Props) {
             aria-label={`${def.code} ${def.name}: ${PHASE_STATUS_LABEL[status]}`}
           >
             <rect x={left ? nameX - 330 : x - 120} y={y - 34} width={450} height={68} fill="transparent" />
-            <line x1={x} y1={y} x2={left ? x + tick : x - tick} y2={y} stroke={status === 'bloqueada' ? '#2a3a5c' : '#c7d2fe'} strokeWidth="3" opacity={status === 'bloqueada' ? 0.6 : 0.9} />
-            <text x={codeX} y={y + 13} textAnchor={left ? 'start' : 'end'} fontSize="38" fontWeight="800" fill={status === 'bloqueada' ? '#3b4a6b' : isCurrent ? '#fb923c' : '#e8edf7'} style={{ transition: 'fill .4s' }}>
+            <line x1={x} y1={y} x2={left ? x + tick : x - tick} y2={y} stroke={status === 'bloqueada' ? 'var(--color-line-strong)' : 'var(--ladder-on)'} strokeWidth="3" opacity={status === 'bloqueada' ? 0.6 : 0.9} />
+            <text x={codeX} y={y + 13} textAnchor={left ? 'start' : 'end'} fontSize="38" fontWeight="800" fill={status === 'bloqueada' ? 'var(--color-faint)' : isCurrent ? '#fb923c' : 'var(--color-ink)'} style={{ transition: 'fill .4s' }}>
               {def.code}
             </text>
 
             {isCurrent && <circle cx={x} cy={y} r="17" fill="none" stroke="#f97316" strokeWidth="3" className="pulse-ring" />}
             <circle
               cx={x} cy={y} r={isCurrent ? 17 : 14}
-              fill={status === 'concluida' ? 'url(#ladder-grad)' : status === 'andamento' ? '#f97316' : status === 'disponivel' ? '#0c1322' : '#141d31'}
+              fill={status === 'concluida' ? 'url(#ladder-grad)' : status === 'andamento' ? '#f97316' : status === 'disponivel' ? 'var(--color-surface)' : 'var(--color-surface-3)'}
               stroke={color} strokeWidth={status === 'disponivel' ? 4 : 3}
               className="transition-all duration-300 group-hover:brightness-125"
               key={status}
@@ -131,15 +131,15 @@ function DiagonalLadder({ phases, currentPhase, onSelect }: Props) {
               <foreignObject x={x - 9} y={y - 9} width="18" height="18" pointerEvents="none"><Check className="size-[18px] text-white" strokeWidth={3.5} /></foreignObject>
             )}
             {status === 'bloqueada' && (
-              <foreignObject x={x - 7} y={y - 7} width="14" height="14" pointerEvents="none"><Lock className="size-[14px] text-[#5d6a86]" strokeWidth={2.5} /></foreignObject>
+              <foreignObject x={x - 7} y={y - 7} width="14" height="14" pointerEvents="none"><Lock className="size-[14px] text-faint" strokeWidth={2.5} /></foreignObject>
             )}
 
             <text x={nameX} y={y - 2} textAnchor={left ? 'end' : 'start'} fontSize="23" fontWeight="800" letterSpacing="1"
-              fill={status === 'bloqueada' ? '#4a5875' : status === 'concluida' ? '#fdba74' : isCurrent ? '#fb923c' : '#f97316'}
+              fill={status === 'bloqueada' ? 'var(--color-faint)' : status === 'concluida' ? '#fdba74' : isCurrent ? '#fb923c' : '#f97316'}
               className="uppercase transition-all group-hover:brightness-125">
               {def.name.toUpperCase()}
             </text>
-            <text x={nameX} y={y + 22} textAnchor={left ? 'end' : 'start'} fontSize="15" fontWeight="600" fill={status === 'concluida' ? 'var(--brand-success)' : status === 'andamento' ? '#e8edf7' : '#5d6a86'}>
+            <text x={nameX} y={y + 22} textAnchor={left ? 'end' : 'start'} fontSize="15" fontWeight="600" fill={status === 'concluida' ? 'var(--brand-success)' : status === 'andamento' ? 'var(--color-ink)' : '#5d6a86'}>
               {sub}
             </text>
           </g>
@@ -172,7 +172,7 @@ function VerticalLadder({ phases, currentPhase, onSelect }: Props) {
                 'relative z-10 size-8 shrink-0 rounded-full grid place-items-center border-[3px] transition',
                 status === 'concluida' && 'bg-accent border-success',
                 status === 'andamento' && 'bg-accent border-accent ring-4 ring-accent/25',
-                status === 'disponivel' && 'bg-surface border-[#c7d2fe]',
+                status === 'disponivel' && 'bg-surface border-[var(--ladder-on)]',
                 status === 'bloqueada' && 'bg-surface-2 border-line-strong',
               )}
               aria-label={`${def.code} ${def.name}`}

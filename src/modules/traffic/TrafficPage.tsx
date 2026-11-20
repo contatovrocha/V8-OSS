@@ -379,10 +379,10 @@ function History({ rows, period, metric, compact }: { rows: Parameters<typeof us
       <div className="h-64">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={chart} margin={{ left: 0, right: 8, top: 4 }}>
-            <CartesianGrid stroke="#1d2943" vertical={false} />
-            <XAxis dataKey="d" tick={{ fill: '#8b97b1', fontSize: 11 }} axisLine={false} tickLine={false} minTickGap={20} />
-            <YAxis tick={{ fill: '#8b97b1', fontSize: 11 }} axisLine={false} tickLine={false} width={84} tickFormatter={(v) => fmtMetric(metric, v)} />
-            <Tooltip contentStyle={{ background: '#111a2d', border: '1px solid #2a3a5c', borderRadius: 12 }} formatter={(v) => [fmtMetric(metric, v as number), METRIC_LABEL[metric]]} />
+            <CartesianGrid stroke="var(--color-line)" vertical={false} />
+            <XAxis dataKey="d" tick={{ fill: 'var(--color-muted)', fontSize: 11 }} axisLine={false} tickLine={false} minTickGap={20} />
+            <YAxis tick={{ fill: 'var(--color-muted)', fontSize: 11 }} axisLine={false} tickLine={false} width={84} tickFormatter={(v) => fmtMetric(metric, v)} />
+            <Tooltip contentStyle={{ background: 'var(--color-surface-2)', border: '1px solid var(--color-line-strong)', borderRadius: 12 }} formatter={(v) => [fmtMetric(metric, v as number), METRIC_LABEL[metric]]} />
             <Line type="monotone" dataKey="v" stroke="var(--brand-primary)" strokeWidth={2.5} dot={false} connectNulls={false} />
           </LineChart>
         </ResponsiveContainer>
@@ -447,10 +447,10 @@ function AdDetail({ p, campaign, adSet, rows, period, onClose }: { p: AdPerforma
           <div className="h-44">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={daily}>
-                <CartesianGrid stroke="#1d2943" vertical={false} />
-                <XAxis dataKey="d" tick={{ fill: '#8b97b1', fontSize: 10 }} axisLine={false} tickLine={false} minTickGap={16} />
-                <YAxis tick={{ fill: '#8b97b1', fontSize: 10 }} axisLine={false} tickLine={false} width={50} tickFormatter={(v) => money(v).replace(',00', '')} />
-                <Tooltip contentStyle={{ background: '#111a2d', border: '1px solid #2a3a5c', borderRadius: 12 }} formatter={(v, n) => (n === 'Investimento' ? money(Number(v)) : num(Number(v)))} />
+                <CartesianGrid stroke="var(--color-line)" vertical={false} />
+                <XAxis dataKey="d" tick={{ fill: 'var(--color-muted)', fontSize: 10 }} axisLine={false} tickLine={false} minTickGap={16} />
+                <YAxis tick={{ fill: 'var(--color-muted)', fontSize: 10 }} axisLine={false} tickLine={false} width={50} tickFormatter={(v) => money(v).replace(',00', '')} />
+                <Tooltip contentStyle={{ background: 'var(--color-surface-2)', border: '1px solid var(--color-line-strong)', borderRadius: 12 }} formatter={(v, n) => (n === 'Investimento' ? money(Number(v)) : num(Number(v)))} />
                 <Bar dataKey="Investimento" fill="var(--brand-primary)" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>

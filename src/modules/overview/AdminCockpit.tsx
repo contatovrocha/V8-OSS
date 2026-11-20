@@ -110,10 +110,10 @@ export function AdminCockpit() {
                 <linearGradient id="agInv" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="var(--brand-primary)" stopOpacity={0.35} /><stop offset="1" stopColor="var(--brand-primary)" stopOpacity={0} /></linearGradient>
                 <linearGradient id="agRev" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="var(--brand-success)" stopOpacity={0.3} /><stop offset="1" stopColor="var(--brand-success)" stopOpacity={0} /></linearGradient>
               </defs>
-              <CartesianGrid stroke="#1d2943" vertical={false} />
-              <XAxis dataKey="d" tick={{ fill: '#8b97b1', fontSize: 11 }} axisLine={false} tickLine={false} minTickGap={20} />
-              <YAxis tick={{ fill: '#8b97b1', fontSize: 11 }} axisLine={false} tickLine={false} width={84} tickFormatter={(v) => moneyShort(v)} />
-              <Tooltip contentStyle={{ background: '#111a2d', border: '1px solid #2a3a5c', borderRadius: 12 }} formatter={(v) => money(Number(v))} />
+              <CartesianGrid stroke="var(--color-line)" vertical={false} />
+              <XAxis dataKey="d" tick={{ fill: 'var(--color-muted)', fontSize: 11 }} axisLine={false} tickLine={false} minTickGap={20} />
+              <YAxis tick={{ fill: 'var(--color-muted)', fontSize: 11 }} axisLine={false} tickLine={false} width={84} tickFormatter={(v) => moneyShort(v)} />
+              <Tooltip contentStyle={{ background: 'var(--color-surface-2)', border: '1px solid var(--color-line-strong)', borderRadius: 12 }} formatter={(v) => money(Number(v))} />
               <Area type="monotone" dataKey="Faturamento" stroke="var(--brand-success)" strokeWidth={2} fill="url(#agRev)" />
               <Area type="monotone" dataKey="Investimento" stroke="var(--brand-primary)" strokeWidth={2} fill="url(#agInv)" />
             </AreaChart>

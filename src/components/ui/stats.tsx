@@ -78,8 +78,8 @@ export function Gauge({ value, expected, label, display, sub, caption }: { value
           const [c, d] = pt(expected, R + 12)
           return <line x1={a} y1={b} x2={c} y2={d} stroke="#fff" strokeWidth="3" strokeLinecap="round"><title>Ritmo esperado até hoje</title></line>
         })()}
-        <line x1={cx} y1={cy} x2={nx} y2={ny} stroke="#e8edf7" strokeWidth="3" strokeLinecap="round" style={{ transition: 'all .8s ease' }} />
-        <circle cx={cx} cy={cy} r="6" fill="#e8edf7" />
+        <line x1={cx} y1={cy} x2={nx} y2={ny} stroke="var(--color-ink)" strokeWidth="3" strokeLinecap="round" style={{ transition: 'all .8s ease' }} />
+        <circle cx={cx} cy={cy} r="6" fill="var(--color-ink)" />
       </svg>
       <div className="text-sm sm:text-xl font-extrabold tabular-nums -mt-1 whitespace-nowrap">{display}</div>
       {sub && <div className="text-[10px] sm:text-xs font-semibold mt-0.5" style={{ color: tone }}>{sub}</div>}

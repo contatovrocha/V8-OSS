@@ -84,6 +84,15 @@ export interface PublicEventPage {
   update: ProjectUpdate
 }
 
+export interface PublicBrandDoc {
+  expert: string
+  photo: string | null
+  status: 'pendente' | 'rascunho' | 'respondido'
+  answers: Record<string, string>
+  respondent_name: string
+  submitted_at: string | null
+}
+
 export interface Backend {
   readonly mode: 'supabase' | 'local'
 
@@ -103,6 +112,10 @@ export interface Backend {
   publicProjectCreatives(token: string): Promise<PublicGallery | null>
   /** Página pública do evento: última campanha publicada do projeto. */
   publicEventPage(slug: string): Promise<PublicEventPage | null>
+  /** Documento de Marca do Expert pelo token do link (formulário público). null = link inválido. */
+  publicBrandDoc(token: string): Promise<PublicBrandDoc | null>
+  /** Salva o rascunho (final = false) ou envia as respostas (final = true). Retorna o status resultante. */
+  submitBrandDoc(token: string, answers: Record<string, string>, respondent: string, final: boolean): Promise<'rascunho' | 'respondido'>
   /** Avisa quando o usuário chegou pelo link de recuperação de senha. */
   onPasswordRecovery(cb: () => void): () => void
   signOut(): Promise<void>

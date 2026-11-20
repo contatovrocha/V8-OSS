@@ -31,8 +31,8 @@ const REPORTS = [
 ] as const
 type ReportKey = (typeof REPORTS)[number]['key']
 
-const tooltipStyle = { background: '#111a2d', border: '1px solid #2a3a5c', borderRadius: 12 }
-const axis = { tick: { fill: '#8b97b1', fontSize: 11 }, axisLine: false, tickLine: false }
+const tooltipStyle = { background: 'var(--color-surface-2)', border: '1px solid var(--color-line-strong)', borderRadius: 12 }
+const axis = { tick: { fill: 'var(--color-muted)', fontSize: 11 }, axisLine: false, tickLine: false }
 
 export default function ReportsPage() {
   const app = useApp()
@@ -120,7 +120,7 @@ function Report({ kind, period, projectIds }: { kind: ReportKey; period: Period;
         <Section
           filename="evolucao-fases"
           rows={rows}
-          chart={<ResponsiveContainer><LineChart data={timeline}><CartesianGrid stroke="#1d2943" vertical={false} /><XAxis dataKey="data" {...axis} /><YAxis {...axis} allowDecimals={false} /><Tooltip contentStyle={tooltipStyle} /><Line type="stepAfter" dataKey="Fases concluídas" stroke="var(--brand-accent)" strokeWidth={2.5} /></LineChart></ResponsiveContainer>}
+          chart={<ResponsiveContainer><LineChart data={timeline}><CartesianGrid stroke="var(--color-line)" vertical={false} /><XAxis dataKey="data" {...axis} /><YAxis {...axis} allowDecimals={false} /><Tooltip contentStyle={tooltipStyle} /><Line type="stepAfter" dataKey="Fases concluídas" stroke="var(--brand-accent)" strokeWidth={2.5} /></LineChart></ResponsiveContainer>}
           columns={[
             { key: 'n', header: 'Projeto', cell: (r) => <span className="font-semibold">{r.name}</span>, sortValue: (r) => r.name },
             { key: 'p', header: 'Progresso', align: 'right', cell: (r) => pct(r.progress), sortValue: (r) => r.progress },
@@ -140,7 +140,7 @@ function Report({ kind, period, projectIds }: { kind: ReportKey; period: Period;
         <Section
           filename="investimento-anuncios"
           rows={[...rows].reverse()}
-          chart={<ResponsiveContainer><ComposedChart data={rows.map((r) => ({ d: shortDate(r.date), Diário: r.spend, Acumulado: r.cumulative }))}><CartesianGrid stroke="#1d2943" vertical={false} /><XAxis dataKey="d" {...axis} minTickGap={20} /><YAxis yAxisId="a" {...axis} width={84} tickFormatter={moneyShort} /><YAxis yAxisId="b" orientation="right" {...axis} width={84} tickFormatter={moneyShort} /><Tooltip contentStyle={tooltipStyle} formatter={(v) => money(Number(v))} /><Legend /><Bar yAxisId="a" dataKey="Diário" fill="var(--brand-primary)" radius={[4, 4, 0, 0]} /><Line yAxisId="b" dataKey="Acumulado" stroke="var(--brand-accent)" strokeWidth={2} dot={false} /></ComposedChart></ResponsiveContainer>}
+          chart={<ResponsiveContainer><ComposedChart data={rows.map((r) => ({ d: shortDate(r.date), Diário: r.spend, Acumulado: r.cumulative }))}><CartesianGrid stroke="var(--color-line)" vertical={false} /><XAxis dataKey="d" {...axis} minTickGap={20} /><YAxis yAxisId="a" {...axis} width={84} tickFormatter={moneyShort} /><YAxis yAxisId="b" orientation="right" {...axis} width={84} tickFormatter={moneyShort} /><Tooltip contentStyle={tooltipStyle} formatter={(v) => money(Number(v))} /><Legend /><Bar yAxisId="a" dataKey="Diário" fill="var(--brand-primary)" radius={[4, 4, 0, 0]} /><Line yAxisId="b" dataKey="Acumulado" stroke="var(--brand-accent)" strokeWidth={2} dot={false} /></ComposedChart></ResponsiveContainer>}
           columns={[
             { key: 'd', header: 'Data', cell: (r) => date(r.date), sortValue: (r) => r.date },
             { key: 's', header: 'Investimento', align: 'right', cell: (r) => money(r.spend), sortValue: (r) => r.spend },
@@ -154,7 +154,7 @@ function Report({ kind, period, projectIds }: { kind: ReportKey; period: Period;
         <Section
           filename="leads-custos"
           rows={[...rows].reverse()}
-          chart={<ResponsiveContainer><ComposedChart data={rows.map((r) => ({ d: shortDate(r.date), Leads: r.leads, CPL: r.cpl }))}><CartesianGrid stroke="#1d2943" vertical={false} /><XAxis dataKey="d" {...axis} minTickGap={20} /><YAxis yAxisId="a" {...axis} allowDecimals={false} /><YAxis yAxisId="b" orientation="right" {...axis} width={84} tickFormatter={(v) => money(v)} /><Tooltip contentStyle={tooltipStyle} formatter={(v, n) => (n === 'CPL' ? money(v as number) : num(v as number))} /><Legend /><Bar yAxisId="a" dataKey="Leads" fill="var(--brand-primary)" radius={[4, 4, 0, 0]} /><Line yAxisId="b" dataKey="CPL" stroke="var(--brand-accent)" strokeWidth={2} dot={false} connectNulls /></ComposedChart></ResponsiveContainer>}
+          chart={<ResponsiveContainer><ComposedChart data={rows.map((r) => ({ d: shortDate(r.date), Leads: r.leads, CPL: r.cpl }))}><CartesianGrid stroke="var(--color-line)" vertical={false} /><XAxis dataKey="d" {...axis} minTickGap={20} /><YAxis yAxisId="a" {...axis} allowDecimals={false} /><YAxis yAxisId="b" orientation="right" {...axis} width={84} tickFormatter={(v) => money(v)} /><Tooltip contentStyle={tooltipStyle} formatter={(v, n) => (n === 'CPL' ? money(v as number) : num(v as number))} /><Legend /><Bar yAxisId="a" dataKey="Leads" fill="var(--brand-primary)" radius={[4, 4, 0, 0]} /><Line yAxisId="b" dataKey="CPL" stroke="var(--brand-accent)" strokeWidth={2} dot={false} connectNulls /></ComposedChart></ResponsiveContainer>}
           columns={[
             { key: 'd', header: 'Data', cell: (r) => date(r.date), sortValue: (r) => r.date },
             { key: 'l', header: 'Leads', align: 'right', cell: (r) => num(r.leads), sortValue: (r) => r.leads },
@@ -172,7 +172,7 @@ function Report({ kind, period, projectIds }: { kind: ReportKey; period: Period;
         <Section
           filename="desempenho-criativos"
           rows={rows}
-          chart={<ResponsiveContainer><BarChart data={rows.map((r) => ({ n: r.ad.name.split('—')[0].trim(), Leads: r.leads, Cliques: r.link_clicks }))}><CartesianGrid stroke="#1d2943" vertical={false} /><XAxis dataKey="n" {...axis} /><YAxis {...axis} /><Tooltip contentStyle={tooltipStyle} /><Legend /><Bar dataKey="Leads" fill="var(--brand-primary)" radius={[4, 4, 0, 0]} /><Bar dataKey="Cliques" fill="var(--brand-accent)" radius={[4, 4, 0, 0]} /></BarChart></ResponsiveContainer>}
+          chart={<ResponsiveContainer><BarChart data={rows.map((r) => ({ n: r.ad.name.split('—')[0].trim(), Leads: r.leads, Cliques: r.link_clicks }))}><CartesianGrid stroke="var(--color-line)" vertical={false} /><XAxis dataKey="n" {...axis} /><YAxis {...axis} /><Tooltip contentStyle={tooltipStyle} /><Legend /><Bar dataKey="Leads" fill="var(--brand-primary)" radius={[4, 4, 0, 0]} /><Bar dataKey="Cliques" fill="var(--brand-accent)" radius={[4, 4, 0, 0]} /></BarChart></ResponsiveContainer>}
           columns={[
             { key: 'n', header: 'Criativo', cell: (r) => <span className="font-semibold">{r.ad.name}</span>, sortValue: (r) => r.ad.name },
             { key: 's', header: 'Investimento', align: 'right', cell: (r) => money(r.spend), sortValue: (r) => r.spend },
@@ -193,7 +193,7 @@ function Report({ kind, period, projectIds }: { kind: ReportKey; period: Period;
         <Section
           filename="vendas-por-produto"
           rows={rows}
-          chart={<ResponsiveContainer><BarChart data={rows.map((r) => ({ n: r.product.name, Vendas: r.count, Faturamento: r.revenue }))}><CartesianGrid stroke="#1d2943" vertical={false} /><XAxis dataKey="n" {...axis} /><YAxis yAxisId="a" {...axis} allowDecimals={false} /><YAxis yAxisId="b" orientation="right" {...axis} width={84} tickFormatter={moneyShort} /><Tooltip contentStyle={tooltipStyle} formatter={(v, n) => (n === 'Faturamento' ? money(v as number) : num(v as number))} /><Legend /><Bar yAxisId="a" dataKey="Vendas" fill="var(--brand-accent)" radius={[4, 4, 0, 0]} /><Bar yAxisId="b" dataKey="Faturamento" fill="var(--brand-success)" radius={[4, 4, 0, 0]} /></BarChart></ResponsiveContainer>}
+          chart={<ResponsiveContainer><BarChart data={rows.map((r) => ({ n: r.product.name, Vendas: r.count, Faturamento: r.revenue }))}><CartesianGrid stroke="var(--color-line)" vertical={false} /><XAxis dataKey="n" {...axis} /><YAxis yAxisId="a" {...axis} allowDecimals={false} /><YAxis yAxisId="b" orientation="right" {...axis} width={84} tickFormatter={moneyShort} /><Tooltip contentStyle={tooltipStyle} formatter={(v, n) => (n === 'Faturamento' ? money(v as number) : num(v as number))} /><Legend /><Bar yAxisId="a" dataKey="Vendas" fill="var(--brand-accent)" radius={[4, 4, 0, 0]} /><Bar yAxisId="b" dataKey="Faturamento" fill="var(--brand-success)" radius={[4, 4, 0, 0]} /></BarChart></ResponsiveContainer>}
           columns={[
             { key: 'n', header: 'Produto', cell: (r) => <span className="font-semibold">{r.product.name}</span>, sortValue: (r) => r.product.name },
             { key: 'q', header: 'Vendas aprovadas', align: 'right', cell: (r) => num(r.count), sortValue: (r) => r.count },
@@ -218,7 +218,7 @@ function Report({ kind, period, projectIds }: { kind: ReportKey; period: Period;
           <Section
             filename="faturamento-despesas"
             rows={[...rows].reverse().filter((r) => r.revenue || r.traffic || r.other)}
-            chart={<ResponsiveContainer><BarChart data={rows.map((r) => ({ d: shortDate(r.date), Faturamento: r.revenue, Tráfego: r.traffic, 'Outras despesas': r.other }))}><CartesianGrid stroke="#1d2943" vertical={false} /><XAxis dataKey="d" {...axis} minTickGap={20} /><YAxis {...axis} width={84} tickFormatter={moneyShort} /><Tooltip contentStyle={tooltipStyle} formatter={(v) => money(v as number)} /><Legend /><Bar dataKey="Faturamento" fill="var(--brand-success)" radius={[4, 4, 0, 0]} /><Bar dataKey="Tráfego" stackId="c" fill="var(--brand-primary)" /><Bar dataKey="Outras despesas" stackId="c" fill="var(--brand-accent)" radius={[4, 4, 0, 0]} /></BarChart></ResponsiveContainer>}
+            chart={<ResponsiveContainer><BarChart data={rows.map((r) => ({ d: shortDate(r.date), Faturamento: r.revenue, Tráfego: r.traffic, 'Outras despesas': r.other }))}><CartesianGrid stroke="var(--color-line)" vertical={false} /><XAxis dataKey="d" {...axis} minTickGap={20} /><YAxis {...axis} width={84} tickFormatter={moneyShort} /><Tooltip contentStyle={tooltipStyle} formatter={(v) => money(v as number)} /><Legend /><Bar dataKey="Faturamento" fill="var(--brand-success)" radius={[4, 4, 0, 0]} /><Bar dataKey="Tráfego" stackId="c" fill="var(--brand-primary)" /><Bar dataKey="Outras despesas" stackId="c" fill="var(--brand-accent)" radius={[4, 4, 0, 0]} /></BarChart></ResponsiveContainer>}
             columns={[
               { key: 'd', header: 'Data', cell: (r) => date(r.date), sortValue: (r) => r.date },
               { key: 'r', header: 'Faturamento bruto', align: 'right', cell: (r) => money(r.revenue), sortValue: (r) => r.revenue },
@@ -247,7 +247,7 @@ function Report({ kind, period, projectIds }: { kind: ReportKey; period: Period;
           <Section
             filename="resultado-por-projeto"
             rows={rows}
-            chart={<ResponsiveContainer><BarChart data={rows.map((r) => ({ n: r.name.slice(0, 24), Receita: r.s.netRevenue, Custo: r.s.totalCost, Resultado: r.s.result }))}><CartesianGrid stroke="#1d2943" vertical={false} /><XAxis dataKey="n" {...axis} /><YAxis {...axis} width={84} tickFormatter={moneyShort} /><Tooltip contentStyle={tooltipStyle} formatter={(v) => money(v as number)} /><Legend /><Bar dataKey="Receita" fill="var(--brand-success)" radius={[4, 4, 0, 0]} /><Bar dataKey="Custo" fill="var(--brand-danger)" radius={[4, 4, 0, 0]} /><Bar dataKey="Resultado" fill="var(--brand-primary)" radius={[4, 4, 0, 0]} /></BarChart></ResponsiveContainer>}
+            chart={<ResponsiveContainer><BarChart data={rows.map((r) => ({ n: r.name.slice(0, 24), Receita: r.s.netRevenue, Custo: r.s.totalCost, Resultado: r.s.result }))}><CartesianGrid stroke="var(--color-line)" vertical={false} /><XAxis dataKey="n" {...axis} /><YAxis {...axis} width={84} tickFormatter={moneyShort} /><Tooltip contentStyle={tooltipStyle} formatter={(v) => money(v as number)} /><Legend /><Bar dataKey="Receita" fill="var(--brand-success)" radius={[4, 4, 0, 0]} /><Bar dataKey="Custo" fill="var(--brand-danger)" radius={[4, 4, 0, 0]} /><Bar dataKey="Resultado" fill="var(--brand-primary)" radius={[4, 4, 0, 0]} /></BarChart></ResponsiveContainer>}
             columns={[
               { key: 'n', header: 'Projeto', cell: (r) => <span className="font-semibold">{r.name}</span>, sortValue: (r) => r.name },
               { key: 'rev', header: 'Faturamento', align: 'right', cell: (r) => money(r.s.grossRevenue), sortValue: (r) => r.s.grossRevenue },
@@ -271,7 +271,7 @@ function Report({ kind, period, projectIds }: { kind: ReportKey; period: Period;
         <Section
           filename="evolucao-metas"
           rows={rows}
-          chart={<ResponsiveContainer><LineChart data={salesDays}><CartesianGrid stroke="#1d2943" vertical={false} /><XAxis dataKey="d" {...axis} minTickGap={20} /><YAxis {...axis} width={84} tickFormatter={moneyShort} /><Tooltip contentStyle={tooltipStyle} formatter={(v) => money(v as number)} /><Legend /><Line dataKey="Faturamento acumulado" stroke="var(--brand-success)" strokeWidth={2.5} dot={false} /><Line dataKey="Meta" stroke="#8b97b1" strokeDasharray="6 6" dot={false} /></LineChart></ResponsiveContainer>}
+          chart={<ResponsiveContainer><LineChart data={salesDays}><CartesianGrid stroke="var(--color-line)" vertical={false} /><XAxis dataKey="d" {...axis} minTickGap={20} /><YAxis {...axis} width={84} tickFormatter={moneyShort} /><Tooltip contentStyle={tooltipStyle} formatter={(v) => money(v as number)} /><Legend /><Line dataKey="Faturamento acumulado" stroke="var(--brand-success)" strokeWidth={2.5} dot={false} /><Line dataKey="Meta" stroke="var(--color-muted)" strokeDasharray="6 6" dot={false} /></LineChart></ResponsiveContainer>}
           columns={[
             { key: 'n', header: 'Projeto', cell: (r) => <span className="font-semibold">{r.name}</span>, sortValue: (r) => r.name },
             { key: 'rg', header: 'Meta faturamento', align: 'right', cell: (r) => money(r.p.revenue_goal), sortValue: (r) => r.p.revenue_goal },
@@ -293,7 +293,7 @@ function Report({ kind, period, projectIds }: { kind: ReportKey; period: Period;
         <Section
           filename="entregas"
           rows={rows}
-          chart={<ResponsiveContainer><BarChart data={rows.map((r) => ({ n: r.name.slice(0, 24), Concluídas: r.concluida, Pendentes: r.total - r.concluida, Atrasadas: r.late }))}><CartesianGrid stroke="#1d2943" vertical={false} /><XAxis dataKey="n" {...axis} /><YAxis {...axis} allowDecimals={false} /><Tooltip contentStyle={tooltipStyle} /><Legend /><Bar dataKey="Concluídas" fill="var(--brand-success)" radius={[4, 4, 0, 0]} /><Bar dataKey="Pendentes" fill="var(--brand-primary)" radius={[4, 4, 0, 0]} /><Bar dataKey="Atrasadas" fill="var(--brand-danger)" radius={[4, 4, 0, 0]} /></BarChart></ResponsiveContainer>}
+          chart={<ResponsiveContainer><BarChart data={rows.map((r) => ({ n: r.name.slice(0, 24), Concluídas: r.concluida, Pendentes: r.total - r.concluida, Atrasadas: r.late }))}><CartesianGrid stroke="var(--color-line)" vertical={false} /><XAxis dataKey="n" {...axis} /><YAxis {...axis} allowDecimals={false} /><Tooltip contentStyle={tooltipStyle} /><Legend /><Bar dataKey="Concluídas" fill="var(--brand-success)" radius={[4, 4, 0, 0]} /><Bar dataKey="Pendentes" fill="var(--brand-primary)" radius={[4, 4, 0, 0]} /><Bar dataKey="Atrasadas" fill="var(--brand-danger)" radius={[4, 4, 0, 0]} /></BarChart></ResponsiveContainer>}
           columns={[
             { key: 'n', header: 'Projeto', cell: (r) => <span className="font-semibold">{r.name}</span>, sortValue: (r) => r.name },
             { key: 't', header: 'Total', align: 'right', cell: (r) => num(r.total), sortValue: (r) => r.total },

@@ -20,7 +20,7 @@ import { addDays, date, daysBetween, money, moneyShort, num, pct, ratio, relativ
 import { delta } from '@/lib/metrics'
 import { daysOf, inPeriod, PERIOD_LABEL, previousPeriod } from '@/lib/period'
 import { phaseLabel, phaseProgress } from '@/lib/phases'
-import { LadderPanel } from '../phases/LadderPanel'
+import { LaunchProcessPanel } from '../launch/LaunchProcessPanel'
 import { AdminCockpit } from './AdminCockpit'
 
 export default function OverviewPage() {
@@ -131,8 +131,8 @@ function Cockpit({ focus }: { focus: Project }) {
         </Card>
       </div>
 
-      {/* Escada V1–V8 em destaque */}
-      <LadderPanel project={focus} />
+      {/* Processo de lançamento (kanban das 9 etapas) e escada V1–V8 */}
+      <LaunchProcessPanel project={focus} />
 
       {/* Indicadores principais */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -162,10 +162,10 @@ function Cockpit({ focus }: { focus: Project }) {
                   <linearGradient id="gInv" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="var(--brand-primary)" stopOpacity={0.35} /><stop offset="1" stopColor="var(--brand-primary)" stopOpacity={0} /></linearGradient>
                   <linearGradient id="gRev" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="var(--brand-success)" stopOpacity={0.3} /><stop offset="1" stopColor="var(--brand-success)" stopOpacity={0} /></linearGradient>
                 </defs>
-                <CartesianGrid stroke="#1d2943" vertical={false} />
-                <XAxis dataKey="d" tick={{ fill: '#8b97b1', fontSize: 11 }} axisLine={false} tickLine={false} minTickGap={20} />
-                <YAxis tick={{ fill: '#8b97b1', fontSize: 11 }} axisLine={false} tickLine={false} width={84} tickFormatter={(v) => moneyShort(v)} />
-                <Tooltip contentStyle={{ background: '#111a2d', border: '1px solid #2a3a5c', borderRadius: 12 }} formatter={(v) => money(Number(v))} />
+                <CartesianGrid stroke="var(--color-line)" vertical={false} />
+                <XAxis dataKey="d" tick={{ fill: 'var(--color-muted)', fontSize: 11 }} axisLine={false} tickLine={false} minTickGap={20} />
+                <YAxis tick={{ fill: 'var(--color-muted)', fontSize: 11 }} axisLine={false} tickLine={false} width={84} tickFormatter={(v) => moneyShort(v)} />
+                <Tooltip contentStyle={{ background: 'var(--color-surface-2)', border: '1px solid var(--color-line-strong)', borderRadius: 12 }} formatter={(v) => money(Number(v))} />
                 <Area type="monotone" dataKey="Faturamento" stroke="var(--brand-success)" strokeWidth={2} fill="url(#gRev)" />
                 <Area type="monotone" dataKey="Investimento" stroke="var(--brand-primary)" strokeWidth={2} fill="url(#gInv)" />
               </AreaChart>

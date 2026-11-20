@@ -569,6 +569,40 @@ export interface AppSettings {
   updated_at: string
 }
 
+export type LaunchStageStatus = 'a_fazer' | 'andamento' | 'concluida'
+
+/** Uma das 9 etapas do processo de lançamento de um projeto (kanban). */
+export interface LaunchStage {
+  id: string
+  project_id: string
+  stage_number: number
+  status: LaunchStageStatus
+  owner: string
+  checklist: ChecklistItem[]
+  notes: string
+  links: LinkItem[]
+  completed_at: string | null
+  created_at: string
+  updated_at: string
+}
+
+export type BrandDocStatus = 'pendente' | 'rascunho' | 'respondido'
+
+/** Documento de Marca do Expert (V1), respondido pelo expert em um link público estilo formulário. */
+export interface BrandDoc {
+  id: string
+  expert_id: string
+  token: string
+  status: BrandDocStatus
+  answers: Record<string, string>
+  respondent_name: string
+  submitted_at: string | null
+  last_saved_at: string | null
+  created_by?: string | null
+  created_at: string
+  updated_at: string
+}
+
 export interface TableMap {
   profiles: Profile
   experts: Expert
@@ -601,6 +635,8 @@ export interface TableMap {
   creative_people: CreativePerson
   project_updates: ProjectUpdate
   creatives: Creative
+  launch_stages: LaunchStage
+  brand_docs: BrandDoc
 }
 
 export type TableName = keyof TableMap

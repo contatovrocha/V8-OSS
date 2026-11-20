@@ -24,6 +24,7 @@ const DynamicSection = lazy(() => import('./modules/sections/DynamicSectionPage'
 const PublicGallery = lazy(() => import('./modules/sections/PublicGalleryPage'))
 const Team = lazy(() => import('./modules/team/TeamPage'))
 const PublicEvent = lazy(() => import('./modules/creatives/PublicEventPage'))
+const PublicBrandForm = lazy(() => import('./modules/launch/PublicBrandForm'))
 
 function Loading() {
   return <div className="min-h-[50vh] grid place-items-center"><Spinner className="size-7" /></div>
@@ -40,7 +41,9 @@ function Guard({ module, children }: { module: string; children: ReactNode }) {
 function Shell() {
   const { user, loading, recovery } = useAuth()
   const { pathname } = useLocation()
-  // Áreas públicas (sem conta): página do evento e galerias compartilhadas por link.
+  // Áreas públicas (sem conta): página do evento, formulário do Documento de Marca e galerias compartilhadas por link.
+  const brandForm = pathname.match(/^\/f\/marca\/([0-9a-f-]{36})/i)
+  if (brandForm) return <Suspense fallback={<Loading />}><PublicBrandForm token={brandForm[1]} /></Suspense>
   const event = pathname.match(/^\/e\/([a-z0-9-]+)/)
   if (event) return <Suspense fallback={<Loading />}><PublicEvent slug={event[1]} /></Suspense>
   const sharedProject = pathname.match(/^\/compartilhado\/p\/([\w-]+)/)

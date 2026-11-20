@@ -15,6 +15,7 @@ import { date, dateTime, money, num, pct } from '@/lib/format'
 import { projectGoalProgress } from '@/lib/finance'
 import { PHASE_STATUS_LABEL } from '@/lib/phases'
 import { LadderPanel } from '../phases/LadderPanel'
+import { LaunchBoard } from '../launch/LaunchBoard'
 import { ProjectForm } from './ProjectForm'
 import { CampaignWizard } from '../creatives/CampaignWizard'
 import { CreativesTab } from '../creatives/CreativesTab'
@@ -26,7 +27,7 @@ const TrafficView = lazy(() => import('../traffic/TrafficPage').then((m) => ({ d
 const FinanceView = lazy(() => import('../finance/FinancePage').then((m) => ({ default: m.FinanceView })))
 const TasksView = lazy(() => import('../tasks/TasksPage').then((m) => ({ default: m.TasksView })))
 
-type Tab = 'resumo' | 'fases' | 'paginas' | 'trafego' | 'financeiro' | 'tarefas' | 'arquivos' | 'historico' | 'criativos'
+type Tab = 'resumo' | 'processo' | 'fases' | 'paginas' | 'trafego' | 'financeiro' | 'tarefas' | 'arquivos' | 'historico' | 'criativos'
 
 export default function ProjectDetailPage() {
   const { id } = useParams()
@@ -57,6 +58,7 @@ export default function ProjectDetailPage() {
   const visible = (m: string) => app.canSee(m)
   const tabs: { value: Tab; label: string }[] = [
     { value: 'resumo', label: 'Resumo' },
+    { value: 'processo', label: 'Processo' },
     { value: 'fases', label: 'Fases' },
     { value: 'criativos', label: 'Criativos' },
     ...(visible('paginas') ? [{ value: 'paginas' as Tab, label: 'Páginas' }] : []),
@@ -97,6 +99,7 @@ export default function ProjectDetailPage() {
 
       <Suspense fallback={<div className="py-10 grid place-items-center"><Spinner /></div>}>
         {tab === 'resumo' && <Summary project={project} />}
+        {tab === 'processo' && <LaunchBoard project={project} />}
         {tab === 'fases' && <LadderPanel project={project} />}
         {tab === 'criativos' && <CreativesTab project={project} />}
         {tab === 'paginas' && <PagesView fixedProjectId={project.id} />}

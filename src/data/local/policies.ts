@@ -83,6 +83,8 @@ export function canRead<T extends TableName>(db: DB, ctx: Ctx, table: T, row: Ro
       return false
     case 'creative_people':
       return true
+    case 'brand_docs':
+      return ctx.expertIds.has(r.expert_id as string)
     case 'profiles':
       return r.id === ctx.user.id
     case 'user_experts':
@@ -122,6 +124,10 @@ export function canRead<T extends TableName>(db: DB, ctx: Ctx, table: T, row: Ro
 }
 
 export type Op = 'insert' | 'update' | 'delete'
+
+/** Gestor da equipe do expert (equivale a can_manage_project / can_manage_expert no banco). */
+const managesTeam = (db: DB, ctx: Ctx, expertId: string) =>
+  db.user_experts.some((u) => u.user_id === ctx.user.id && u.expert_id === expertId && u.can_manage_team)
 
 /** Retorna null quando permitido, ou a mensagem de recusa. */
 export function writeDenied<T extends TableName>(db: DB, ctx: Ctx, table: T, op: Op, row: Row<T>, old?: Row<T>): string | null {
@@ -172,6 +178,12 @@ export function writeDenied<T extends TableName>(db: DB, ctx: Ctx, table: T, op:
       if (sec?.expert_can_edit && op !== 'delete') return null
       return deny
     }
+    case 'launch_stages': {
+      const e = expertOfProject(db, r.project_id as string)
+      return e && managesTeam(db, ctx, e.id) ? null : deny
+    }
+    case 'brand_docs':
+      return managesTeam(db, ctx, r.expert_id as string) ? null : deny
     case 'activity_log':
     case 'phase_history':
       return op === 'insert' ? null : deny

@@ -1,6 +1,6 @@
 import { storage } from '@/lib/storage'
 import clsx from 'clsx'
-import { ChevronsLeft, ChevronsRight, LogOut, Menu, PanelTop, PanelLeft, X, Database } from 'lucide-react'
+import { ChevronsLeft, ChevronsRight, LogOut, Menu, Moon, PanelTop, PanelLeft, Sun, X, Database } from 'lucide-react'
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { NavLink, useLocation } from 'react-router-dom'
 import { useApp } from '@/app/AppContext'
@@ -35,7 +35,7 @@ function Brand({ compact }: { compact?: boolean }) {
       {settings.logo_url ? (
         <img src={settings.logo_url} alt="" className="size-9 rounded-xl object-cover" />
       ) : (
-        <img src={v8Logo} alt="V8" className={compact ? 'h-6 w-auto shrink-0' : 'h-8 w-auto shrink-0'} />
+        <img src={v8Logo} alt="V8" className={clsx('brand-logo w-auto shrink-0', compact ? 'h-6' : 'h-8')} />
       )}
       {!compact && <span className="font-extrabold tracking-[0.14em] uppercase text-sm truncate">{settings.logo_url ? settings.brand_name : settings.brand_name.replace(/^V8\s*/i, '') || settings.brand_name}</span>}
     </div>
@@ -86,7 +86,23 @@ function TopNav({ items }: { items: NavItem[] }) {
   )
 }
 
+type Theme = 'dark' | 'light'
+
+/** Tela preta ou tela branca: vale para todo o sistema logado e fica salvo neste navegador. */
+function useTheme() {
+  const [theme, setTheme] = useState<Theme>(() => (storage.get('theme') === 'light' ? 'light' : 'dark'))
+  useEffect(() => {
+    const root = document.documentElement
+    root.dataset.theme = theme
+    storage.set('theme', theme)
+    // Login e páginas públicas mantêm a identidade escura da V8.
+    return () => { delete root.dataset.theme }
+  }, [theme])
+  return [theme, () => setTheme((t) => (t === 'dark' ? 'light' : 'dark'))] as const
+}
+
 export function AppLayout({ children }: { children: ReactNode }) {
+  const [theme, toggleTheme] = useTheme()
   const items = useNavItems()
   const { user, signOut, isAdmin } = useAuth()
   const app = useApp()
@@ -163,6 +179,7 @@ export function AppLayout({ children }: { children: ReactNode }) {
                 <div className="text-[10px] uppercase tracking-widest text-muted">{user ? (user.role === 'expert' ? funcaoLabel(user.funcao) : ROLE_LABEL[user.role]) : ''}</div>
               </div>
               <Avatar src={user?.avatar_url ?? (!isAdmin ? app.experts[0]?.photo_url : null)} name={user?.full_name ?? ''} size={36} />
+              <button onClick={toggleTheme} className="size-9 grid place-items-center rounded-full text-muted hover:text-ink hover:bg-surface-3" title={theme === 'dark' ? 'Tela branca' : 'Tela preta'} aria-label={theme === 'dark' ? 'Mudar para tela branca' : 'Mudar para tela preta'}>{theme === 'dark' ? <Sun className="size-4" /> : <Moon className="size-4" />}</button>
               <button onClick={signOut} className="size-9 grid place-items-center rounded-full text-muted hover:text-ink hover:bg-surface-3" title="Sair" aria-label="Sair"><LogOut className="size-4" /></button>
             </div>
           </div>
