@@ -304,6 +304,7 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .trophy svg{width:30px;height:30px;filter:drop-shadow(0 0 4px rgba(243,213,138,.75))}
 @keyframes neon{0%,100%{box-shadow:0 0 4px rgba(243,213,138,.6),0 0 10px rgba(212,166,74,.35)}50%{box-shadow:0 0 10px #f3d58a,0 0 24px rgba(243,213,138,.8),0 0 46px rgba(212,166,74,.5)}}
 @media (prefers-reduced-motion:reduce){.arcp,.trophy{animation:none}}
+.rk-sdr{display:flex;gap:4px}.rank .rk-nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.rk-sdr span{background:rgba(26,18,5,.12);border:1px solid rgba(26,18,5,.25);border-radius:10px;padding:2px 6px;font:500 11px Inter,sans-serif;color:rgba(26,18,5,.75);white-space:nowrap}.rk-sdr b{font:800 15px Sora,sans-serif;color:#1a1205}
 </style>
 
 <nav class="topnav" aria-label="Seções">
@@ -332,7 +333,7 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
     <div class="panel gauges" id="gauges" role="tablist" aria-label="Escolha a meta"></div>
     <aside class="rank" aria-label="Ranking de performance">
       <div class="rk-h"><div style="display:flex;align-items:center;gap:10px"><span class="trophy" aria-hidden="true"><svg viewBox="0 0 64 64"><defs><linearGradient id="tgold" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff1c2"/><stop offset=".45" stop-color="#e9c46a"/><stop offset="1" stop-color="#9c6f22"/></linearGradient></defs><path d="M18 8h28v10c0 9-6 16-14 16S18 27 18 18z" fill="url(#tgold)"/><path d="M18 12H9c0 8 4 13 11 14" fill="none" stroke="url(#tgold)" stroke-width="4" stroke-linecap="round"/><path d="M46 12h9c0 8-4 13-11 14" fill="none" stroke="url(#tgold)" stroke-width="4" stroke-linecap="round"/><rect x="29" y="33" width="6" height="9" fill="url(#tgold)"/><path d="M22 50c0-5 4-8 10-8s10 3 10 8z" fill="url(#tgold)"/><rect x="17" y="50" width="30" height="6" rx="2" fill="url(#tgold)"/><path d="M24 12c0 6 2 11 6 14" stroke="#fff6d8" stroke-opacity=".7" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M32 14l1.8 3.6 4 .6-2.9 2.8.7 4-3.6-1.9-3.6 1.9.7-4-2.9-2.8 4-.6z" fill="#7a5418" fill-opacity=".6"/></svg></span><div class="rk-e">Ranking de performance</div></div><span class="rk-m" id="rkMes"></span></div>
-      <div class="rk-g"><div class="rk-t">SDR · ligações feitas</div><div id="rkSdr"></div></div>
+      <div class="rk-g"><div class="rk-t">SDR · ligações e agendamentos</div><div id="rkSdr"></div></div>
       <div class="rk-g"><div class="rk-t">Closer · reuniões fechadas</div><div id="rkClo"></div></div>
       <p class="rk-n" id="rkNote" hidden></p>
     </aside>
@@ -343,7 +344,7 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
     <div class="panel tile"><div class="t">Vendas no mês</div><div class="v num" id="tQtd">0</div><div class="d" id="tQtdD"></div></div>
     <div class="panel tile"><div class="t" id="tFaltaT">Falta para a meta</div><div class="v num" id="tFalta">—</div><div class="d" id="tFaltaD"></div></div>
     <div class="panel tile"><div class="t">Leads de entrada</div><div class="v num" id="tLeads">0</div><div class="d" id="tLeadsD"></div></div>
-    <div class="panel tile"><div class="t">Ligações do time</div><div class="v num" id="rkTL">0</div><div class="d">SDRs no mês</div></div>
+    <div class="panel tile"><div class="t">Ligações do time</div><div class="v num" id="rkTL">0</div><div class="d" id="rkTA">SDRs no mês</div></div>
     <div class="panel tile"><div class="t">Reuniões fechadas</div><div class="v num" id="rkTR">0</div><div class="d">Closers no mês</div></div>
   </section>
 
@@ -576,6 +577,7 @@ $('fVenda').addEventListener('submit',function(e){e.preventDefault();var d=$('vD
   $('vBtn').disabled=true;db.collection('vendas').add(row).then(function(){msg.textContent='Venda de '+brl(row.valor)+' lançada.';$('vVal').value='';$('vCli').value=''}).catch(function(err){msg.textContent=err&&err.code==='invalid_argument'?'Você tem acesso só de leitura. Peça acesso de Colaborador para lançar vendas.':err&&err.code==='quota_exceeded'?'O limite de registros do painel foi atingido.':'Não deu para salvar agora. Tente de novo em instantes.'}).then(function(){$('vBtn').disabled=false})});
 function ligMes(mk){return LIG.filter(function(l){return l.mes===mk})}
 function ligSdr(mk,nome){return ligMes(mk).filter(function(l){return l.sdr===nome}).length}
+function agSdr(mk,nome){return ligMes(mk).filter(function(l){return l.sdr===nome&&l.resultado==='agendado'}).length}
 function realFunil(mk,qtdVendas){var L=ligMes(mk),c=function(f){return L.filter(f).length};
   return{leads:L.length,atend:c(function(l){return l.resultado!=='nao_atendeu'}),qual:c(function(l){return['qualificado','followup','agendado'].indexOf(l.resultado)>=0}),fup:c(function(l){return l.resultado==='followup'}),agend:c(function(l){return l.resultado==='agendado'}),
     reun:TEAM.filter(function(t){return t.papel==='closer'}).reduce(function(a,t){return a+(RANK[mk+'_'+t.id]||0)},0),vendas:qtdVendas}}
@@ -589,23 +591,23 @@ function paintGauges(){if(!GD)return;var t=ANIM.t,rec=GD.rec,ticket=GD.ticket,R=
 }
 function renderRank(mk){
   $('rkMes').textContent=MES[+mk.slice(5)-1]+' de '+mk.slice(0,4);
-  var sumP=function(pp){return TEAM.filter(function(t){return t.papel===pp}).reduce(function(a,t){return a+(pp==='sdr'?ligSdr(mk,t.nome):(RANK[mk+'_'+t.id]||0))},0)};$('rkTL').textContent=sumP('sdr').toLocaleString('pt-BR');$('rkTR').textContent=sumP('closer').toLocaleString('pt-BR');
+  var sumP=function(pp){return TEAM.filter(function(t){return t.papel===pp}).reduce(function(a,t){return a+(pp==='sdr'?ligSdr(mk,t.nome):(RANK[mk+'_'+t.id]||0))},0)};$('rkTL').textContent=sumP('sdr').toLocaleString('pt-BR');var agT=ligMes(mk).filter(function(l){return l.resultado==='agendado'}).length;$('rkTA').textContent=agT+' agendamento'+(agT===1?'':'s')+' no mês';$('rkTR').textContent=sumP('closer').toLocaleString('pt-BR');
   [['sdr','rkSdr'],['closer','rkClo']].forEach(function(g){
-    var box=$(g[1]),list=TEAM.filter(function(t){return t.papel===g[0]}).map(function(t){return{t:t,v:t.papel==='sdr'?ligSdr(mk,t.nome):(RANK[mk+'_'+t.id]||0)}}).sort(function(a,b){return b.v-a.v});
-    var max=Math.max(1,list[0]?list[0].v:1);
+    var box=$(g[1]),list=TEAM.filter(function(t){return t.papel===g[0]}).map(function(t){return{t:t,v:t.papel==='sdr'?ligSdr(mk,t.nome):(RANK[mk+'_'+t.id]||0),ag:t.papel==='sdr'?agSdr(mk,t.nome):0}}).sort(function(a,b){return (b.ag-a.ag)||(b.v-a.v)});
+    var max=Math.max(1,Math.max.apply(null,list.map(function(x){return g[0]==='sdr'?x.ag*5+x.v:x.v})));
     var ae=document.activeElement,refocus=ae&&box.contains(ae)?ae.id||(ae.parentNode&&ae.parentNode.firstChild.id+'+'):null;
     if(ae&&ae.tagName==='INPUT'&&box.contains(ae))return; // não redesenha enquanto alguém digita
     box.textContent='';
-    list.forEach(function(it,i){var row=document.createElement('div');row.className='rk-row'+(i===0&&it.v>0?' top':'');
+    list.forEach(function(it,i){var row=document.createElement('div');row.className='rk-row'+(i===0&&(it.v>0||it.ag>0)?' top':'');
       var pos=document.createElement('div');pos.className='rk-pos';pos.textContent=(i+1)+'º';
-      var nm=document.createElement('div');nm.className='rk-nm';nm.textContent=it.t.nome;var bar=document.createElement('div');bar.className='rk-bar';var bi=document.createElement('i');bi.style.width=(it.v/max*100)+'%';bar.appendChild(bi);nm.appendChild(bar);
+      var nm=document.createElement('div');nm.className='rk-nm';nm.textContent=it.t.nome;var bar=document.createElement('div');bar.className='rk-bar';var bi=document.createElement('i');bi.style.width=((g[0]==='sdr'?it.ag*5+it.v:it.v)/max*100)+'%';bar.appendChild(bi);nm.appendChild(bar);
       var val=document.createElement('div');val.className='rk-val';
       var inp=document.createElement('input');inp.type='number';inp.min='0';inp.step='1';inp.className='num';inp.value=it.v;inp.id='rk_'+it.t.id;inp.setAttribute('aria-label',(g[0]==='sdr'?'Ligações feitas por ':'Reuniões fechadas por ')+it.t.nome);inp.readOnly=!canWrite;
       var plus=document.createElement('button');plus.type='button';plus.textContent='+';plus.setAttribute('aria-label','Somar 1');plus.hidden=!canWrite;
       inp.addEventListener('change',function(){saveRank(mk,it.t,Math.max(0,Math.round(+inp.value||0)))});
       plus.addEventListener('click',function(){saveRank(mk,it.t,(RANK[mk+'_'+it.t.id]||0)+1)});
-      if(it.t.papel==='sdr'){inp.readOnly=true;inp.tabIndex=-1;inp.title='Contado automaticamente pelas ligações registradas no Script SDR';plus.hidden=true}
-      val.appendChild(inp);val.appendChild(plus);row.appendChild(pos);row.appendChild(nm);row.appendChild(val);box.appendChild(row)});
+      if(it.t.papel==='sdr'){var st=document.createElement('div');st.className='rk-sdr';st.title='Contado automaticamente pelo Script SDR';var mk1=function(n,l){var d=document.createElement('span');var b=document.createElement('b');b.className='num';b.textContent=n;d.appendChild(b);d.appendChild(document.createTextNode(' '+l));return d};st.appendChild(mk1(it.v,'lig.'));st.appendChild(mk1(it.ag,'agend.'));val.appendChild(st)}
+      else{val.appendChild(inp);val.appendChild(plus)}row.appendChild(pos);row.appendChild(nm);row.appendChild(val);box.appendChild(row)});
     if(refocus&&refocus.slice(-1)==='+'){var el=$(refocus.slice(0,-1));if(el&&el.nextSibling)el.nextSibling.focus({preventScroll:true})}
   });
 }
