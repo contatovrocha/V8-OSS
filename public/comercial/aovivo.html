@@ -1,0 +1,297 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" type="image/png" href="favicon.png">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="em-db-publico.js"></script>
+</head><body>
+<title>Placar dos Times</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: palco fixo 1920x1080 escalado para caber em qualquer tela (telão); dois times lado a lado, velocímetro de cada time no topo do card */
+:root{--bg:#050505;--panel:#0e0d0b;--panel2:#13110e;--field:#090807;--line:#2a251c;--fg:#f5f2ea;--mut:#a39d91;--dim:#6b665c;--gold:#d4a64a;--gold2:#f3d58a;--ok:#5fbf86;color-scheme:dark}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:#050505;color:var(--fg);font-family:Inter,system-ui,sans-serif;overflow:hidden;padding-left:max(0px,env(safe-area-inset-left,0px));padding-right:max(0px,env(safe-area-inset-right,0px))}
+.fit{position:fixed;inset:0;overflow:hidden;background:#050505}
+.stage{position:absolute;left:50%;top:50%;width:1920px;height:1080px;transform-origin:center center;transform:translate(-50%,-50%);background:radial-gradient(1200px 700px at 50% 110%,rgba(212,166,74,.10),transparent 60%),var(--bg);padding:40px 56px 32px;display:flex;flex-direction:column;gap:20px}
+.num{font-variant-numeric:tabular-nums}
+.top{display:flex;justify-content:space-between;align-items:center}
+.top h1{font:800 42px Sora,sans-serif;letter-spacing:-.02em}
+.top h1 span{color:var(--gold2)}
+.eyebrow{font:600 14px Inter,sans-serif;letter-spacing:.22em;text-transform:uppercase;color:var(--gold)}
+.live{display:flex;align-items:center;gap:10px;font:600 15px Inter,sans-serif;color:var(--mut);letter-spacing:.14em;text-transform:uppercase}
+.live i{width:10px;height:10px;border-radius:50%;background:#e2574c;box-shadow:0 0 0 0 rgba(226,87,76,.6);animation:pulse 2s infinite}
+@keyframes pulse{70%{box-shadow:0 0 0 10px rgba(226,87,76,0)}100%{box-shadow:0 0 0 0 rgba(226,87,76,0)}}
+@media (prefers-reduced-motion:reduce){.live i{animation:none}}
+.cols{display:grid;grid-template-columns:1fr 1.32fr;gap:26px;flex:1;min-height:0}
+.team{background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:26px;padding:22px 26px;display:flex;flex-direction:column;gap:16px;min-width:0}
+.th{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line);padding-bottom:12px}
+.th h2{font:800 30px Sora,sans-serif}
+.lab{font:700 13px Inter,sans-serif;letter-spacing:.16em;text-transform:uppercase;background:var(--gold);color:#1a1205;border-radius:99px;padding:6px 12px}
+.st{font:600 12.5px Inter,sans-serif;letter-spacing:.18em;text-transform:uppercase;color:var(--mut)}
+.hero{display:grid;grid-template-columns:380px 1fr;gap:20px;align-items:center}
+.gauge{text-align:center}
+.gauge svg{width:380px;height:auto;display:block}
+.gv{font:800 40px Sora,sans-serif;margin-top:-18px}
+.gs{font:600 15px Inter,sans-serif;color:var(--gold2);margin-top:2px;min-height:20px}
+.edit{margin-top:6px;display:inline-flex;align-items:center;gap:6px;background:none;border:1px solid var(--line);color:var(--mut);border-radius:99px;padding:4px 12px;font:500 12px Inter,sans-serif;cursor:pointer}
+.edit:hover,.edit:focus-visible{color:var(--gold2);border-color:var(--gold);outline:0}
+.editf{margin-top:6px;display:inline-flex;gap:6px}
+.editf input{width:150px;background:var(--field);border:1px solid var(--gold);border-radius:10px;color:var(--fg);font:700 16px Sora,sans-serif;padding:5px 10px;text-align:right}
+.editf button{background:var(--gold);color:#1a1205;border:0;border-radius:10px;padding:0 12px;font:700 13px Inter,sans-serif;cursor:pointer}
+table{width:100%;border-collapse:collapse}
+th,td{padding:10px 8px;text-align:center}
+th{font:600 12px Inter,sans-serif;letter-spacing:.1em;text-transform:uppercase;color:var(--mut);border-bottom:1px solid var(--line)}
+th:first-child,td:first-child{text-align:left}
+td{border-bottom:1px solid var(--line);font:800 25px Sora,sans-serif}
+tr:last-child td{border-bottom:0}
+td.tier{font:700 20px Sora,sans-serif;color:var(--gold2)}
+tr.hit td{background:rgba(212,166,74,.08)}
+tr.hit td.tier::after{content:" ✓";color:var(--ok)}
+.metas4{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.mt{border:1px solid var(--line);background:var(--field);border-radius:16px;padding:12px 14px}
+.mt small{display:block;font:600 11px Inter,sans-serif;letter-spacing:.16em;text-transform:uppercase;color:var(--dim)}
+.mt b{font:700 17px Sora,sans-serif;color:var(--gold2)}
+.mt .v{font:800 30px Sora,sans-serif;margin-top:2px}
+.mt.hit{border-color:rgba(95,191,134,.55);background:rgba(95,191,134,.06)}
+.mt.hit b::after{content:" ✓";color:var(--ok)}
+.box{border:1px solid var(--line);background:var(--field);border-radius:18px;padding:14px 18px}
+.box h3{font:700 18px Sora,sans-serif;display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.tag{font:700 11px Inter,sans-serif;letter-spacing:.14em;text-transform:uppercase;background:var(--gold);color:#1a1205;border-radius:99px;padding:4px 9px}
+.box table th{font-size:11.5px;padding:7px 5px}
+.box table td{font-size:21px;padding:9px 5px}
+.box table td:first-child{font:500 12.5px Inter,sans-serif;color:var(--mut)}
+.box td.b{color:var(--gold2)}
+.box tr.tot td{background:rgba(212,166,74,.10)}
+.box tr.tot td:first-child{color:var(--fg);font-weight:700}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.chips{display:flex;gap:12px}
+.chip{flex:1;display:flex;align-items:center;gap:14px;border:1px dashed rgba(212,166,74,.45);border-radius:16px;padding:12px 18px;background:rgba(212,166,74,.05)}
+.chip .v{font:800 30px Sora,sans-serif;color:var(--gold2);white-space:nowrap}
+.chip span{font-size:15px;line-height:1.3}
+.chip span small{display:block;color:var(--mut);font-size:12.5px}
+.mtgrow{margin-top:auto}
+.prize{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:20px}
+.flowl,.flowr{font:600 15px Inter,sans-serif;color:var(--mut);display:flex;align-items:center;gap:12px}
+.flowl{justify-content:flex-end}
+.flowl::after,.flowr::before{content:"";flex:0 0 90px;height:2px;background:linear-gradient(90deg,transparent,var(--gold))}
+.flowr::before{background:linear-gradient(90deg,var(--gold),transparent)}
+.flowl b,.flowr b{color:var(--fg)}
+.flowl.on b,.flowr.on b{color:var(--ok)}
+.pp{background:linear-gradient(140deg,#f3d58a,#d4a64a 55%,#a8782a);color:#1a1205;border-radius:22px;padding:14px 44px;text-align:center}
+.pp small{display:block;font:700 12px Inter,sans-serif;letter-spacing:.2em;text-transform:uppercase;opacity:.7}
+.pp b{font:800 36px Sora,sans-serif}
+.two .box table td{font-size:23px;padding:12px 5px}.two .box table td:first-child{font-size:12.5px}.two .box{padding:18px 20px}.mt{padding:16px 16px}.mt .v{font-size:34px}
+#tRota td{white-space:nowrap;font-size:23px;padding:10px 6px}
+.team:first-child .hero{grid-template-columns:330px 1fr}.team:first-child .gauge svg{width:330px}
+.vend{margin:6px auto 0;max-width:300px;display:grid;gap:4px}.vend>div:not(.upd){display:flex;justify-content:space-between;gap:12px;font:500 14px Inter,sans-serif;color:var(--mut);border-bottom:1px solid var(--line);padding:3px 0}.vend b{font:700 15px Sora,sans-serif;color:var(--fg)}.upd{font:500 11px Inter,sans-serif;color:var(--dim);letter-spacing:.06em;margin-top:2px}
+
+/* animação dos velocímetros, pulso do arco e troféu neon */
+.arcp{animation:arcp 2.2s ease-in-out infinite}
+@keyframes arcp{0%,100%{filter:drop-shadow(0 0 1px currentColor);opacity:.86}50%{filter:drop-shadow(0 0 9px currentColor);opacity:1}}
+.trophy{flex:none;display:inline-grid;place-items:center;width:46px;height:46px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#2c2414,#0b0906 70%);border:1.5px solid #f3d58a;animation:neon 2s ease-in-out infinite}
+.trophy svg{width:30px;height:30px;filter:drop-shadow(0 0 4px rgba(243,213,138,.75))}
+@keyframes neon{0%,100%{box-shadow:0 0 4px rgba(243,213,138,.6),0 0 10px rgba(212,166,74,.35)}50%{box-shadow:0 0 10px #f3d58a,0 0 24px rgba(243,213,138,.8),0 0 46px rgba(212,166,74,.5)}}
+@media (prefers-reduced-motion:reduce){.arcp,.trophy{animation:none}}
+.pp{display:flex;align-items:center;gap:22px}.pp .trophy{width:64px;height:64px}.pp .trophy svg{width:42px;height:42px}
+.mt{position:relative}
+.ind{font:600 13px Inter,sans-serif;color:var(--mut);margin-top:2px}
+.seg{position:relative;margin-top:12px;padding-bottom:6px;padding-right:54px}
+.segs{display:flex;gap:4px;height:16px;padding-left:4px}
+.sg{flex:0 0 7px;width:7px;transform:skewX(-32deg);border-radius:1px;background:linear-gradient(180deg,#2a2722,#1a1814);box-shadow:inset 0 0 0 1px rgba(255,255,255,.05)}
+.sg.r{background:linear-gradient(180deg,#ff5a85,#e8285a);box-shadow:0 0 6px rgba(255,59,107,.45)}
+.sg.g{background:linear-gradient(180deg,#8dff6a,#3fd43a);box-shadow:0 0 8px rgba(84,240,74,.85),0 0 16px rgba(84,240,74,.35);animation:sgg 1.6s ease-in-out infinite}
+@keyframes sgg{50%{box-shadow:0 0 12px rgba(120,255,100,1),0 0 26px rgba(84,240,74,.55)}}
+.segl{position:absolute;left:0;bottom:0;height:3px;border-radius:3px;background:linear-gradient(90deg,#ff8a00,#ffd400);box-shadow:0 0 6px rgba(255,180,0,.6)}
+.segp{position:absolute;right:0;top:-2px;font:800 15px Sora,sans-serif;color:var(--fg)}
+.metas4 .mt{padding:12px 14px 10px}
+@media (prefers-reduced-motion:reduce){.sg.g{animation:none}}
+#mRota .v{font-size:27px;white-space:nowrap}#mRota .mt b{font-size:15px}#mRota .ind{font-size:12px}
+#mRota{gap:8px}#mRota .mt{padding:10px 12px 8px}
+.team:first-child .hero{grid-template-columns:290px 1fr!important;gap:14px}.team:first-child .gauge svg{width:290px!important}
+.team{gap:12px}
+.team:first-child .box table td{padding:7px 5px!important;font-size:20px}.team:first-child .box table td:first-child{font:500 12.5px Inter,sans-serif;color:var(--mut)}.team:first-child .box tr.tot td:first-child{color:var(--fg);font-weight:700}
+.mt .v{line-height:1.1}
+.tsub{font:600 13px Inter,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);margin-left:8px;vertical-align:middle}
+.team{transition:box-shadow .4s,border-color .4s}
+.team.lead{border-color:#f3d58a;animation:leadneon 2.4s ease-in-out infinite}
+@keyframes leadneon{0%,100%{box-shadow:0 0 0 1px rgba(243,213,138,.9),0 0 14px rgba(243,213,138,.35)}50%{box-shadow:0 0 0 1px #f3d58a,0 0 26px rgba(243,213,138,.6)}}
+.mt.cur{border-color:#6dff8a!important;box-shadow:0 0 0 1px rgba(109,255,138,.85),0 0 14px rgba(84,240,74,.45)}
+@media (prefers-reduced-motion:reduce){.team.lead{animation:none;box-shadow:0 0 0 1px #f3d58a,0 0 18px rgba(243,213,138,.45)}}
+.gauge .gv{margin-top:2px!important}
+.hero{grid-template-columns:430px 1fr!important}.gauge svg{width:430px!important}
+.team:first-child .hero{grid-template-columns:330px 1fr!important}.team:first-child .gauge svg{width:330px!important}
+.brandt{display:flex;align-items:center;gap:22px}.logo-rb{height:96px;width:auto;display:block;mix-blend-mode:lighten}
+.segs{gap:3px;justify-content:flex-start}
+.pp{position:relative;overflow:visible;padding:14px 36px!important;gap:16px!important}
+.t3w{width:96px;height:72px;position:relative;flex:none}
+.t3d{position:absolute;left:50%;bottom:-14px;width:118px;height:auto;transform:translateX(-50%);animation:tfloat 3.2s ease-in-out infinite;filter:drop-shadow(0 0 14px rgba(243,213,138,.45))}
+.t3w:last-child .t3d{animation-delay:-1.6s}
+@keyframes tfloat{50%{transform:translate(-50%,-6px)}}
+.t3d .spark{animation:spk 2.2s ease-in-out infinite;transform-origin:center}
+@keyframes spk{0%,100%{opacity:.2}50%{opacity:1}}
+@media (prefers-reduced-motion:reduce){.t3d,.t3d .spark{animation:none}}
+</style>
+
+<div class="fit"><div class="stage" id="stage">
+  <div class="top">
+    <div class="brandt"><img src="logo-rota-brusca.png" alt="Rota Brusca" class="logo-rb"><div><div class="eyebrow">Placar ao vivo</div><h1>Times <span>comerciais</span></h1></div></div>
+    <div class="live"><i></i><span id="mesLbl">—</span></div>
+  </div>
+
+  <div class="cols">
+    <section class="team" id="cRota">
+      <div class="th"><h2>Rota Brusca</h2><span class="lab">Time 01</span></div>
+      <div class="hero">
+        <div class="gauge"><div id="gRota"></div><div class="gv num" id="vRota">R$ 0</div><div class="gs" id="sRota"></div><div data-team="rota"></div></div>
+        <div>
+<div class="st" style="margin-bottom:8px">Metas de faturamento do time</div>
+          <div class="metas4" id="mRota"><div class="mt"><small>Meta 01</small><b>ROIA</b><div class="v num">R$ 45K</div><div class="ind num">Individual R$ 22K</div><div class="seg" data-team="rota" data-i="0"></div></div><div class="mt"><small>Meta 02</small><b>ROIA Bronze</b><div class="v num">R$ 70K</div><div class="ind num">Individual R$ 35K</div><div class="seg" data-team="rota" data-i="1"></div></div><div class="mt"><small>Meta 03</small><b>PRO Silver</b><div class="v num">R$ 100K</div><div class="ind num">Individual R$ 50K</div><div class="seg" data-team="rota" data-i="2"></div></div><div class="mt"><small>Meta 04</small><b>PRO Gold</b><div class="v num">R$ 160K</div><div class="ind num">Individual R$ 80K</div><div class="seg" data-team="rota" data-i="3"></div></div></div>
+        </div>
+      </div>
+      <div class="box">
+        <h3><span class="tag">Vendedor</span> Remuneração pela meta individual</h3>
+        <table>
+          <tr><th></th><th>50% ROIA</th><th>ROIA</th><th>ROIA Bronze</th><th>PRO Silver</th><th>PRO Gold</th></tr>
+          <tr><td>Vendido</td><td class="num">11K</td><td class="num">22K</td><td class="num">35K</td><td class="num">50K</td><td class="num">80K</td></tr>
+          <tr><td>Base</td><td class="num">1.150</td><td class="num">2.300</td><td class="num">2.300</td><td class="num">2.300</td><td class="num">2.300</td></tr>
+          <tr><td>Comissão 1%</td><td class="num">—</td><td class="num">—</td><td class="b num">+350</td><td class="b num">+500</td><td class="b num">+800</td></tr>
+          <tr class="tot"><td>Total</td><td class="num">1.150</td><td class="num">2.300</td><td class="num">2.650</td><td class="num">2.800</td><td class="num">3.100</td></tr>
+        </table>
+      </div>
+      <div class="chips mtgrow"><div class="chip"><div class="v num">R$ 800</div><span>Bônus de grupo<small>quando o time bate a Meta PRO Silver</small></span></div></div>
+    </section>
+
+    <section class="team" id="cMil">
+      <div class="th"><h2>Razor <small class="tsub">E-commerce Million</small></h2><span class="lab">Time 02</span></div>
+      <div class="hero">
+        <div class="gauge"><div id="gMil"></div><div class="gv num" id="vMil">R$ 0</div><div class="gs" id="sMil"></div><div data-team="million"></div></div>
+        <div>
+          <div class="st" style="margin-bottom:8px">Metas de faturamento do time</div>
+          <div class="metas4" id="mMil">
+            <div class="mt"><small>Meta 01</small><b>ROIA</b><div class="v num">R$ 50K</div><div class="seg" data-team="million" data-i="0"></div></div>
+            <div class="mt"><small>Meta 02</small><b>ROIA Bronze</b><div class="v num">R$ 130K</div><div class="seg" data-team="million" data-i="1"></div></div>
+            <div class="mt"><small>Meta 03</small><b>PRO Silver</b><div class="v num">R$ 250K</div><div class="seg" data-team="million" data-i="2"></div></div>
+            <div class="mt"><small>Meta 04</small><b>PRO Gold</b><div class="v num">R$ 530K</div><div class="seg" data-team="million" data-i="3"></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="two">
+        <div class="box">
+          <h3><span class="tag">SDR</span> Taxa de agendamento</h3>
+          <table>
+            <tr><th></th><th>25%</th><th>40%</th><th>60%</th><th>80%</th></tr>
+            <tr><td>Base + bônus</td><td class="num">1.950</td><td class="b num">+100</td><td class="b num">+200</td><td class="b num">+500</td></tr>
+            <tr class="tot"><td>Acumulado</td><td class="num">1.950</td><td class="num">2.050</td><td class="num">2.250</td><td class="num">2.750</td></tr>
+          </table>
+        </div>
+        <div class="box">
+          <h3><span class="tag">Closer</span> Meta batida</h3>
+          <table>
+            <tr><th></th><th>ROIA</th><th>ROIA Bronze</th><th>PRO Silver</th><th>PRO Gold</th></tr>
+            <tr><td>Base + bônus</td><td class="num">2.300</td><td class="b num">+150</td><td class="b num">+250</td><td class="b num">+700</td></tr>
+            <tr class="tot"><td>Acumulado</td><td class="num">2.300</td><td class="num">2.450</td><td class="num">2.700</td><td class="num">3.400</td></tr>
+          </table>
+        </div>
+      </div>
+      <div class="chips mtgrow">
+        <div class="chip"><div class="v num">+ R$ 10</div><span>por agendamento<small>fora do horário comercial (SDR)</small></span></div>
+        <div class="chip"><div class="v num">R$ 800</div><span>Bônus de grupo<small>quando o time bate a Meta PRO Silver</small></span></div>
+      </div>
+    </section>
+  </div>
+
+  <div class="prize">
+    <div class="flowl" id="fRota"><span><b>Rota Brusca</b> bateu a Meta PRO Silver</span></div>
+    <div class="pp"><div class="t3w"><svg class="t3d" viewBox="0 0 220 260" aria-hidden="true"><defs><linearGradient id="gF" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#7a5212"/><stop offset=".18" stop-color="#e8c06a"/><stop offset=".35" stop-color="#fff2c4"/><stop offset=".52" stop-color="#d9a648"/><stop offset=".8" stop-color="#9a6a1e"/><stop offset="1" stop-color="#f0cf80"/></linearGradient><linearGradient id="gS" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#b8862f"/><stop offset="1" stop-color="#5e3d0c"/></linearGradient><linearGradient id="gT" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff6d6"/><stop offset=".6" stop-color="#f0cf80"/><stop offset="1" stop-color="#c9963e"/></linearGradient><radialGradient id="gIn" cx="50%" cy="40%" r="60%"><stop offset="0" stop-color="#3a2708"/><stop offset="1" stop-color="#8a5f1c"/></radialGradient><linearGradient id="gPl" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f6dc95"/><stop offset=".5" stop-color="#c79133"/><stop offset="1" stop-color="#f0cf80"/></linearGradient><filter id="gSh" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="10" stdDeviation="9" flood-color="#000" flood-opacity=".6"/></filter></defs><g filter="url(#gSh)"><!-- base inferior (bloco) --><path d="M30 214 L182 214 L200 202 L48 202 Z" fill="url(#gT)"/><path d="M182 214 L200 202 L200 246 L182 258 Z" fill="url(#gS)"/><rect x="30" y="214" width="152" height="44" fill="url(#gF)"/><!-- base superior com placa --><path d="M48 168 L164 168 L178 158 L62 158 Z" fill="url(#gT)"/><path d="M164 168 L178 158 L178 196 L164 206 Z" fill="url(#gS)"/><rect x="48" y="168" width="116" height="38" fill="url(#gF)"/><rect x="58" y="175" width="96" height="24" rx="2" fill="url(#gPl)" stroke="#7a5212" stroke-opacity=".6"/><text x="106" y="186" text-anchor="middle" font-family="Sora,Inter,sans-serif" font-weight="800" font-size="8.5" fill="#6d4a12" fill-opacity=".85">PRÊMIO</text><text x="106" y="195.5" text-anchor="middle" font-family="Sora,Inter,sans-serif" font-weight="800" font-size="8.5" fill="#6d4a12" fill-opacity=".85">PERFORMANCE</text><!-- haste --><path d="M92 158 L120 158 L126 150 L98 150 Z" fill="url(#gT)"/><path d="M96 150 C96 138 100 128 106 120 C112 128 116 138 116 150 Z" fill="url(#gF)"/><ellipse cx="106" cy="118" rx="16" ry="5" fill="url(#gS)"/><!-- alças --><path d="M50 52 C18 52 16 98 62 108" fill="none" stroke="url(#gS)" stroke-width="11" stroke-linecap="round"/><path d="M50 52 C22 52 20 96 62 106" fill="none" stroke="url(#gF)" stroke-width="7" stroke-linecap="round"/><path d="M162 52 C194 52 196 98 150 108" fill="none" stroke="url(#gS)" stroke-width="11" stroke-linecap="round"/><path d="M162 52 C190 52 192 96 150 106" fill="none" stroke="url(#gF)" stroke-width="7" stroke-linecap="round"/><!-- taça --><path d="M44 42 L168 42 C168 92 142 122 106 122 C70 122 44 92 44 42 Z" fill="url(#gF)"/><ellipse cx="106" cy="42" rx="62" ry="13" fill="url(#gT)"/><ellipse cx="106" cy="43" rx="54" ry="9" fill="url(#gIn)"/><path d="M62 54 C64 84 76 104 94 114" fill="none" stroke="#fff8e0" stroke-opacity=".7" stroke-width="5" stroke-linecap="round"/><!-- estrela --><path d="M106 62 l5.3 10.8 11.9 1.7-8.6 8.4 2 11.8-10.6-5.6-10.6 5.6 2-11.8-8.6-8.4 11.9-1.7z" fill="#8a5f1c" fill-opacity=".55"/><path d="M106 60 l5.3 10.8 11.9 1.7-8.6 8.4 2 11.8-10.6-5.6-10.6 5.6 2-11.8-8.6-8.4 11.9-1.7z" fill="url(#gT)"/></g><g class="spark"><path d="M40 20 l2 6 6 2-6 2-2 6-2-6-6-2 6-2z" fill="#fff6d6"/><path d="M182 132 l1.6 4.4 4.4 1.6-4.4 1.6-1.6 4.4-1.6-4.4-4.4-1.6 4.4-1.6z" fill="#fff6d6"/></g></svg></div><div class="ppt"><small>Qualificados disputam</small><b>Prêmio Performance</b></div></div>
+    <div class="flowr" id="fMil"><span><b>Razor</b> bateu a Meta PRO Silver</span></div>
+  </div>
+</div></div>
+
+<script>
+(function(){
+var TEAMS={rota:{metas:[45000,70000,100000,160000],g:'gRota',v:'vRota',s:'sRota',f:'fRota'},million:{metas:[50000,130000,250000,530000],g:'gMil',v:'vMil',s:'sMil',f:'fMil'}};
+var NOMES=['ROIA','ROIA Bronze','PRO Silver','PRO Gold'],MES=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+var now=new Date(),mk=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
+document.getElementById('mesLbl').textContent=MES[now.getMonth()]+' de '+now.getFullYear();
+var VAL={rota:0,million:0},ROTA={vend:null,em:null,fonte:''},db=null,canWrite=false;
+var brl=function(v){return 'R$ '+Math.round(v).toLocaleString('pt-BR')};
+var k=function(v){return v>=1000?(v/1000).toLocaleString('pt-BR',{maximumFractionDigits:1})+'K':String(v)};
+function fit(){var s=Math.min(innerWidth/1920,innerHeight/1080);document.getElementById('stage').style.transform='translate(-50%,-50%) scale('+s+')'}
+addEventListener('resize',fit);fit();
+var ANIM={t:0,start:null,done:false};
+function heat(p){p=Math.max(0,Math.min(1,p));var h=p<=.5?4+68*p:38+204*(p-.5);return 'hsl('+h.toFixed(0)+',70%,'+(52+6*p).toFixed(0)+'%)'}
+function startAnim(paint){if(ANIM.start)return;ANIM.start=performance.now();
+  if(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches){ANIM.t=1;ANIM.done=true;paint();return}
+  var D=1800;(function step(now){var x=Math.min(1,Math.max(0,(now-ANIM.start)/D));ANIM.t=1-Math.pow(1-x,3);paint();if(x<1)requestAnimationFrame(step);else{ANIM.done=true;paint()}})(ANIM.start)}
+function bigGauge(fr,color,labels,markerFr){
+  fr=Math.max(0,Math.min(1,fr));
+  var cx=200,cy=196,R=158,W=400;
+  var pt=function(f,r){var a=Math.PI+Math.PI*f;return [cx+Math.cos(a)*r,cy+Math.sin(a)*r]};
+  var arcP=function(f0,f1,r){var a=pt(f0,r),b=pt(f1,r);return 'M '+a[0].toFixed(1)+' '+a[1].toFixed(1)+' A '+r+' '+r+' 0 0 1 '+b[0].toFixed(1)+' '+b[1].toFixed(1)};
+  var rt=R-12;
+  var h='<svg viewBox="-16 -16 520 236" aria-hidden="true" class="bg">'+
+  '<defs><linearGradient id="bgBez" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff0bf"/><stop offset=".3" stop-color="#d9ab4f"/><stop offset=".55" stop-color="#7a5418"/><stop offset=".8" stop-color="#e9c46a"/><stop offset="1" stop-color="#8a5f1c"/></linearGradient>'+
+  '<radialGradient id="bgFace" cx="50%" cy="100%" r="100%"><stop offset="0" stop-color="#1c1810"/><stop offset=".7" stop-color="#0c0a07"/><stop offset="1" stop-color="#050403"/></radialGradient>'+
+  '<linearGradient id="bgZone" x1="0" x2="1"><stop offset="0" stop-color="#e2574c"/><stop offset=".5" stop-color="#e8a33c"/><stop offset="1" stop-color="#5fbf86"/></linearGradient>'+
+  '<linearGradient id="bgNeedle" x1="0" x2="1"><stop offset="0" stop-color="#ff6b5e"/><stop offset=".5" stop-color="#ff2d2d"/><stop offset="1" stop-color="#a30f0f"/></linearGradient>'+
+  '<radialGradient id="bgHub" cx="35%" cy="30%" r="80%"><stop offset="0" stop-color="#fff3cc"/><stop offset=".45" stop-color="#d4a64a"/><stop offset="1" stop-color="#6e4b14"/></radialGradient>'+
+  '<filter id="bgGlow" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>';
+  // bezel + face
+  var o=R+20,i2=R+9;
+  h+='<path d="M '+(cx-o)+' '+cy+' A '+o+' '+o+' 0 0 1 '+(cx+o)+' '+cy+' L '+(cx+i2)+' '+cy+' A '+i2+' '+i2+' 0 0 0 '+(cx-i2)+' '+cy+' Z" fill="url(#bgBez)"/>';
+  h+='<path d="M '+(cx-i2)+' '+cy+' A '+i2+' '+i2+' 0 0 1 '+(cx+i2)+' '+cy+' Z" fill="url(#bgFace)"/>';
+  h+='<rect x="'+(cx-o)+'" y="'+(cy-1)+'" width="'+(2*o)+'" height="7" rx="3" fill="url(#bgBez)"/>';
+  // zona e progresso
+  h+='<path d="'+arcP(0,1,rt)+'" fill="none" stroke="url(#bgZone)" stroke-opacity=".18" stroke-width="20"/>';
+  if(fr>0.004)h+='<path d="'+arcP(0,fr,rt)+'" fill="none" stroke="'+color+'" style="color:'+color+'" class="arcp" stroke-width="20" filter="url(#bgGlow)"/>';
+  // ticks
+  for(var k=0;k<=40;k++){var f=k/40,maj=k%10===0,mid=k%5===0;var a=pt(f,rt-16),b=pt(f,rt-(maj?36:mid?29:24));
+    h+='<line x1="'+a[0].toFixed(1)+'" y1="'+a[1].toFixed(1)+'" x2="'+b[0].toFixed(1)+'" y2="'+b[1].toFixed(1)+'" stroke="'+(f<=fr?'#f5f2ea':'#5d564a')+'" stroke-opacity="'+(maj?1:.8)+'" stroke-width="'+(maj?3.2:mid?2.2:1.4)+'" stroke-linecap="round"/>'}
+  if(markerFr!=null){var m1=pt(markerFr,rt-14),m2=pt(markerFr,R+6);h+='<line x1="'+m1[0].toFixed(1)+'" y1="'+m1[1].toFixed(1)+'" x2="'+m2[0].toFixed(1)+'" y2="'+m2[1].toFixed(1)+'" stroke="#f3d58a" stroke-width="4" stroke-linecap="round"/>'}
+  (labels||[]).forEach(function(L){var p=pt(L.fr,R+34);h+='<text x="'+p[0].toFixed(1)+'" y="'+(p[1]+(L.fr>.4&&L.fr<.6?2:6)).toFixed(1)+'" text-anchor="'+(L.fr<.45?'end':L.fr>.55?'start':'middle')+'" font-family="Inter,sans-serif" font-size="'+(L.size||15)+'" font-weight="700" fill="'+(L.hit?'#6dff8a':'#a39d91')+'">'+L.text+'</text>'});
+  // agulha
+  var deg=fr*180-90;
+  h+='<g transform="rotate('+deg.toFixed(2)+' '+cx+' '+cy+')"><polygon points="'+(cx-7)+','+cy+' '+cx+','+(cy-(rt-22))+' '+(cx+7)+','+cy+' '+cx+','+(cy+16)+'" fill="url(#bgNeedle)" style="filter:drop-shadow(0 0 6px rgba(255,45,45,.65))"/></g>';
+  h+='<circle cx="'+cx+'" cy="'+cy+'" r="19" fill="url(#bgHub)" stroke="#2a2014" stroke-width="2"/><circle cx="'+cx+'" cy="'+cy+'" r="7" fill="#120d07"/>';
+  h+='<path d="M '+(cx-i2+14)+' '+(cy-8)+' A '+(i2-14)+' '+(i2-14)+' 0 0 1 '+(cx+i2-14)+' '+(cy-8)+'" fill="none" stroke="#fff" stroke-opacity=".05" stroke-width="40"/>';
+  return h+'</svg>';
+}
+function gauge(val,metas){var f=tierFrac(val,metas);return bigGauge(f,heat(f),metas.map(function(m,k){return{fr:(k+1)/4,text:NOMES[k],hit:val>=m,size:22}}),null)}
+var SEGW=10;
+function segBar(el,p){p=Math.max(0,Math.min(1,p||0));var SEGN=Math.max(8,Math.floor((el.getBoundingClientRect().width/((document.getElementById('stage').getBoundingClientRect().width/1920)||1)-60)/SEGW));var n=Math.round(p*SEGN),key=n+'|'+(p>=1)+'|'+SEGN;if(el.dataset.k===key)return;el.dataset.k=key;
+  var h='<div class="segs">';for(var k=0;k<SEGN;k++){var c=k>=n?'':(p>=1||k>=n-3?' g':' r');h+='<i class="sg'+c+'"></i>'}
+  h+='</div><div class="segl" style="width:'+(p*100).toFixed(1)+'%"></div><span class="segp num">'+Math.round(p*100)+'%</span>';el.innerHTML=h}
+function tierFrac(v,m){var prev=0;for(var i=0;i<4;i++){if(v<m[i])return (i+(v-prev)/(m[i]-prev))/4;prev=m[i]}return 1}
+function render(){
+  var fr=tierFrac(VAL.rota,TEAMS.rota.metas),fm=tierFrac(VAL.million,TEAMS.million.metas);document.getElementById('cRota').classList.toggle('lead',fr>fm);document.getElementById('cMil').classList.toggle('lead',fm>fr);
+  Object.keys(TEAMS).forEach(function(t){var T=TEAMS[t],v=VAL[t],lvl=T.metas.filter(function(m){return v>=m}).length;
+    var va=v*ANIM.t,sig=v+'';if(!(ANIM.done&&T.sig===sig)){document.getElementById(T.g).innerHTML=gauge(va,T.metas);document.getElementById(T.v).textContent=brl(va);if(ANIM.done)T.sig=sig}
+    var nx=T.metas[lvl];document.getElementById(T.s).textContent=lvl===4?'Meta PRO Gold batida':(lvl?'Meta '+NOMES[lvl-1]+' batida · ':'')+'faltam '+brl(nx-v)+' para '+NOMES[lvl];
+    document.getElementById(T.f).classList.toggle('on',v>=T.metas[2]);
+    document.querySelectorAll(t==='rota'?'#mRota .mt':'#mMil .mt').forEach(function(el,i){el.classList.toggle('hit',v>=T.metas[i]);el.classList.toggle('cur',i===lvl)});
+    document.querySelectorAll('.seg[data-team="'+t+'"]').forEach(function(el){segBar(el,va/T.metas[+el.dataset.i])});
+    var slot=document.querySelector('[data-team="'+t+'"]');if(slot.querySelector('input'))return;slot.textContent='';
+    if(t==='rota'&&ROTA.fonte==='planilha'){var box=document.createElement('div');box.className='vend';Object.keys(ROTA.vend||{}).sort(function(a,b){return ROTA.vend[b]-ROTA.vend[a]}).forEach(function(n){var r=document.createElement('div');var a=document.createElement('span');a.textContent=n;var b=document.createElement('b');b.className='num';b.textContent=brl(ROTA.vend[n]);r.appendChild(a);r.appendChild(b);box.appendChild(r)});
+      var up=document.createElement('div');up.className='upd';var d=ROTA.em?new Date(ROTA.em):null;up.textContent='Espelhado da planilha'+(d&&!isNaN(d)?' · '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'):'');box.appendChild(up);slot.appendChild(box);return}
+    if(canWrite){var b=document.createElement('button');b.type='button';b.className='edit';b.textContent='Atualizar realizado';b.onclick=function(){openEdit(t,slot)};slot.appendChild(b)}
+  });
+}
+function openEdit(t,slot){slot.textContent='';var f=document.createElement('form');f.className='editf';var i=document.createElement('input');i.type='number';i.min='0';i.step='0.01';i.value=VAL[t];i.id='ed_'+t;i.setAttribute('aria-label','Realizado em reais');var b=document.createElement('button');b.type='submit';b.textContent='Salvar';f.appendChild(i);f.appendChild(b);slot.appendChild(f);i.focus();i.select();
+  f.onsubmit=function(e){e.preventDefault();var n=Math.max(0,Math.round((+i.value||0)*100)/100);VAL[t]=n;slot.textContent='';render();var d={};d[t]=n;d.atualizado=new Date().toISOString();
+    if(db)db.doc('placar/'+mk).set(Object.assign({rota:VAL.rota,million:VAL.million},d)).catch(function(err){if(err&&err.code==='invalid_argument'){canWrite=false;render()}})};
+  i.onkeydown=function(e){if(e.key==='Escape'){slot.textContent='';render()}}}
+render();setTimeout(function(){startAnim(render)},2500);
+(async function(){
+  try{db=window.claude&&window.claude.use?await window.claude.use('db'):null}catch(e){db=null}
+  if(!db)return;
+  try{var u=await window.claude.use('user');var cw=u?await u.can('data.write'):null;canWrite=cw!==false}catch(e){canWrite=true}
+  render();
+  db.doc('placar/'+mk).onSnapshot(function(s){var o=s.exists?s.data():{};VAL.rota=+o.rota||0;VAL.million=+o.million||0;setTimeout(function(){startAnim(render)},0);ROTA.vend=o.rota_vendedores&&typeof o.rota_vendedores==='object'?o.rota_vendedores:null;ROTA.em=typeof o.rota_atualizado==='string'?o.rota_atualizado:null;ROTA.fonte=o.rota_fonte==='planilha'?'planilha':'';render()},function(){});
+})();
+})();
+</script>
+
+</body></html>
