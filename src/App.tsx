@@ -23,6 +23,7 @@ const SettingsPage = lazy(() => import('./modules/settings/SettingsPage'))
 const DynamicSection = lazy(() => import('./modules/sections/DynamicSectionPage'))
 const PublicGallery = lazy(() => import('./modules/sections/PublicGalleryPage'))
 const Team = lazy(() => import('./modules/team/TeamPage'))
+const Comercial = lazy(() => import('./modules/comercial/ComercialPage'))
 const PublicEvent = lazy(() => import('./modules/creatives/PublicEventPage'))
 const PublicBrandForm = lazy(() => import('./modules/launch/PublicBrandForm'))
 
@@ -60,6 +61,7 @@ function Shell() {
         <Suspense fallback={<Loading />}>
           <Routes>
             <Route path="/" element={<Guard module="visao_geral"><Overview /></Guard>} />
+            <Route path="/comercial" element={<Guard module="comercial"><Comercial /></Guard>} />
             <Route path="/posicionamento" element={<Guard module="posicionamento"><Positioning /></Guard>} />
             <Route path="/projetos" element={<Guard module="projetos"><Projects /></Guard>} />
             <Route path="/projetos/:id" element={<Guard module="projetos"><ProjectDetail /></Guard>} />

@@ -14,6 +14,7 @@ export interface NavItem {
 
 export const NATIVE_NAV: NavItem[] = [
   { key: 'visao_geral', label: 'Visão Geral', path: '/', icon: Gauge, position: 1 },
+  { key: 'comercial', label: 'Comercial', path: '/comercial', icon: Handshake, position: 1.5 },
   { key: 'posicionamento', label: 'Posicionamento', path: '/posicionamento', icon: Compass, position: 2 },
   { key: 'projetos', label: 'Projetos', path: '/projetos', icon: FolderKanban, position: 3 },
   { key: 'paginas', label: 'Páginas', path: '/paginas', icon: Globe, position: 4 },

@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" type="image/png" href="favicon.png">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="em-db.js"></script>
+</head><body>
+<title>Placar dos Times</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: palco fixo 1920x1080 escalado para caber em qualquer tela (telão); dois times lado a lado, velocímetro de cada time no topo do card */
+:root{--bg:#050505;--panel:#0e0d0b;--panel2:#13110e;--field:#090807;--line:#2a251c;--fg:#f5f2ea;--mut:#a39d91;--dim:#6b665c;--gold:#d4a64a;--gold2:#f3d58a;--ok:#5fbf86;color-scheme:dark}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:#050505;color:var(--fg);font-family:Inter,system-ui,sans-serif;overflow:hidden;padding-left:max(0px,env(safe-area-inset-left,0px));padding-right:max(0px,env(safe-area-inset-right,0px))}
+.fit{position:absolute;inset:0;display:grid;place-items:center;overflow:hidden}
+.stage{width:1920px;height:1080px;flex:none;transform-origin:center center;background:radial-gradient(1200px 700px at 50% 110%,rgba(212,166,74,.10),transparent 60%),var(--bg);padding:40px 56px 32px;display:flex;flex-direction:column;gap:20px}
+.num{font-variant-numeric:tabular-nums}
+.top{display:flex;justify-content:space-between;align-items:center}
+.top h1{font:800 42px Sora,sans-serif;letter-spacing:-.02em}
+.top h1 span{color:var(--gold2)}
+.eyebrow{font:600 14px Inter,sans-serif;letter-spacing:.22em;text-transform:uppercase;color:var(--gold)}
+.live{display:flex;align-items:center;gap:10px;font:600 15px Inter,sans-serif;color:var(--mut);letter-spacing:.14em;text-transform:uppercase}
+.live i{width:10px;height:10px;border-radius:50%;background:#e2574c;box-shadow:0 0 0 0 rgba(226,87,76,.6);animation:pulse 2s infinite}
+@keyframes pulse{70%{box-shadow:0 0 0 10px rgba(226,87,76,0)}100%{box-shadow:0 0 0 0 rgba(226,87,76,0)}}
+@media (prefers-reduced-motion:reduce){.live i{animation:none}}
+.cols{display:grid;grid-template-columns:1fr 1.32fr;gap:26px;flex:1;min-height:0}
+.team{background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:26px;padding:22px 26px;display:flex;flex-direction:column;gap:16px;min-width:0}
+.th{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line);padding-bottom:12px}
+.th h2{font:800 30px Sora,sans-serif}
+.lab{font:700 13px Inter,sans-serif;letter-spacing:.16em;text-transform:uppercase;background:var(--gold);color:#1a1205;border-radius:99px;padding:6px 12px}
+.st{font:600 12.5px Inter,sans-serif;letter-spacing:.18em;text-transform:uppercase;color:var(--mut)}
+.hero{display:grid;grid-template-columns:380px 1fr;gap:20px;align-items:center}
+.gauge{text-align:center}
+.gauge svg{width:380px;height:auto;display:block}
+.gv{font:800 40px Sora,sans-serif;margin-top:-18px}
+.gs{font:600 15px Inter,sans-serif;color:var(--gold2);margin-top:2px;min-height:20px}
+.edit{margin-top:6px;display:inline-flex;align-items:center;gap:6px;background:none;border:1px solid var(--line);color:var(--mut);border-radius:99px;padding:4px 12px;font:500 12px Inter,sans-serif;cursor:pointer}
+.edit:hover,.edit:focus-visible{color:var(--gold2);border-color:var(--gold);outline:0}
+.editf{margin-top:6px;display:inline-flex;gap:6px}
+.editf input{width:150px;background:var(--field);border:1px solid var(--gold);border-radius:10px;color:var(--fg);font:700 16px Sora,sans-serif;padding:5px 10px;text-align:right}
+.editf button{background:var(--gold);color:#1a1205;border:0;border-radius:10px;padding:0 12px;font:700 13px Inter,sans-serif;cursor:pointer}
+table{width:100%;border-collapse:collapse}
+th,td{padding:10px 8px;text-align:center}
+th{font:600 12px Inter,sans-serif;letter-spacing:.1em;text-transform:uppercase;color:var(--mut);border-bottom:1px solid var(--line)}
+th:first-child,td:first-child{text-align:left}
+td{border-bottom:1px solid var(--line);font:800 25px Sora,sans-serif}
+tr:last-child td{border-bottom:0}
+td.tier{font:700 20px Sora,sans-serif;color:var(--gold2)}
+tr.hit td{background:rgba(212,166,74,.08)}
+tr.hit td.tier::after{content:" ✓";color:var(--ok)}
+.metas4{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.mt{border:1px solid var(--line);background:var(--field);border-radius:16px;padding:12px 14px}
+.mt small{display:block;font:600 11px Inter,sans-serif;letter-spacing:.16em;text-transform:uppercase;color:var(--dim)}
+.mt b{font:700 17px Sora,sans-serif;color:var(--gold2)}
+.mt .v{font:800 30px Sora,sans-serif;margin-top:2px}
+.mt.hit{border-color:rgba(95,191,134,.55);background:rgba(95,191,134,.06)}
+.mt.hit b::after{content:" ✓";color:var(--ok)}
+.box{border:1px solid var(--line);background:var(--field);border-radius:18px;padding:14px 18px}
+.box h3{font:700 18px Sora,sans-serif;display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.tag{font:700 11px Inter,sans-serif;letter-spacing:.14em;text-transform:uppercase;background:var(--gold);color:#1a1205;border-radius:99px;padding:4px 9px}
+.box table th{font-size:11.5px;padding:7px 5px}
+.box table td{font-size:21px;padding:9px 5px}
+.box table td:first-child{font:500 12.5px Inter,sans-serif;color:var(--mut)}
+.box td.b{color:var(--gold2)}
+.box tr.tot td{background:rgba(212,166,74,.10)}
+.box tr.tot td:first-child{color:var(--fg);font-weight:700}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.chips{display:flex;gap:12px}
+.chip{flex:1;display:flex;align-items:center;gap:14px;border:1px dashed rgba(212,166,74,.45);border-radius:16px;padding:12px 18px;background:rgba(212,166,74,.05)}
+.chip .v{font:800 30px Sora,sans-serif;color:var(--gold2);white-space:nowrap}
+.chip span{font-size:15px;line-height:1.3}
+.chip span small{display:block;color:var(--mut);font-size:12.5px}
+.mtgrow{margin-top:auto}
+.prize{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:20px}
+.flowl,.flowr{font:600 15px Inter,sans-serif;color:var(--mut);display:flex;align-items:center;gap:12px}
+.flowl{justify-content:flex-end}
+.flowl::after,.flowr::before{content:"";flex:0 0 90px;height:2px;background:linear-gradient(90deg,transparent,var(--gold))}
+.flowr::before{background:linear-gradient(90deg,var(--gold),transparent)}
+.flowl b,.flowr b{color:var(--fg)}
+.flowl.on b,.flowr.on b{color:var(--ok)}
+.pp{background:linear-gradient(140deg,#f3d58a,#d4a64a 55%,#a8782a);color:#1a1205;border-radius:22px;padding:14px 44px;text-align:center}
+.pp small{display:block;font:700 12px Inter,sans-serif;letter-spacing:.2em;text-transform:uppercase;opacity:.7}
+.pp b{font:800 36px Sora,sans-serif}
+.two .box table td{font-size:23px;padding:12px 5px}.two .box table td:first-child{font-size:12.5px}.two .box{padding:18px 20px}.mt{padding:16px 16px}.mt .v{font-size:34px}
+#tRota td{white-space:nowrap;font-size:23px;padding:10px 6px}
+.team:first-child .hero{grid-template-columns:330px 1fr}.team:first-child .gauge svg{width:330px}
+</style>
+
+<div class="fit"><div class="stage" id="stage">
+  <div class="top">
+    <div><div class="eyebrow">Placar ao vivo · Metas e remuneração</div><h1>Times <span>comerciais</span></h1></div>
+    <div class="live"><i></i><span id="mesLbl">—</span><a href="./" style="margin-left:18px;color:#6b665c;font-size:12px;text-decoration:none;letter-spacing:.14em">COCKPIT</a></div>
+  </div>
+
+  <div class="cols">
+    <section class="team">
+      <div class="th"><h2>Rota Brusca</h2><span class="lab">Time 01</span></div>
+      <div class="hero">
+        <div class="gauge"><div id="gRota"></div><div class="gv num" id="vRota">R$ 0</div><div class="gs" id="sRota"></div><div data-team="rota"></div></div>
+        <div>
+          <div class="st" style="margin-bottom:4px">Metas de faturamento</div>
+          <table id="tRota">
+            <tr><th>Meta</th><th>Individual</th><th>Grupo</th></tr>
+            <tr><td class="tier">Start</td><td class="num">R$ 22K</td><td class="num">R$ 45K</td></tr>
+            <tr><td class="tier">Bronze</td><td class="num">R$ 35K</td><td class="num">R$ 70K</td></tr>
+            <tr><td class="tier">Silver</td><td class="num">R$ 50K</td><td class="num">R$ 100K</td></tr>
+            <tr><td class="tier">Gold</td><td class="num">R$ 80K</td><td class="num">R$ 160K</td></tr>
+          </table>
+        </div>
+      </div>
+      <div class="box">
+        <h3><span class="tag">Vendedor</span> Remuneração pela meta individual</h3>
+        <table>
+          <tr><th></th><th>50% Start</th><th>Start</th><th>Bronze</th><th>Silver</th><th>Gold</th></tr>
+          <tr><td>Vendido</td><td class="num">11K</td><td class="num">22K</td><td class="num">35K</td><td class="num">50K</td><td class="num">80K</td></tr>
+          <tr><td>Base</td><td class="num">1.150</td><td class="num">2.300</td><td class="num">2.300</td><td class="num">2.300</td><td class="num">2.300</td></tr>
+          <tr><td>Comissão 1%</td><td class="num">—</td><td class="num">—</td><td class="b num">+350</td><td class="b num">+500</td><td class="b num">+800</td></tr>
+          <tr class="tot"><td>Total</td><td class="num">1.150</td><td class="num">2.300</td><td class="num">2.650</td><td class="num">2.800</td><td class="num">3.100</td></tr>
+        </table>
+      </div>
+      <div class="chips mtgrow"><div class="chip"><div class="v num">R$ 800</div><span>Bônus de grupo<small>quando o time bate a Meta Silver</small></span></div></div>
+    </section>
+
+    <section class="team">
+      <div class="th"><h2>E-commerce Million</h2><span class="lab">Time 02</span></div>
+      <div class="hero">
+        <div class="gauge"><div id="gMil"></div><div class="gv num" id="vMil">R$ 0</div><div class="gs" id="sMil"></div><div data-team="million"></div></div>
+        <div>
+          <div class="st" style="margin-bottom:8px">Metas de faturamento do time</div>
+          <div class="metas4" id="mMil">
+            <div class="mt"><small>Meta 01</small><b>Start</b><div class="v num">R$ 50K</div></div>
+            <div class="mt"><small>Meta 02</small><b>Bronze</b><div class="v num">R$ 130K</div></div>
+            <div class="mt"><small>Meta 03</small><b>Silver</b><div class="v num">R$ 250K</div></div>
+            <div class="mt"><small>Meta 04</small><b>Gold</b><div class="v num">R$ 530K</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="two">
+        <div class="box">
+          <h3><span class="tag">SDR</span> Taxa de agendamento</h3>
+          <table>
+            <tr><th></th><th>25%</th><th>40%</th><th>60%</th><th>80%</th></tr>
+            <tr><td>Base + bônus</td><td class="num">1.950</td><td class="b num">+100</td><td class="b num">+200</td><td class="b num">+500</td></tr>
+            <tr class="tot"><td>Acumulado</td><td class="num">1.950</td><td class="num">2.050</td><td class="num">2.250</td><td class="num">2.750</td></tr>
+          </table>
+        </div>
+        <div class="box">
+          <h3><span class="tag">Closer</span> Meta batida</h3>
+          <table>
+            <tr><th></th><th>Start</th><th>Bronze</th><th>Silver</th><th>Gold</th></tr>
+            <tr><td>Base + bônus</td><td class="num">2.300</td><td class="b num">+150</td><td class="b num">+250</td><td class="b num">+700</td></tr>
+            <tr class="tot"><td>Acumulado</td><td class="num">2.300</td><td class="num">2.450</td><td class="num">2.700</td><td class="num">3.400</td></tr>
+          </table>
+        </div>
+      </div>
+      <div class="chips mtgrow">
+        <div class="chip"><div class="v num">+ R$ 10</div><span>por agendamento<small>fora do horário comercial (SDR)</small></span></div>
+        <div class="chip"><div class="v num">R$ 800</div><span>Bônus de grupo<small>quando o time bate a Meta Silver</small></span></div>
+      </div>
+    </section>
+  </div>
+
+  <div class="prize">
+    <div class="flowl" id="fRota"><span><b>Rota Brusca</b> bateu a Meta Silver</span></div>
+    <div class="pp"><small>Qualificados disputam</small><b>Prêmio Performance</b></div>
+    <div class="flowr" id="fMil"><span><b>E-commerce Million</b> bateu a Meta Silver</span></div>
+  </div>
+</div></div>
+
+<script>
+(function(){
+var TEAMS={rota:{metas:[45000,70000,100000,160000],g:'gRota',v:'vRota',s:'sRota',f:'fRota'},million:{metas:[50000,130000,250000,530000],g:'gMil',v:'vMil',s:'sMil',f:'fMil'}};
+var NOMES=['Start','Bronze','Silver','Gold'],MES=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+var now=new Date(),mk=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
+document.getElementById('mesLbl').textContent=MES[now.getMonth()]+' de '+now.getFullYear();
+var VAL={rota:0,million:0},db=null,canWrite=false;
+var brl=function(v){return 'R$ '+Math.round(v).toLocaleString('pt-BR')};
+var k=function(v){return v>=1000?(v/1000).toLocaleString('pt-BR',{maximumFractionDigits:1})+'K':String(v)};
+function fit(){var s=Math.min(innerWidth/1920,innerHeight/1080);document.getElementById('stage').style.transform='scale('+s+')'}
+addEventListener('resize',fit);fit();
+function gauge(val,metas){
+  var cx=190,cy=190,R=140,a0=Math.PI;function frac(v){var prev=0;for(var i=0;i<4;i++){if(v<metas[i])return (i+(v-prev)/(metas[i]-prev))/4;prev=metas[i]}return 1}var f=frac(val);
+  var pt=function(fr,r){var a=a0+Math.PI*fr;return [cx+Math.cos(a)*r,cy+Math.sin(a)*r]};
+  var e=pt(f,R),arc=f>0.004?'<path d="M '+(cx-R)+' '+cy+' A '+R+' '+R+' 0 0 1 '+e[0].toFixed(1)+' '+e[1].toFixed(1)+'" fill="none" stroke="url(#gg)" stroke-width="22" stroke-linecap="round"/>':'';
+  var ticks=metas.map(function(m,i){var fr=(i+1)/4,p1=pt(fr,R-16),p2=pt(fr,R+16),pl=pt(fr,R+30),hit=val>=m;
+    return '<line x1="'+p1[0].toFixed(1)+'" y1="'+p1[1].toFixed(1)+'" x2="'+p2[0].toFixed(1)+'" y2="'+p2[1].toFixed(1)+'" stroke="'+(hit?'#5fbf86':'#f5f2ea')+'" stroke-width="3" stroke-linecap="round"/>'+
+    '<text x="'+(i===3?(cx+R).toFixed(1):pl[0].toFixed(1))+'" y="'+(i===3?(cy+30).toFixed(1):(pl[1]+5).toFixed(1))+'" text-anchor="'+(i===3?'middle':fr>0.62?'start':fr<0.38?'end':'middle')+'" font-family="Inter,sans-serif" font-size="15" font-weight="700" fill="'+(hit?'#5fbf86':'#a39d91')+'">'+NOMES[i]+'</text>'}).join('');
+  var n=pt(f,R-34);
+  return '<svg viewBox="0 10 380 225" role="img" aria-label="'+brl(val)+' realizados"><defs><linearGradient id="gg" x1="0" x2="1"><stop offset="0" stop-color="#9c7426"/><stop offset=".6" stop-color="#d4a64a"/><stop offset="1" stop-color="#f3d58a"/></linearGradient></defs><path d="M '+(cx-R)+' '+cy+' A '+R+' '+R+' 0 0 1 '+(cx+R)+' '+cy+'" fill="none" stroke="#1d1a14" stroke-width="22" stroke-linecap="round"/>'+arc+ticks+'<line x1="'+cx+'" y1="'+cy+'" x2="'+n[0].toFixed(1)+'" y2="'+n[1].toFixed(1)+'" stroke="#f5f2ea" stroke-width="4" stroke-linecap="round"/><circle cx="'+cx+'" cy="'+cy+'" r="9" fill="#f5f2ea"/></svg>';
+}
+function render(){
+  Object.keys(TEAMS).forEach(function(t){var T=TEAMS[t],v=VAL[t],lvl=T.metas.filter(function(m){return v>=m}).length;
+    document.getElementById(T.g).innerHTML=gauge(v,T.metas);
+    document.getElementById(T.v).textContent=brl(v);
+    var nx=T.metas[lvl];document.getElementById(T.s).textContent=lvl===4?'Meta Gold batida':(lvl?'Meta '+NOMES[lvl-1]+' batida · ':'')+'faltam '+brl(nx-v)+' para '+NOMES[lvl];
+    document.getElementById(T.f).classList.toggle('on',v>=T.metas[2]);
+    if(t==='rota'){var rows=document.querySelectorAll('#tRota tr');T.metas.forEach(function(m,i){rows[i+1].classList.toggle('hit',v>=m)})}
+    else document.querySelectorAll('#mMil .mt').forEach(function(el,i){el.classList.toggle('hit',v>=T.metas[i])});
+    var slot=document.querySelector('[data-team="'+t+'"]');if(slot.querySelector('input'))return;slot.textContent='';
+    if(canWrite){var b=document.createElement('button');b.type='button';b.className='edit';b.textContent='Atualizar realizado';b.onclick=function(){openEdit(t,slot)};slot.appendChild(b)}
+  });
+}
+function openEdit(t,slot){slot.textContent='';var f=document.createElement('form');f.className='editf';var i=document.createElement('input');i.type='number';i.min='0';i.step='0.01';i.value=VAL[t];i.id='ed_'+t;i.setAttribute('aria-label','Realizado em reais');var b=document.createElement('button');b.type='submit';b.textContent='Salvar';f.appendChild(i);f.appendChild(b);slot.appendChild(f);i.focus();i.select();
+  f.onsubmit=function(e){e.preventDefault();var n=Math.max(0,Math.round((+i.value||0)*100)/100);VAL[t]=n;slot.textContent='';render();var d={};d[t]=n;d.atualizado=new Date().toISOString();
+    if(db)db.doc('placar/'+mk).set(Object.assign({rota:VAL.rota,million:VAL.million},d)).catch(function(err){if(err&&err.code==='invalid_argument'){canWrite=false;render()}})};
+  i.onkeydown=function(e){if(e.key==='Escape'){slot.textContent='';render()}}}
+render();
+(async function(){
+  try{db=window.claude&&window.claude.use?await window.claude.use('db'):null}catch(e){db=null}
+  if(!db)return;
+  try{var u=await window.claude.use('user');var cw=u?await u.can('data.write'):null;canWrite=cw!==false}catch(e){canWrite=true}
+  render();
+  db.doc('placar/'+mk).onSnapshot(function(s){var o=s.exists?s.data():{};VAL.rota=+o.rota||0;VAL.million=+o.million||0;render()},function(){});
+})();
+})();
+</script>
+
+</body></html>

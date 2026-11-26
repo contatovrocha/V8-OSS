@@ -95,6 +95,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const canSee = (module: string) => {
     if (settings.disabled_modules.includes(module)) return false
+    if (module === 'comercial') return isAdmin
     if (isAdmin || !user || module === 'equipe') return true
     const allowed = new Set<string>()
     experts.forEach((e) => (e.permissions?.visible_modules ?? ALL_MODULES).forEach((m) => allowed.add(m)))
