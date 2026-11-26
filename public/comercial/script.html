@@ -75,6 +75,7 @@ td a{color:var(--gold2)}
 .crm-h{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
 .crm-s{font:600 11.5px Inter,sans-serif;color:var(--ok)}
 #crm{font:500 13px/1.5 Inter,sans-serif;background:#050505;min-height:230px;color:var(--fg);resize:vertical}
+.res{display:grid;gap:8px;padding-top:12px;border-top:1px solid var(--line)}
 </style>
 </head><body>
 <div class="wrap">
@@ -179,6 +180,12 @@ td a{color:var(--gold2)}
       </div>
       <div id="qual"></div>
       <div><label for="fObs">Observações</label><textarea id="fObs" maxlength="500"></textarea></div>
+      <div class="res">
+        <label for="fRes">Resultado da ligação</label>
+        <select id="fRes"><option value="">Selecione</option><option value="nao_atendeu">Não atendeu</option><option value="atendeu">Atendeu, sem interesse</option><option value="qualificado">Qualificado</option><option value="followup">Follow-up (retornar depois)</option><option value="agendado">Agendado</option></select>
+        <button class="btn gold" type="button" id="bReg">Registrar ligação</button>
+        <span class="note" id="regNote" role="status"></span>
+      </div>
       <div class="crm">
         <div class="crm-h"><label for="crm" style="margin:0">Resumo para o CRM</label><span class="crm-s" id="crmS"></span></div>
         <textarea id="crm" readonly rows="12" aria-describedby="crmS"></textarea>
@@ -230,7 +237,9 @@ var MES=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'
 var brl=function(v){return 'R$ '+Math.round(v).toLocaleString('pt-BR')};
 var first=function(n){return (n||'').trim().split(/\s+/)[0]||''};
 var db=null,AG=[];
-var ids=['fSdr','fLead','fWpp','fLoja','fTempo','fMeta','fFat','fDesafio','fData','fHora','fEmail','fMeet','fObs'];
+var registrada=false;
+var RES_TXT={nao_atendeu:'Não atendeu',atendeu:'Atendeu, sem interesse',qualificado:'Qualificado',followup:'Follow-up',agendado:'Agendado'};
+var ids=['fRes','fSdr','fLead','fWpp','fLoja','fTempo','fMeta','fFat','fDesafio','fData','fHora','fEmail','fMeet','fObs'];
 function whenTxt(){var d=$('fData').value,h=$('fHora').value;if(!d)return '';var dt=new Date(d+'T12:00:00');return DIA[dt.getDay()]+', '+d.slice(8,10)+'/'+d.slice(5,7)+(h?' às '+h.replace(':','h'):'')}
 function msgTxt(){var n=first($('fLead').value)||'tudo bem';var w=whenTxt();var l=$('fMeet').value.trim();
   return 'Oi, '+n+'! Aqui é '+(first($('fSdr').value)||'[seu nome]')+', da E-commerce Million.\n\nSua inscrição na consultoria Black Million está confirmada'+(w?' para '+w:'')+'.\n\nLink da reunião: '+(l||'[cole o link do Meet]')+'\n\nSe surgir algum imprevisto, é só me avisar por aqui. Até lá!'}
@@ -240,7 +249,7 @@ function crmTxt(){
   'Lead: '+(v('fLead')||'—'),'WhatsApp: '+(v('fWpp')||'—'),'E-mail: '+(v('fEmail')||'—'),'Loja / marketplace: '+(v('fLoja')||'—'),'',
   'Tempo de operação: '+(v('fTempo')||'—'),'Meta de faturamento mensal: '+(meta?brl(meta):'—'),'Faturamento atual: '+(fat?brl(fat):'—'),'Gap até a meta: '+(meta&&fat?brl(Math.max(0,meta-fat)):'—'),
   'Maior desafio: '+(v('fDesafio')||'—'),'',
-  'Status: '+(v('fData')&&v('fHora')?'Consultoria agendada':'Sem agendamento'),'Consultoria: '+(whenTxt()||'—'),'Link do Meet: '+(v('fMeet')||'—')];
+  'Resultado: '+(RES_TXT[v('fRes')]||'—'),'Status: '+(v('fRes')==='agendado'?'Consultoria agendada':'Sem agendamento'),'Consultoria: '+(whenTxt()||'—'),'Link do Meet: '+(v('fMeet')||'—')];
   if(v('fObs'))L.push('','Observações: '+v('fObs'));return L.join('\n')}
 function upd(){
   var lead=first($('fLead').value)||'Lead',sdr=$('fSdr').value||'seu nome';
@@ -266,7 +275,16 @@ $('bCopiar').addEventListener('click',function(){var t=msgTxt();var done=functio
   if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(t).then(done,function(){sel()});else sel();
   function sel(){var r=document.createRange();r.selectNodeContents($('msg'));var s=getSelection();s.removeAllRanges();s.addRange(r);$('note').textContent='Texto selecionado: use Ctrl+C para copiar.'}});
 $('bWpp').addEventListener('click',function(e){if($('bWpp').getAttribute('href')==='#'){e.preventDefault();$('note').textContent='Preencha o WhatsApp do lead na ficha.'}});
-$('bLimpar').addEventListener('click',function(){ids.forEach(function(id){if(id!=='fSdr')$(id).value=''});upd();$('note').textContent='';window.scrollTo({top:0,behavior:'smooth'});$('fLead').focus()});
+function limpar(){registrada=false;ids.forEach(function(id){if(id!=='fSdr')$(id).value=''});var t=new Date();$('fData').value=t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0')+'-'+String(t.getDate()).padStart(2,'0')}
+async function registrar(res){var v=function(id){return ($(id).value||'').trim()};var hoje=new Date();var d=hoje.getFullYear()+'-'+String(hoje.getMonth()+1).padStart(2,'0')+'-'+String(hoje.getDate()).padStart(2,'0');
+  await db.collection('ligacoes').add({acao:'Black Million',sdr:v('fSdr'),lead:v('fLead'),whatsapp:v('fWpp'),resultado:res,data:d,mes:d.slice(0,7),criadoEm:hoje.toISOString()});registrada=true}
+$('bReg').addEventListener('click',async function(){var res=$('fRes').value,n=$('regNote');
+  if(!$('fSdr').value){n.textContent='Selecione o SDR.';$('fSdr').focus();return}
+  if(!res){n.textContent='Selecione o resultado da ligação.';$('fRes').focus();return}
+  if(registrada){n.textContent='Esta ligação já foi registrada. Clique em Nova ligação para a próxima.';return}
+  if(!db){n.textContent='Não foi possível conectar ao banco de dados.';return}
+  $('bReg').disabled=true;try{await registrar(res);n.textContent='Ligação registrada no cockpit.'+(res==='agendado'?' Agora salve o agendamento abaixo.':'')}catch(e){n.textContent='Não deu para registrar. Tente de novo.'}$('bReg').disabled=false});
+$('bLimpar').addEventListener('click',function(){limpar();$('regNote').textContent='';upd();$('note').textContent='';window.scrollTo({top:0,behavior:'smooth'});$('fLead').focus()});
 $('bSalvar').addEventListener('click',async function(){
   var v={};ids.forEach(function(id){v[id]=$(id).value.trim()});
   if(!v.fLead||!v.fData||!v.fHora){$('note').textContent='Preencha pelo menos o nome do lead, a data e o horário.';return}
@@ -274,7 +292,7 @@ $('bSalvar').addEventListener('click',async function(){
   if(!db){$('note').textContent='Não foi possível conectar ao banco de dados.';return}
   var row={acao:'Black Million',sdr:v.fSdr,lead:v.fLead,whatsapp:v.fWpp,loja:v.fLoja,tempo:v.fTempo,meta:+v.fMeta||0,faturamento:+v.fFat||0,desafio:v.fDesafio,email:v.fEmail,data:v.fData,hora:v.fHora,meet:/^https:\/\//.test(v.fMeet)?v.fMeet:'',obs:v.fObs,criadoEm:new Date().toISOString()};
   $('bSalvar').disabled=true;
-  try{await db.collection('agendamentos').add(row);$('note').textContent='Agendamento salvo.'}catch(e){$('note').textContent='Não deu para salvar agora. Tente de novo.'}
+  try{await db.collection('agendamentos').add(row);if(!registrada){$('fRes').value='agendado';await registrar('agendado');$('regNote').textContent='Ligação registrada no cockpit como Agendado.'}$('note').textContent='Agendamento salvo.'}catch(e){$('note').textContent='Não deu para salvar agora. Tente de novo.'}
   $('bSalvar').disabled=false});
 function renderList(){var t=$('tab');t.textContent='';var hr=t.insertRow();['Data','Horário','Lead','Loja','Faturamento','SDR','Meet'].forEach(function(h){var th=document.createElement('th');th.textContent=h;hr.appendChild(th)});
   if(!AG.length){var r=t.insertRow(),c=r.insertCell();c.colSpan=7;c.className='empty';c.textContent='Nenhum agendamento salvo ainda.';return}
