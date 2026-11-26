@@ -96,6 +96,24 @@ tr.hit td.tier::after{content:" ✓";color:var(--ok)}
 @keyframes neon{0%,100%{box-shadow:0 0 4px rgba(243,213,138,.6),0 0 10px rgba(212,166,74,.35)}50%{box-shadow:0 0 10px #f3d58a,0 0 24px rgba(243,213,138,.8),0 0 46px rgba(212,166,74,.5)}}
 @media (prefers-reduced-motion:reduce){.arcp,.trophy{animation:none}}
 .pp{display:flex;align-items:center;gap:22px}.pp .trophy{width:64px;height:64px}.pp .trophy svg{width:42px;height:42px}
+.mt{position:relative}
+.ind{font:600 13px Inter,sans-serif;color:var(--mut);margin-top:2px}
+.seg{position:relative;margin-top:12px;padding-bottom:6px;padding-right:54px}
+.segs{display:flex;gap:4px;height:16px;padding-left:4px}
+.sg{flex:1;transform:skewX(-32deg);border-radius:1px;background:linear-gradient(180deg,#2a2722,#1a1814);box-shadow:inset 0 0 0 1px rgba(255,255,255,.05)}
+.sg.r{background:linear-gradient(180deg,#ff5a85,#e8285a);box-shadow:0 0 6px rgba(255,59,107,.45)}
+.sg.g{background:linear-gradient(180deg,#8dff6a,#3fd43a);box-shadow:0 0 8px rgba(84,240,74,.85),0 0 16px rgba(84,240,74,.35);animation:sgg 1.6s ease-in-out infinite}
+@keyframes sgg{50%{box-shadow:0 0 12px rgba(120,255,100,1),0 0 26px rgba(84,240,74,.55)}}
+.segl{position:absolute;left:0;bottom:0;height:3px;border-radius:3px;background:linear-gradient(90deg,#ff8a00,#ffd400);box-shadow:0 0 6px rgba(255,180,0,.6)}
+.segp{position:absolute;right:0;top:-2px;font:800 15px Sora,sans-serif;color:var(--fg)}
+.metas4 .mt{padding:12px 14px 10px}
+@media (prefers-reduced-motion:reduce){.sg.g{animation:none}}
+#mRota .v{font-size:27px;white-space:nowrap}#mRota .mt b{font-size:15px}#mRota .ind{font-size:12px}
+#mRota{gap:8px}#mRota .mt{padding:10px 12px 8px}
+.team:first-child .hero{grid-template-columns:290px 1fr!important;gap:14px}.team:first-child .gauge svg{width:290px!important}
+.team{gap:12px}
+.team:first-child .box table td{padding:7px 5px!important;font-size:20px}.team:first-child .box table td:first-child{font:500 12.5px Inter,sans-serif;color:var(--mut)}.team:first-child .box tr.tot td:first-child{color:var(--fg);font-weight:700}
+.mt .v{line-height:1.1}
 </style>
 
 <div class="fit"><div class="stage" id="stage">
@@ -110,14 +128,8 @@ tr.hit td.tier::after{content:" ✓";color:var(--ok)}
       <div class="hero">
         <div class="gauge"><div id="gRota"></div><div class="gv num" id="vRota">R$ 0</div><div class="gs" id="sRota"></div><div data-team="rota"></div></div>
         <div>
-          <div class="st" style="margin-bottom:4px">Metas de faturamento</div>
-          <table id="tRota">
-            <tr><th>Meta</th><th>Individual</th><th>Grupo</th></tr>
-            <tr><td class="tier">ROIA</td><td class="num">R$ 22K</td><td class="num">R$ 45K</td></tr>
-            <tr><td class="tier">ROIA Bronze</td><td class="num">R$ 35K</td><td class="num">R$ 70K</td></tr>
-            <tr><td class="tier">PRO Silver</td><td class="num">R$ 50K</td><td class="num">R$ 100K</td></tr>
-            <tr><td class="tier">PRO Gold</td><td class="num">R$ 80K</td><td class="num">R$ 160K</td></tr>
-          </table>
+<div class="st" style="margin-bottom:8px">Metas de faturamento do time</div>
+          <div class="metas4" id="mRota"><div class="mt"><small>Meta 01</small><b>ROIA</b><div class="v num">R$ 45K</div><div class="ind num">Individual R$ 22K</div><div class="seg" data-team="rota" data-i="0"></div></div><div class="mt"><small>Meta 02</small><b>ROIA Bronze</b><div class="v num">R$ 70K</div><div class="ind num">Individual R$ 35K</div><div class="seg" data-team="rota" data-i="1"></div></div><div class="mt"><small>Meta 03</small><b>PRO Silver</b><div class="v num">R$ 100K</div><div class="ind num">Individual R$ 50K</div><div class="seg" data-team="rota" data-i="2"></div></div><div class="mt"><small>Meta 04</small><b>PRO Gold</b><div class="v num">R$ 160K</div><div class="ind num">Individual R$ 80K</div><div class="seg" data-team="rota" data-i="3"></div></div></div>
         </div>
       </div>
       <div class="box">
@@ -140,10 +152,10 @@ tr.hit td.tier::after{content:" ✓";color:var(--ok)}
         <div>
           <div class="st" style="margin-bottom:8px">Metas de faturamento do time</div>
           <div class="metas4" id="mMil">
-            <div class="mt"><small>Meta 01</small><b>ROIA</b><div class="v num">R$ 50K</div></div>
-            <div class="mt"><small>Meta 02</small><b>ROIA Bronze</b><div class="v num">R$ 130K</div></div>
-            <div class="mt"><small>Meta 03</small><b>PRO Silver</b><div class="v num">R$ 250K</div></div>
-            <div class="mt"><small>Meta 04</small><b>PRO Gold</b><div class="v num">R$ 530K</div></div>
+            <div class="mt"><small>Meta 01</small><b>ROIA</b><div class="v num">R$ 50K</div><div class="seg" data-team="million" data-i="0"></div></div>
+            <div class="mt"><small>Meta 02</small><b>ROIA Bronze</b><div class="v num">R$ 130K</div><div class="seg" data-team="million" data-i="1"></div></div>
+            <div class="mt"><small>Meta 03</small><b>PRO Silver</b><div class="v num">R$ 250K</div><div class="seg" data-team="million" data-i="2"></div></div>
+            <div class="mt"><small>Meta 04</small><b>PRO Gold</b><div class="v num">R$ 530K</div><div class="seg" data-team="million" data-i="3"></div></div>
           </div>
         </div>
       </div>
@@ -205,13 +217,17 @@ function gauge(val,metas){
   var n=pt(f,R-34);
   return '<svg viewBox="-34 8 448 228" role="img" aria-label="'+brl(val)+' realizados"><defs><linearGradient id="gg" x1="0" x2="1"><stop offset="0" stop-color="#9c7426"/><stop offset=".6" stop-color="#d4a64a"/><stop offset="1" stop-color="#f3d58a"/></linearGradient></defs><path d="M '+(cx-R)+' '+cy+' A '+R+' '+R+' 0 0 1 '+(cx+R)+' '+cy+'" fill="none" stroke="#1d1a14" stroke-width="22" stroke-linecap="round"/>'+arc+ticks+'<line x1="'+cx+'" y1="'+cy+'" x2="'+n[0].toFixed(1)+'" y2="'+n[1].toFixed(1)+'" stroke="#f5f2ea" stroke-width="4" stroke-linecap="round"/><circle cx="'+cx+'" cy="'+cy+'" r="9" fill="#f5f2ea"/></svg>';
 }
+var SEGN=18;
+function segBar(el,p){p=Math.max(0,Math.min(1,p||0));var n=Math.round(p*SEGN),key=n+'|'+(p>=1);if(el.dataset.k===key)return;el.dataset.k=key;
+  var h='<div class="segs">';for(var k=0;k<SEGN;k++){var c=k>=n?'':(p>=1||k>=n-3?' g':' r');h+='<i class="sg'+c+'"></i>'}
+  h+='</div><div class="segl" style="width:'+(p*100).toFixed(1)+'%"></div><span class="segp num">'+Math.round(p*100)+'%</span>';el.innerHTML=h}
 function render(){
   Object.keys(TEAMS).forEach(function(t){var T=TEAMS[t],v=VAL[t],lvl=T.metas.filter(function(m){return v>=m}).length;
     var va=v*ANIM.t,sig=v+'';if(!(ANIM.done&&T.sig===sig)){document.getElementById(T.g).innerHTML=gauge(va,T.metas);document.getElementById(T.v).textContent=brl(va);if(ANIM.done)T.sig=sig}
     var nx=T.metas[lvl];document.getElementById(T.s).textContent=lvl===4?'Meta PRO Gold batida':(lvl?'Meta '+NOMES[lvl-1]+' batida · ':'')+'faltam '+brl(nx-v)+' para '+NOMES[lvl];
     document.getElementById(T.f).classList.toggle('on',v>=T.metas[2]);
-    if(t==='rota'){var rows=document.querySelectorAll('#tRota tr');T.metas.forEach(function(m,i){rows[i+1].classList.toggle('hit',v>=m)})}
-    else document.querySelectorAll('#mMil .mt').forEach(function(el,i){el.classList.toggle('hit',v>=T.metas[i])});
+    document.querySelectorAll(t==='rota'?'#mRota .mt':'#mMil .mt').forEach(function(el,i){el.classList.toggle('hit',v>=T.metas[i])});
+    document.querySelectorAll('.seg[data-team="'+t+'"]').forEach(function(el){segBar(el,va/T.metas[+el.dataset.i])});
     var slot=document.querySelector('[data-team="'+t+'"]');if(slot.querySelector('input'))return;slot.textContent='';
     if(t==='rota'&&ROTA.fonte==='planilha'){var box=document.createElement('div');box.className='vend';Object.keys(ROTA.vend||{}).sort(function(a,b){return ROTA.vend[b]-ROTA.vend[a]}).forEach(function(n){var r=document.createElement('div');var a=document.createElement('span');a.textContent=n;var b=document.createElement('b');b.className='num';b.textContent=brl(ROTA.vend[n]);r.appendChild(a);r.appendChild(b);box.appendChild(r)});
       var up=document.createElement('div');up.className='upd';var d=ROTA.em?new Date(ROTA.em):null;up.textContent='Espelhado da planilha'+(d&&!isNaN(d)?' · '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'):'');box.appendChild(up);slot.appendChild(box);return}
