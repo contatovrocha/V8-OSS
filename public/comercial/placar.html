@@ -87,6 +87,15 @@ tr.hit td.tier::after{content:" ✓";color:var(--ok)}
 #tRota td{white-space:nowrap;font-size:23px;padding:10px 6px}
 .team:first-child .hero{grid-template-columns:330px 1fr}.team:first-child .gauge svg{width:330px}
 .vend{margin:6px auto 0;max-width:300px;display:grid;gap:4px}.vend>div:not(.upd){display:flex;justify-content:space-between;gap:12px;font:500 14px Inter,sans-serif;color:var(--mut);border-bottom:1px solid var(--line);padding:3px 0}.vend b{font:700 15px Sora,sans-serif;color:var(--fg)}.upd{font:500 11px Inter,sans-serif;color:var(--dim);letter-spacing:.06em;margin-top:2px}
+
+/* animação dos velocímetros, pulso do arco e troféu neon */
+.arcp{animation:arcp 2.2s ease-in-out infinite}
+@keyframes arcp{0%,100%{filter:drop-shadow(0 0 1px currentColor);opacity:.86}50%{filter:drop-shadow(0 0 9px currentColor);opacity:1}}
+.trophy{flex:none;display:inline-grid;place-items:center;width:46px;height:46px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#2c2414,#0b0906 70%);border:1.5px solid #f3d58a;animation:neon 2s ease-in-out infinite}
+.trophy svg{width:30px;height:30px;filter:drop-shadow(0 0 4px rgba(243,213,138,.75))}
+@keyframes neon{0%,100%{box-shadow:0 0 4px rgba(243,213,138,.6),0 0 10px rgba(212,166,74,.35)}50%{box-shadow:0 0 10px #f3d58a,0 0 24px rgba(243,213,138,.8),0 0 46px rgba(212,166,74,.5)}}
+@media (prefers-reduced-motion:reduce){.arcp,.trophy{animation:none}}
+.pp{display:flex;align-items:center;gap:22px}.pp .trophy{width:64px;height:64px}.pp .trophy svg{width:42px;height:42px}
 </style>
 
 <div class="fit"><div class="stage" id="stage">
@@ -165,7 +174,7 @@ tr.hit td.tier::after{content:" ✓";color:var(--ok)}
 
   <div class="prize">
     <div class="flowl" id="fRota"><span><b>Rota Brusca</b> bateu a Meta PRO Silver</span></div>
-    <div class="pp"><small>Qualificados disputam</small><b>Prêmio Performance</b></div>
+    <div class="pp"><span class="trophy" aria-hidden="true"><svg viewBox="0 0 64 64"><defs><linearGradient id="tgold" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff1c2"/><stop offset=".45" stop-color="#e9c46a"/><stop offset="1" stop-color="#9c6f22"/></linearGradient></defs><path d="M18 8h28v10c0 9-6 16-14 16S18 27 18 18z" fill="url(#tgold)"/><path d="M18 12H9c0 8 4 13 11 14" fill="none" stroke="url(#tgold)" stroke-width="4" stroke-linecap="round"/><path d="M46 12h9c0 8-4 13-11 14" fill="none" stroke="url(#tgold)" stroke-width="4" stroke-linecap="round"/><rect x="29" y="33" width="6" height="9" fill="url(#tgold)"/><path d="M22 50c0-5 4-8 10-8s10 3 10 8z" fill="url(#tgold)"/><rect x="17" y="50" width="30" height="6" rx="2" fill="url(#tgold)"/><path d="M24 12c0 6 2 11 6 14" stroke="#fff6d8" stroke-opacity=".7" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M32 14l1.8 3.6 4 .6-2.9 2.8.7 4-3.6-1.9-3.6 1.9.7-4-2.9-2.8 4-.6z" fill="#7a5418" fill-opacity=".6"/></svg></span><div><small>Qualificados disputam</small><b>Prêmio Performance</b></div><span class="trophy" aria-hidden="true"><svg viewBox="0 0 64 64"><defs><linearGradient id="tgold" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff1c2"/><stop offset=".45" stop-color="#e9c46a"/><stop offset="1" stop-color="#9c6f22"/></linearGradient></defs><path d="M18 8h28v10c0 9-6 16-14 16S18 27 18 18z" fill="url(#tgold)"/><path d="M18 12H9c0 8 4 13 11 14" fill="none" stroke="url(#tgold)" stroke-width="4" stroke-linecap="round"/><path d="M46 12h9c0 8-4 13-11 14" fill="none" stroke="url(#tgold)" stroke-width="4" stroke-linecap="round"/><rect x="29" y="33" width="6" height="9" fill="url(#tgold)"/><path d="M22 50c0-5 4-8 10-8s10 3 10 8z" fill="url(#tgold)"/><rect x="17" y="50" width="30" height="6" rx="2" fill="url(#tgold)"/><path d="M24 12c0 6 2 11 6 14" stroke="#fff6d8" stroke-opacity=".7" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M32 14l1.8 3.6 4 .6-2.9 2.8.7 4-3.6-1.9-3.6 1.9.7-4-2.9-2.8 4-.6z" fill="#7a5418" fill-opacity=".6"/></svg></span></div>
     <div class="flowr" id="fMil"><span><b>E-commerce Million</b> bateu a Meta PRO Silver</span></div>
   </div>
 </div></div>
@@ -181,10 +190,15 @@ var brl=function(v){return 'R$ '+Math.round(v).toLocaleString('pt-BR')};
 var k=function(v){return v>=1000?(v/1000).toLocaleString('pt-BR',{maximumFractionDigits:1})+'K':String(v)};
 function fit(){var s=Math.min(innerWidth/1920,innerHeight/1080);document.getElementById('stage').style.transform='translate(-50%,-50%) scale('+s+')'}
 addEventListener('resize',fit);fit();
+var ANIM={t:0,start:null,done:false};
+function heat(p){p=Math.max(0,Math.min(1,p));var h=p<=.5?4+68*p:38+204*(p-.5);return 'hsl('+h.toFixed(0)+',70%,'+(52+6*p).toFixed(0)+'%)'}
+function startAnim(paint){if(ANIM.start)return;ANIM.start=performance.now();
+  if(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches){ANIM.t=1;ANIM.done=true;paint();return}
+  var D=1800;(function step(now){var x=Math.min(1,Math.max(0,(now-ANIM.start)/D));ANIM.t=1-Math.pow(1-x,3);paint();if(x<1)requestAnimationFrame(step);else{ANIM.done=true;paint()}})(ANIM.start)}
 function gauge(val,metas){
   var cx=190,cy=190,R=140,a0=Math.PI;function frac(v){var prev=0;for(var i=0;i<4;i++){if(v<metas[i])return (i+(v-prev)/(metas[i]-prev))/4;prev=metas[i]}return 1}var f=frac(val);
   var pt=function(fr,r){var a=a0+Math.PI*fr;return [cx+Math.cos(a)*r,cy+Math.sin(a)*r]};
-  var e=pt(f,R),arc=f>0.004?'<path d="M '+(cx-R)+' '+cy+' A '+R+' '+R+' 0 0 1 '+e[0].toFixed(1)+' '+e[1].toFixed(1)+'" fill="none" stroke="url(#gg)" stroke-width="22" stroke-linecap="round"/>':'';
+  var e=pt(f,R),arc=f>0.004?'<path d="M '+(cx-R)+' '+cy+' A '+R+' '+R+' 0 0 1 '+e[0].toFixed(1)+' '+e[1].toFixed(1)+'" fill="none" stroke="'+heat(f)+'" style="color:'+heat(f)+'" class="arcp" stroke-width="22" stroke-linecap="round"/>':'';
   var ticks=metas.map(function(m,i){var fr=(i+1)/4,p1=pt(fr,R-16),p2=pt(fr,R+16),pl=pt(fr,R+30),hit=val>=m;
     return '<line x1="'+p1[0].toFixed(1)+'" y1="'+p1[1].toFixed(1)+'" x2="'+p2[0].toFixed(1)+'" y2="'+p2[1].toFixed(1)+'" stroke="'+(hit?'#5fbf86':'#f5f2ea')+'" stroke-width="3" stroke-linecap="round"/>'+
     '<text x="'+(i===3?(cx+R).toFixed(1):pl[0].toFixed(1))+'" y="'+(i===3?(cy+30).toFixed(1):(pl[1]+5).toFixed(1))+'" text-anchor="'+(i===3?'middle':fr>0.62?'start':fr<0.38?'end':'middle')+'" font-family="Inter,sans-serif" font-size="14" font-weight="700" fill="'+(hit?'#5fbf86':'#a39d91')+'">'+NOMES[i]+'</text>'}).join('');
@@ -193,8 +207,7 @@ function gauge(val,metas){
 }
 function render(){
   Object.keys(TEAMS).forEach(function(t){var T=TEAMS[t],v=VAL[t],lvl=T.metas.filter(function(m){return v>=m}).length;
-    document.getElementById(T.g).innerHTML=gauge(v,T.metas);
-    document.getElementById(T.v).textContent=brl(v);
+    var va=v*ANIM.t,sig=v+'';if(!(ANIM.done&&T.sig===sig)){document.getElementById(T.g).innerHTML=gauge(va,T.metas);document.getElementById(T.v).textContent=brl(va);if(ANIM.done)T.sig=sig}
     var nx=T.metas[lvl];document.getElementById(T.s).textContent=lvl===4?'Meta PRO Gold batida':(lvl?'Meta '+NOMES[lvl-1]+' batida · ':'')+'faltam '+brl(nx-v)+' para '+NOMES[lvl];
     document.getElementById(T.f).classList.toggle('on',v>=T.metas[2]);
     if(t==='rota'){var rows=document.querySelectorAll('#tRota tr');T.metas.forEach(function(m,i){rows[i+1].classList.toggle('hit',v>=m)})}
@@ -209,13 +222,13 @@ function openEdit(t,slot){slot.textContent='';var f=document.createElement('form
   f.onsubmit=function(e){e.preventDefault();var n=Math.max(0,Math.round((+i.value||0)*100)/100);VAL[t]=n;slot.textContent='';render();var d={};d[t]=n;d.atualizado=new Date().toISOString();
     if(db)db.doc('placar/'+mk).set(Object.assign({rota:VAL.rota,million:VAL.million},d)).catch(function(err){if(err&&err.code==='invalid_argument'){canWrite=false;render()}})};
   i.onkeydown=function(e){if(e.key==='Escape'){slot.textContent='';render()}}}
-render();
+render();setTimeout(function(){startAnim(render)},2500);
 (async function(){
   try{db=window.claude&&window.claude.use?await window.claude.use('db'):null}catch(e){db=null}
   if(!db)return;
   try{var u=await window.claude.use('user');var cw=u?await u.can('data.write'):null;canWrite=cw!==false}catch(e){canWrite=true}
   render();
-  db.doc('placar/'+mk).onSnapshot(function(s){var o=s.exists?s.data():{};VAL.rota=+o.rota||0;VAL.million=+o.million||0;ROTA.vend=o.rota_vendedores&&typeof o.rota_vendedores==='object'?o.rota_vendedores:null;ROTA.em=typeof o.rota_atualizado==='string'?o.rota_atualizado:null;ROTA.fonte=o.rota_fonte==='planilha'?'planilha':'';render()},function(){});
+  db.doc('placar/'+mk).onSnapshot(function(s){var o=s.exists?s.data():{};VAL.rota=+o.rota||0;VAL.million=+o.million||0;setTimeout(function(){startAnim(render)},0);ROTA.vend=o.rota_vendedores&&typeof o.rota_vendedores==='object'?o.rota_vendedores:null;ROTA.em=typeof o.rota_atualizado==='string'?o.rota_atualizado:null;ROTA.fonte=o.rota_fonte==='planilha'?'planilha':'';render()},function(){});
 })();
 })();
 </script>
