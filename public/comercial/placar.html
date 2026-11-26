@@ -14,8 +14,8 @@
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%}
 body{background:#050505;color:var(--fg);font-family:Inter,system-ui,sans-serif;overflow:hidden;padding-left:max(0px,env(safe-area-inset-left,0px));padding-right:max(0px,env(safe-area-inset-right,0px))}
-.fit{position:absolute;inset:0;display:grid;place-items:center;overflow:hidden}
-.stage{width:1920px;height:1080px;flex:none;transform-origin:center center;background:radial-gradient(1200px 700px at 50% 110%,rgba(212,166,74,.10),transparent 60%),var(--bg);padding:40px 56px 32px;display:flex;flex-direction:column;gap:20px}
+.fit{position:fixed;inset:0;overflow:hidden;background:#050505}
+.stage{position:absolute;left:50%;top:50%;width:1920px;height:1080px;transform-origin:center center;transform:translate(-50%,-50%);background:radial-gradient(1200px 700px at 50% 110%,rgba(212,166,74,.10),transparent 60%),var(--bg);padding:40px 56px 32px;display:flex;flex-direction:column;gap:20px}
 .num{font-variant-numeric:tabular-nums}
 .top{display:flex;justify-content:space-between;align-items:center}
 .top h1{font:800 42px Sora,sans-serif;letter-spacing:-.02em}
@@ -178,7 +178,7 @@ document.getElementById('mesLbl').textContent=MES[now.getMonth()]+' de '+now.get
 var VAL={rota:0,million:0},db=null,canWrite=false;
 var brl=function(v){return 'R$ '+Math.round(v).toLocaleString('pt-BR')};
 var k=function(v){return v>=1000?(v/1000).toLocaleString('pt-BR',{maximumFractionDigits:1})+'K':String(v)};
-function fit(){var s=Math.min(innerWidth/1920,innerHeight/1080);document.getElementById('stage').style.transform='scale('+s+')'}
+function fit(){var s=Math.min(innerWidth/1920,innerHeight/1080);document.getElementById('stage').style.transform='translate(-50%,-50%) scale('+s+')'}
 addEventListener('resize',fit);fit();
 function gauge(val,metas){
   var cx=190,cy=190,R=140,a0=Math.PI;function frac(v){var prev=0;for(var i=0;i<4;i++){if(v<metas[i])return (i+(v-prev)/(metas[i]-prev))/4;prev=metas[i]}return 1}var f=frac(val);
