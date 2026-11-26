@@ -86,6 +86,7 @@ tr.hit td.tier::after{content:" ✓";color:var(--ok)}
 .two .box table td{font-size:23px;padding:12px 5px}.two .box table td:first-child{font-size:12.5px}.two .box{padding:18px 20px}.mt{padding:16px 16px}.mt .v{font-size:34px}
 #tRota td{white-space:nowrap;font-size:23px;padding:10px 6px}
 .team:first-child .hero{grid-template-columns:330px 1fr}.team:first-child .gauge svg{width:330px}
+.vend{margin:6px auto 0;max-width:300px;display:grid;gap:4px}.vend>div:not(.upd){display:flex;justify-content:space-between;gap:12px;font:500 14px Inter,sans-serif;color:var(--mut);border-bottom:1px solid var(--line);padding:3px 0}.vend b{font:700 15px Sora,sans-serif;color:var(--fg)}.upd{font:500 11px Inter,sans-serif;color:var(--dim);letter-spacing:.06em;margin-top:2px}
 </style>
 
 <div class="fit"><div class="stage" id="stage">
@@ -175,7 +176,7 @@ var TEAMS={rota:{metas:[45000,70000,100000,160000],g:'gRota',v:'vRota',s:'sRota'
 var NOMES=['Start','Bronze','Silver','Gold'],MES=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 var now=new Date(),mk=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
 document.getElementById('mesLbl').textContent=MES[now.getMonth()]+' de '+now.getFullYear();
-var VAL={rota:0,million:0},db=null,canWrite=false;
+var VAL={rota:0,million:0},ROTA={vend:null,em:null,fonte:''},db=null,canWrite=false;
 var brl=function(v){return 'R$ '+Math.round(v).toLocaleString('pt-BR')};
 var k=function(v){return v>=1000?(v/1000).toLocaleString('pt-BR',{maximumFractionDigits:1})+'K':String(v)};
 function fit(){var s=Math.min(innerWidth/1920,innerHeight/1080);document.getElementById('stage').style.transform='translate(-50%,-50%) scale('+s+')'}
@@ -199,6 +200,8 @@ function render(){
     if(t==='rota'){var rows=document.querySelectorAll('#tRota tr');T.metas.forEach(function(m,i){rows[i+1].classList.toggle('hit',v>=m)})}
     else document.querySelectorAll('#mMil .mt').forEach(function(el,i){el.classList.toggle('hit',v>=T.metas[i])});
     var slot=document.querySelector('[data-team="'+t+'"]');if(slot.querySelector('input'))return;slot.textContent='';
+    if(t==='rota'&&ROTA.fonte==='planilha'){var box=document.createElement('div');box.className='vend';Object.keys(ROTA.vend||{}).sort(function(a,b){return ROTA.vend[b]-ROTA.vend[a]}).forEach(function(n){var r=document.createElement('div');var a=document.createElement('span');a.textContent=n;var b=document.createElement('b');b.className='num';b.textContent=brl(ROTA.vend[n]);r.appendChild(a);r.appendChild(b);box.appendChild(r)});
+      var up=document.createElement('div');up.className='upd';var d=ROTA.em?new Date(ROTA.em):null;up.textContent='Espelhado da planilha'+(d&&!isNaN(d)?' · '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'):'');box.appendChild(up);slot.appendChild(box);return}
     if(canWrite){var b=document.createElement('button');b.type='button';b.className='edit';b.textContent='Atualizar realizado';b.onclick=function(){openEdit(t,slot)};slot.appendChild(b)}
   });
 }
@@ -212,7 +215,7 @@ render();
   if(!db)return;
   try{var u=await window.claude.use('user');var cw=u?await u.can('data.write'):null;canWrite=cw!==false}catch(e){canWrite=true}
   render();
-  db.doc('placar/'+mk).onSnapshot(function(s){var o=s.exists?s.data():{};VAL.rota=+o.rota||0;VAL.million=+o.million||0;render()},function(){});
+  db.doc('placar/'+mk).onSnapshot(function(s){var o=s.exists?s.data():{};VAL.rota=+o.rota||0;VAL.million=+o.million||0;ROTA.vend=o.rota_vendedores&&typeof o.rota_vendedores==='object'?o.rota_vendedores:null;ROTA.em=typeof o.rota_atualizado==='string'?o.rota_atualizado:null;ROTA.fonte=o.rota_fonte==='planilha'?'planilha':'';render()},function(){});
 })();
 })();
 </script>
