@@ -2,6 +2,7 @@
 <html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
 <link rel="icon" type="image/png" href="favicon.png">
+<script src="fx.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script src="em-db.js"></script>
 </head><body>
@@ -14,7 +15,7 @@
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%}
 body{background:#050505;color:var(--fg);font-family:Inter,system-ui,sans-serif;overflow:hidden;padding-left:max(0px,env(safe-area-inset-left,0px));padding-right:max(0px,env(safe-area-inset-right,0px))}
-.fit{position:fixed;inset:0;overflow:hidden;background:#050505}
+.fit{position:fixed;inset:0;overflow:hidden;background:transparent;z-index:1}
 .stage{position:absolute;left:50%;top:50%;width:1920px;height:1080px;transform-origin:center center;transform:translate(-50%,-50%);background:radial-gradient(1200px 700px at 50% 110%,rgba(212,166,74,.10),transparent 60%),var(--bg);padding:40px 56px 32px;display:flex;flex-direction:column;gap:20px}
 .num{font-variant-numeric:tabular-nums}
 .top{display:flex;justify-content:space-between;align-items:center}
@@ -133,6 +134,32 @@ tr.hit td.tier::after{content:" ✓";color:var(--ok)}
 .t3d .spark{animation:spk 2.2s ease-in-out infinite;transform-origin:center}
 @keyframes spk{0%,100%{opacity:.2}50%{opacity:1}}
 @media (prefers-reduced-motion:reduce){.t3d,.t3d .spark{animation:none}}
+.stage{background:radial-gradient(1200px 700px at 50% 110%,rgba(212,166,74,.10),transparent 60%)!important}
+/* ===== celular e tablet em pé: layout empilhado com rolagem ===== */
+html.mob,html.mob body{height:auto;overflow:auto}
+html.mob .fit{position:relative;inset:auto;overflow:visible}
+html.mob .stage{position:relative;left:auto;top:auto;width:auto;height:auto;transform:none!important;padding:16px max(14px,env(safe-area-inset-left,0px)) 28px;gap:14px}
+html.mob .top{flex-wrap:wrap;gap:8px}
+html.mob .top h1{font-size:26px}html.mob .brandt{gap:12px}html.mob .logo-rb{height:58px}
+html.mob .cols{grid-template-columns:1fr;gap:14px}
+html.mob .team{padding:16px;gap:12px}
+html.mob .th h2{font-size:22px}html.mob .tsub{display:block;margin:2px 0 0;font-size:10.5px}
+html.mob .hero,html.mob .team:first-child .hero{grid-template-columns:1fr!important;gap:10px}
+html.mob .gauge svg,html.mob .team:first-child .gauge svg{width:100%!important;max-width:380px;margin:0 auto}
+html.mob .gv{font-size:32px}
+html.mob .metas4{grid-template-columns:1fr 1fr;gap:8px}
+html.mob #mRota .v,html.mob .mt .v{font-size:22px}
+html.mob .two{grid-template-columns:1fr}
+html.mob .box{overflow-x:auto}
+html.mob .box table td{font-size:13px!important;padding:7px 2px!important}html.mob .box table th{font-size:9px!important;padding:5px 2px!important;letter-spacing:.04em}html.mob .box table td:first-child{font-size:10.5px!important}html.mob .box{padding:12px 10px}html.mob .box h3{font-size:15px}
+html.mob .chips{flex-direction:column}
+html.mob .chip .v{font-size:24px}
+html.mob .prize{grid-template-columns:1fr;gap:12px;justify-items:center;text-align:center}
+html.mob .flowl,html.mob .flowr{justify-content:center}html.mob .flowl::after,html.mob .flowr::before{display:none}
+html.mob .pp{padding:12px 18px!important;margin-top:30px}html.mob .pp b{font-size:24px}
+html.mob .t3w{width:70px;height:56px}html.mob .t3d{width:88px}
+html.mob .vend{max-width:none}
+@media (max-width:380px){html.mob .metas4{grid-template-columns:1fr}}
 </style>
 
 <div class="fit"><div class="stage" id="stage">
@@ -219,7 +246,7 @@ document.getElementById('mesLbl').textContent=MES[now.getMonth()]+' de '+now.get
 var VAL={rota:0,million:0},ROTA={vend:null,em:null,fonte:''},db=null,canWrite=false;
 var brl=function(v){return 'R$ '+Math.round(v).toLocaleString('pt-BR')};
 var k=function(v){return v>=1000?(v/1000).toLocaleString('pt-BR',{maximumFractionDigits:1})+'K':String(v)};
-function fit(){var s=Math.min(innerWidth/1920,innerHeight/1080);document.getElementById('stage').style.transform='translate(-50%,-50%) scale('+s+')'}
+function fit(){var mob=innerWidth<900||innerWidth<innerHeight*0.9;document.documentElement.classList.toggle('mob',mob);var st=document.getElementById('stage');if(mob){st.style.transform='';return}var s=Math.min(innerWidth/1920,innerHeight/1080);st.style.transform='translate(-50%,-50%) scale('+s+')'}
 addEventListener('resize',fit);fit();
 var ANIM={t:0,start:null,done:false};
 function heat(p){p=Math.max(0,Math.min(1,p));var h=p<=.5?4+68*p:38+204*(p-.5);return 'hsl('+h.toFixed(0)+',70%,'+(52+6*p).toFixed(0)+'%)'}
@@ -261,7 +288,7 @@ function bigGauge(fr,color,labels,markerFr){
 }
 function gauge(val,metas){var f=tierFrac(val,metas);return bigGauge(f,heat(f),metas.map(function(m,k){return{fr:(k+1)/4,text:NOMES[k],hit:val>=m,size:22}}),null)}
 var SEGW=10;
-function segBar(el,p){p=Math.max(0,Math.min(1,p||0));var SEGN=Math.max(8,Math.floor((el.getBoundingClientRect().width/((document.getElementById('stage').getBoundingClientRect().width/1920)||1)-60)/SEGW));var n=Math.round(p*SEGN),key=n+'|'+(p>=1)+'|'+SEGN;if(el.dataset.k===key)return;el.dataset.k=key;
+function segBar(el,p){p=Math.max(0,Math.min(1,p||0));var SEGN=Math.max(8,Math.min(40,Math.floor(((el.clientWidth||200)-60)/SEGW)));var n=Math.round(p*SEGN),key=n+'|'+(p>=1)+'|'+SEGN;if(el.dataset.k===key)return;el.dataset.k=key;
   var h='<div class="segs">';for(var k=0;k<SEGN;k++){var c=k>=n?'':(p>=1||k>=n-3?' g':' r');h+='<i class="sg'+c+'"></i>'}
   h+='</div><div class="segl" style="width:'+(p*100).toFixed(1)+'%"></div><span class="segp num">'+Math.round(p*100)+'%</span>';el.innerHTML=h}
 function tierFrac(v,m){var prev=0;for(var i=0;i<4;i++){if(v<m[i])return (i+(v-prev)/(m[i]-prev))/4;prev=m[i]}return 1}
@@ -271,7 +298,7 @@ function render(){
     var va=v*ANIM.t,sig=v+'';if(!(ANIM.done&&T.sig===sig)){document.getElementById(T.g).innerHTML=gauge(va,T.metas);document.getElementById(T.v).textContent=brl(va);if(ANIM.done)T.sig=sig}
     var nx=T.metas[lvl];document.getElementById(T.s).textContent=lvl===4?'Meta PRO Gold batida':(lvl?'Meta '+NOMES[lvl-1]+' batida · ':'')+'faltam '+brl(nx-v)+' para '+NOMES[lvl];
     document.getElementById(T.f).classList.toggle('on',v>=T.metas[2]);
-    document.querySelectorAll(t==='rota'?'#mRota .mt':'#mMil .mt').forEach(function(el,i){el.classList.toggle('hit',v>=T.metas[i]);el.classList.toggle('cur',i===lvl)});
+    document.querySelectorAll(t==='rota'?'#mRota .mt':'#mMil .mt').forEach(function(el,i){var nh=va>=T.metas[i];if(nh&&!el.classList.contains('hit')&&window.FX)FX.burst(el);el.classList.toggle('hit',v>=T.metas[i]&&nh);el.classList.toggle('cur',i===lvl)});
     document.querySelectorAll('.seg[data-team="'+t+'"]').forEach(function(el){segBar(el,va/T.metas[+el.dataset.i])});
     var slot=document.querySelector('[data-team="'+t+'"]');if(slot.querySelector('input'))return;slot.textContent='';
     if(t==='rota'&&ROTA.fonte==='planilha'){var box=document.createElement('div');box.className='vend';Object.keys(ROTA.vend||{}).sort(function(a,b){return ROTA.vend[b]-ROTA.vend[a]}).forEach(function(n){var r=document.createElement('div');var a=document.createElement('span');a.textContent=n;var b=document.createElement('b');b.className='num';b.textContent=brl(ROTA.vend[n]);r.appendChild(a);r.appendChild(b);box.appendChild(r)});
