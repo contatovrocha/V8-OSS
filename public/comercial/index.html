@@ -419,7 +419,7 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 
 <script>
 (function(){
-var METAS=[{n:'Meta 01',v:50000},{n:'Meta 02',v:130000},{n:'Meta 03',v:250000},{n:'Meta 04',v:530000}];
+var METAS=[{n:'ROIA',v:50000},{n:'ROIA Bronze',v:130000},{n:'PRO Silver',v:250000},{n:'PRO Gold',v:530000}];
 var RATES=[200/300,120/200,80/120,55/80,22/55];
 var PRODUTOS=[{id:'treinamento',nome:'Treinamento',valor:2500},{id:'mentoria',nome:'Mentoria em grupo',valor:11290},{id:'consultoria',nome:'Consultoria',valor:57800},{id:'consultoria98',nome:'Consultoria',valor:98000}];
 function prodLabel(p){return p.nome+' · R$ '+p.valor.toLocaleString('pt-BR')}
@@ -476,7 +476,7 @@ function render(){
   var stages=[['vendas','Vendas'],['reun','Reuniões realizadas'],['agend','Agendamentos'],['fup','Follow-ups'],['qual','Qualificados'],['atend','Ligações atendidas'],['leads','Leads trabalhados']];
   var units=nNorm+fmDays.length*FMW,fm=fmDays.length*FMW/units;function perDay(key,isFm){return F[key]*(isFm?FMW:1)/units}
   // assistant
-  $('aTitle').textContent=mt.n+': '+brl(mt.v)+' = '+F.vendas+' vendas e '+F.reun+' reuniões';
+  $('aTitle').textContent='Meta '+mt.n+': '+brl(mt.v)+' = '+F.vendas+' vendas e '+F.reun+' reuniões';
   var nd=perDay('vendas',false),fd=perDay('vendas',true);
   $('aList').innerHTML='<li>'+work.length+' dias úteis'+(days.some(function(x){return x.fer&&x.w>0&&x.w<6})?' (feriados já descontados)':'')+': '+nNorm+' de ritmo normal + 5 de Fecha Mês.</li><li>Ritmo normal: '+nf(nd)+' vendas, '+nf(perDay('reun',false))+' reuniões e '+nf(perDay('fup',false))+' follow-ups por dia.</li><li>Fecha Mês: '+nf(fd)+' vendas por dia, o dobro do ritmo normal.</li><li>Realizado: '+brl(rec)+' em '+qtd+' venda'+(qtd===1?'':'s')+(rec>=mt.v?'. Meta batida!':'. Faltam '+brl(mt.v-rec)+' ('+Math.ceil((mt.v-rec)/ticket)+' vendas de '+prodLabel(PP)+').')+'</li><li>'+(falta?'Faltam '+falta.toLocaleString('pt-BR')+' leads além da entrada do mês: puxar da base geral.':'A entrada do mês cobre o funil. A base geral vira margem de segurança.')+'</li>';
   // funnel
@@ -508,14 +508,14 @@ function render(){
   var plays=[['Reuniões sem fechamento','Ligar para quem fez reunião e não fechou. Retomar dor, proposta e condição com prazo.'],['Agendados que faltaram','Reagendar todos os no-shows do mês. Confirmar por WhatsApp no dia anterior e 1h antes.'],['Qualificados sem agenda','Ligar para os qualificados que não agendaram e marcar reunião para o mesmo dia ou o seguinte.'],['Base geral','Reativar leads antigos com mensagem e ligação. Quem responder entra direto em agenda.'],['Última chamada','Repassar todas as propostas abertas e fechar o mês. Revisar o placar do time ao fim do dia.']];
   renderRank(mk);
   // tiles
-  var pct=rec/mt.v;$('tRec').textContent=brl(rec);$('tRecD').textContent=Math.round(pct*100)+'% da '+mt.n;
+  var pct=rec/mt.v;$('tRec').textContent=brl(rec);$('tRecD').textContent=Math.round(pct*100)+'% da meta '+mt.n;
   $('tQtd').textContent=qtd;$('tQtdD').textContent=qtd?'maior venda: '+brl(Math.max.apply(null,mSales.map(function(x){return x.valor}))):'nenhuma lançada';
-  $('tFaltaT').textContent='Falta para a '+mt.n;$('tFalta').textContent=rec>=mt.v?'Batida':brl(mt.v-rec);$('tFalta').className='v num'+(rec>=mt.v?' good':'');$('tFaltaD').textContent=rec>=mt.v?'meta atingida':Math.ceil((mt.v-rec)/ticket)+' vendas de '+fmtK(ticket);
+  $('tFaltaT').textContent='Falta para a meta '+mt.n;$('tFalta').textContent=rec>=mt.v?'Batida':brl(mt.v-rec);$('tFalta').className='v num'+(rec>=mt.v?' good':'');$('tFaltaD').textContent=rec>=mt.v?'meta atingida':Math.ceil((mt.v-rec)/ticket)+' vendas de '+fmtK(ticket);
   $('tLeads').textContent=entrada.toLocaleString('pt-BR');$('tLeadsD').textContent=falta?'faltam '+falta.toLocaleString('pt-BR')+' p/ o funil':'cobre o funil';
   // alerts
   var al=[],today=new Date(),isCur=today.getFullYear()===Y&&today.getMonth()===M;
   if(isCur){var el=0;work.forEach(function(x){if(x.d<=today.getDate())el+=(fmDays.indexOf(x.d)>=0?FMW:1)});var exp=mt.v*el/units;
-    if(rec>=mt.v)al.push(['ok','Meta batida',mt.n+' atingida com '+brl(rec)]);
+    if(rec>=mt.v)al.push(['ok','Meta batida','Meta '+mt.n+' atingida com '+brl(rec)]);
     else if(rec<exp)al.push(['bad','Meta abaixo do ritmo',brl(rec)+' de '+fmtK(mt.v)+' · esperado ~'+brl(exp)+' até hoje']);
     else al.push(['ok','No ritmo da meta',brl(rec)+' realizados · esperado ~'+brl(exp)+' até hoje']);
     var fd0=fmDays[0],du=work.filter(function(x){return x.d>today.getDate()&&x.d<fd0}).length;
@@ -527,13 +527,13 @@ function render(){
   if(!lig)al.push(['warn','Ranking sem lançamentos','Nenhuma ligação registrada pelos SDRs em '+MES[M]]);
   var ab=$('alerts');ab.textContent='';al.forEach(function(a){var d=document.createElement('div');d.className='al '+a[0];var i=document.createElement('i');i.textContent=a[0]==='ok'?'✓':'!';var w=document.createElement('div');var b=document.createElement('b');b.textContent=a[1];var sp=document.createElement('span');sp.textContent=a[2];w.appendChild(b);w.appendChild(sp);d.appendChild(i);d.appendChild(w);ab.appendChild(d)});
   $('realTitle').textContent='Vendas de '+MES[M]+' · espelho do CRM';
-  $('kRec').textContent=brl(rec);$('kQtd').textContent=qtd;$('kPctT').textContent='% da '+mt.n;$('kTk').textContent=Math.round(rec/mt.v*100)+'%';
-  $('kFaltaT').textContent='Falta para a '+mt.n;$('kFalta').textContent=rec>=mt.v?'Meta batida':brl(mt.v-rec);
+  $('kRec').textContent=brl(rec);$('kQtd').textContent=qtd;$('kPctT').textContent='% da meta '+mt.n;$('kTk').textContent=Math.round(rec/mt.v*100)+'%';
+  $('kFaltaT').textContent='Falta para a meta '+mt.n;$('kFalta').textContent=rec>=mt.v?'Meta batida':brl(mt.v-rec);
   var pb=$('prods');pb.textContent='';PRODUTOS.forEach(function(pr){var sold=mSales.filter(function(x){return x.produto===pr.id}),sv=sold.reduce(function(a,x){return a+x.valor},0),need=Math.max(0,Math.ceil((mt.v-rec)/pr.valor));
     var c=document.createElement('div');c.className='prod';
     var t=document.createElement('div');t.className='pn';t.textContent=pr.nome;var v=document.createElement('div');v.className='pv num';v.textContent='R$ '+pr.valor.toLocaleString('pt-BR');
     var a=document.createElement('div');a.className='pa';a.textContent='Vendidos: '+sold.length+(sold.length?' · '+brl(sv):'');
-    var n=document.createElement('div');n.className='pm';n.textContent=rec>=mt.v?mt.n+' já batida':'Para a '+mt.n+': '+need+' venda'+(need===1?'':'s')+' só deste produto';
+    var n=document.createElement('div');n.className='pm';n.textContent=rec>=mt.v?'Meta '+mt.n+' já batida':'Para a meta '+mt.n+': '+need+' venda'+(need===1?'':'s')+' só deste produto';
     c.appendChild(t);c.appendChild(v);c.appendChild(n);pb.appendChild(c)});
   var vt=$('vtab');vt.textContent='';var hr=vt.insertRow();['Data','Quem vendeu','Cliente','Valor',''].forEach(function(h){var th=document.createElement('th');th.textContent=h;hr.appendChild(th)});
   if(!mSales.length){var er=vt.insertRow();er.className='empty-row';var c=er.insertCell();c.colSpan=5;c.textContent='Nenhuma venda lançada em '+MES[M]+'. Use o formulário acima para lançar a primeira.'}
