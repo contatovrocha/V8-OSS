@@ -159,7 +159,12 @@ html.mob .flowl,html.mob .flowr{justify-content:center}html.mob .flowl::after,ht
 html.mob .pp{padding:12px 18px!important;margin-top:30px}html.mob .pp b{font-size:24px}
 html.mob .t3w{width:70px;height:56px}html.mob .t3d{width:88px}
 html.mob .vend{max-width:none}
-@media (max-width:380px){html.mob .metas4{grid-template-columns:1fr}}
+html.mob .hero>*,html.mob .cols>*,html.mob .two>*{min-width:0}
+html.mob .metas4{width:100%;grid-template-columns:repeat(2,minmax(0,1fr))}
+html.mob .metas4 .mt{min-width:0;padding:10px 10px 8px}
+html.mob .seg{padding-right:40px}html.mob .segp{font-size:13px}
+html.mob .em-user{position:static;margin:0 auto 20px;width:max-content}
+@media (max-width:380px){html.mob #mRota .v,html.mob .mt .v{font-size:19px}html.mob .mt b{font-size:13px}html.mob .ind{font-size:10.5px}}
 </style>
 
 <div class="fit"><div class="stage" id="stage">
