@@ -1,0 +1,1 @@
+import{t as e}from"./jsx-runtime-EIAPxkjE.js";var t=e();function n(){return(0,t.jsx)(`div`,{className:`-mx-4 lg:-mx-6 -mt-6 -mb-28 lg:-mb-10`,children:(0,t.jsx)(`iframe`,{title:`Cockpit Comercial`,src:`./comercial/index.html`,className:`block w-full border-0 bg-black`,style:{height:`calc(100dvh - 64px)`}})})}export{n as default};

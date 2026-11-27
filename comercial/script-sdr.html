@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" type="image/png" href="favicon.png">
+<title>Script SDR · Black Million</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="em-db-script.js"></script>
+<style>
+/* Layout: roteiro da ligação à esquerda (passo a passo), ficha do lead fixa à direita; pós-ligação embaixo */
+:root{--bg:#050505;--panel:#0e0d0b;--panel2:#13110e;--field:#090807;--line:#2a251c;--fg:#f5f2ea;--mut:#a39d91;--dim:#6b665c;--gold:#d4a64a;--gold2:#f3d58a;--ok:#5fbf86;--warn:#e8a33c;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(1000px 600px at 80% -10%,rgba(212,166,74,.09),transparent 60%),var(--bg);color:var(--fg);font-family:Inter,system-ui,sans-serif;font-size:15px;line-height:1.55}
+.wrap{max-width:1360px;margin:0 auto;padding-block:22px 60px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.top{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:18px}
+.eyebrow{font:600 12px Inter,sans-serif;letter-spacing:.2em;text-transform:uppercase;color:var(--gold)}
+h1{font:800 clamp(28px,3.4vw,42px) Sora,sans-serif;letter-spacing:-.02em;margin:4px 0 2px}
+h1 span{color:var(--gold2)}
+.top p{margin:0;color:var(--mut)}
+.links{display:flex;gap:8px;flex-wrap:wrap}
+.links a{color:var(--mut);text-decoration:none;border:1px solid var(--line);border-radius:99px;padding:8px 14px;font:600 13px Inter,sans-serif}
+.links a:hover{color:var(--gold2);border-color:var(--gold)}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:18px;align-items:start}
+.panel{background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:22px}
+.steps{display:grid;gap:12px}
+.st{padding:18px 22px;display:grid;grid-template-columns:44px 1fr;gap:14px}
+.st .n{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;font:800 16px Sora,sans-serif;background:var(--field);border:1px solid var(--line);color:var(--gold2)}
+.st h2{font:700 13px Inter,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin:2px 0 8px}
+.say{font:500 18px/1.5 Inter,sans-serif;color:var(--fg);margin:0}
+.say b{color:var(--gold2);font-weight:700}
+.say .ln{color:var(--gold2);font-weight:700;border-bottom:1px dashed rgba(243,213,138,.5)}
+.hint{margin:10px 0 0;color:var(--mut);font-size:13.5px;display:flex;gap:8px;align-items:flex-start}
+.hint::before{content:"↳";color:var(--dim)}
+.cap{margin-top:12px;display:flex;gap:10px;flex-wrap:wrap}
+.cap .f{flex:1 1 220px}
+label{display:block;font:600 12px Inter,sans-serif;color:var(--mut);margin-bottom:5px}
+input,select,textarea{width:100%;background:var(--field);border:1px solid var(--line);border-radius:12px;color:var(--fg);font:500 15px Inter,sans-serif;padding:10px 12px;outline:0}
+input:focus,select:focus,textarea:focus{border-color:var(--gold)}
+textarea{resize:vertical;min-height:64px}
+input[type=date],input[type=time]{color-scheme:dark}
+.st.key{border-color:rgba(212,166,74,.55);background:linear-gradient(180deg,#1a160e,var(--panel))}
+.obj{margin-top:12px;padding:12px 14px;border:1px dashed rgba(212,166,74,.45);border-radius:14px;background:rgba(212,166,74,.05)}
+.obj>b{display:block;font:700 12px Inter,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:4px}
+.side{position:sticky;top:16px;padding:20px;display:grid;gap:12px}
+.side h3{font:700 18px Sora,sans-serif;margin:0}
+.badge{display:inline-flex;align-items:center;gap:6px;font:700 12px Inter,sans-serif;border-radius:99px;padding:5px 10px}
+.badge.ok{background:rgba(95,191,134,.14);color:var(--ok)}.badge.no{background:rgba(232,163,60,.14);color:var(--warn)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:12px;padding:12px 16px;font:700 14px Inter,sans-serif;cursor:pointer;text-decoration:none}
+.btn.gold{background:linear-gradient(180deg,#f6dc95,#d4a64a 55%,#b88a33);color:#1a1205}
+.btn.ghost{background:none;border:1px solid var(--line);color:var(--fg)}
+.btn.ghost:hover{border-color:var(--gold);color:var(--gold2)}
+.btn:disabled{opacity:.5;cursor:default}
+.btn:focus-visible,a:focus-visible{outline:2px solid var(--gold2);outline-offset:2px}
+.post{margin-top:18px;padding:22px}
+.post h2{font:700 20px Sora,sans-serif;margin:0 0 4px}
+.post .sub{color:var(--mut);margin:0 0 16px}
+.ck{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.ckc{border:1px solid var(--line);background:var(--field);border-radius:16px;padding:16px}
+.ckc .t{font:700 12px Inter,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
+.ckc p{margin:0 0 10px;color:var(--mut);font-size:13.5px}
+.msg{white-space:pre-wrap;background:#050505;border:1px solid var(--line);border-radius:12px;padding:12px;font:500 13.5px/1.5 Inter,sans-serif;color:var(--fg);min-height:120px}
+.note{min-height:18px;font-size:13px;color:var(--mut)}
+.list{margin-top:18px;padding:22px}
+.list h2{font:700 20px Sora,sans-serif;margin:0 0 12px}
+.tbl{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{padding:10px 8px;text-align:left;border-bottom:1px solid var(--line);white-space:nowrap}
+th{font:600 11.5px Inter,sans-serif;letter-spacing:.1em;text-transform:uppercase;color:var(--mut)}
+td a{color:var(--gold2)}
+.empty{color:var(--mut);text-align:center!important;padding:20px}
+@media (max-width:1100px){.grid{grid-template-columns:1fr}.side{position:static}.ck{grid-template-columns:1fr}}
+@media (max-width:560px){.st{grid-template-columns:1fr}.say{font-size:16.5px}.row2{grid-template-columns:1fr}}
+.crm{display:grid;gap:8px;padding-top:12px;border-top:1px solid var(--line)}
+.crm-h{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.crm-s{font:600 11.5px Inter,sans-serif;color:var(--ok)}
+#crm{font:500 13px/1.5 Inter,sans-serif;background:#050505;min-height:230px;color:var(--fg);resize:vertical}
+.res{display:grid;gap:8px;padding-top:12px;border-top:1px solid var(--line)}
+</style>
+</head><body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <div class="eyebrow">Ação Black Million · Ligação SDR</div>
+      <h1>Script de ligação <span>Black Million</span></h1>
+      <p>Siga a ordem, anote as respostas na ficha ao lado e agende a consultoria ainda na ligação.</p>
+    </div>
+    <nav class="links" aria-label="Painel comercial"><a href="aovivo.html">Placar ao vivo</a></nav>
+  </header>
+
+  <div class="grid">
+    <section class="steps" aria-label="Roteiro da ligação">
+      <article class="panel st">
+        <div class="n">1</div>
+        <div>
+          <h2>Abertura</h2>
+          <p class="say">“Oi, <span class="ln" data-lead>Lead</span>! Aqui é <span class="ln" data-sdr>seu nome</span>, da <b>E-commerce Million</b>. Tá tudo bom por aí ou dá pra melhorar?”</p>
+          <p class="say" style="margin-top:10px">“Seguinte: tô te ligando porque você tem uma operação no marketplace, né isso mesmo?”</p>
+          <p class="hint">Espere o lead confirmar. Se não vende em marketplace, agradeça e encerre.</p>
+        </div>
+      </article>
+
+      <article class="panel st">
+        <div class="n">2</div>
+        <div>
+          <h2>Tempo de operação</h2>
+          <p class="say">“E há quanto tempo você roda essa operação?”</p>
+          <div class="cap"><div class="f"><label for="fTempo">Tempo de operação</label><select id="fTempo"><option value="">Selecione</option><option>Menos de 6 meses</option><option>6 meses a 1 ano</option><option>1 a 2 anos</option><option>Mais de 2 anos</option></select></div></div>
+        </div>
+      </article>
+
+      <article class="panel st key">
+        <div class="n">3</div>
+        <div>
+          <h2>Gancho Black Million</h2>
+          <p class="say">“Então, deixa eu te contar: o <b>Fabrício</b> e o <b>Fabiano</b> montaram um <b>programa de aceleração</b> pra esse fim de mês, a <b>Black Million</b>. Estamos selecionando <b>10 operações de marketplace</b> pra acelerar.”</p>
+          <p class="say" style="margin-top:10px">“E aí, me conta: qual é a sua <b>meta de faturamento mensal</b>?”</p>
+          <div class="cap"><div class="f"><label for="fMeta">Meta mensal (R$)</label><input id="fMeta" type="number" min="0" step="1000" placeholder="Ex.: 100000" inputmode="numeric"></div></div>
+        </div>
+      </article>
+
+      <article class="panel st">
+        <div class="n">4</div>
+        <div>
+          <h2>Faturamento atual</h2>
+          <p class="say">“E qual é o seu <b>faturamento atual</b>?”</p>
+          <div class="cap"><div class="f"><label for="fFat">Faturamento atual por mês (R$)</label><input id="fFat" type="number" min="0" step="1000" placeholder="Ex.: 40000" inputmode="numeric"></div></div>
+        </div>
+      </article>
+
+      <article class="panel st">
+        <div class="n">5</div>
+        <div>
+          <h2>Maior desafio</h2>
+          <p class="say">“Qual tá sendo o seu <b>maior desafio</b>? O que está te impedindo de chegar nessa meta?”</p>
+          <p class="hint">Deixe o lead falar. Repita com as palavras dele antes de seguir.</p>
+          <div class="cap"><div class="f"><label for="fDesafio">Maior desafio (nas palavras do lead)</label><textarea id="fDesafio" maxlength="500" placeholder="Ex.: Ads caro, reputação amarela, vendas paradas…"></textarea></div></div>
+        </div>
+      </article>
+
+      <article class="panel st">
+        <div class="n">6</div>
+        <div>
+          <h2>Apresente o programa</h2>
+          <p class="say">“Nosso programa funciona como uma <b>consultoria personalizada</b>: o nosso especialista analisa a sua operação, identifica os pontos críticos e aponta os ajustes de melhoria.”</p>
+        </div>
+      </article>
+
+      <article class="panel st key">
+        <div class="n">7</div>
+        <div>
+          <h2>Qualificação e agenda</h2>
+          <p class="say">“Seguinte, <span class="ln" data-lead>Lead</span>: pelo seu faturamento e tempo de operação, hoje a sua empresa <b>está qualificada</b> pra participar do programa. Como tá a sua agenda: você consegue <b>hoje ou amanhã</b>?”</p>
+          <div class="obj"><b>Se perguntar quanto custa</b><p class="say" style="font-size:16px">“Para empresas qualificadas, o <b>cadastro é gratuito</b>.”</p></div>
+          <div class="cap">
+            <div class="f"><label for="fData">Data da consultoria</label><input id="fData" type="date"></div>
+            <div class="f"><label for="fHora">Horário</label><input id="fHora" type="time" step="900"></div>
+          </div>
+        </div>
+      </article>
+
+      <article class="panel st">
+        <div class="n">8</div>
+        <div>
+          <h2>Inscrição e confirmação</h2>
+          <p class="say">“Perfeito! Vou fazer a sua inscrição agora. Qual é o seu <b>melhor e-mail</b>?”</p>
+          <p class="say" style="margin-top:10px">“Então fica confirmado: <span class="ln" id="sayWhen">dia e horário</span>. Vou te mandar o link da reunião no WhatsApp e no e-mail, combinado?”</p>
+          <div class="cap"><div class="f"><label for="fEmail">E-mail do lead</label><input id="fEmail" type="email" autocomplete="off" placeholder="nome@empresa.com"></div></div>
+        </div>
+      </article>
+    </section>
+
+    <aside class="panel side" aria-label="Ficha do lead">
+      <h3>Ficha da ligação</h3>
+      <div><label for="fSdr">SDR</label><select id="fSdr"><option value="">Selecione</option><option>Vinícius Soares</option><option>Taís Braz</option></select></div>
+      <div><label for="fLead">Nome do lead</label><input id="fLead" type="text" maxlength="80" placeholder="Nome de quem atendeu"></div>
+      <div class="row2">
+        <div><label for="fWpp">WhatsApp</label><input id="fWpp" type="tel" maxlength="20" placeholder="(11) 99999-9999"></div>
+        <div><label for="fLoja">Loja / marketplace</label><input id="fLoja" type="text" maxlength="80" placeholder="Ex.: Loja X no ML"></div>
+      </div>
+      <div id="qual"></div>
+      <div><label for="fObs">Observações</label><textarea id="fObs" maxlength="500"></textarea></div>
+      <div class="res">
+        <label for="fRes">Resultado da ligação</label>
+        <select id="fRes"><option value="">Selecione</option><option value="nao_atendeu">Não atendeu</option><option value="atendeu">Atendeu, sem interesse</option><option value="qualificado">Qualificado</option><option value="followup">Follow-up (retornar depois)</option><option value="agendado">Agendado</option></select>
+        <button class="btn gold" type="button" id="bReg">Registrar ligação</button>
+        <span class="note" id="regNote" role="status"></span>
+      </div>
+      <div class="crm">
+        <div class="crm-h"><label for="crm" style="margin:0">Resumo para o CRM</label><span class="crm-s" id="crmS"></span></div>
+        <textarea id="crm" readonly rows="12" aria-describedby="crmS"></textarea>
+        <button class="btn gold" type="button" id="bCrm">Copiar para o CRM</button>
+      </div>
+      <button class="btn ghost" type="button" id="bLimpar">Nova ligação</button>
+    </aside>
+  </div>
+
+  <section class="panel post" aria-label="Depois da ligação">
+    <h2>Depois de agendar</h2>
+    <p class="sub">Faça na ordem: crie a reunião, cole o link do Meet e envie para o lead.</p>
+    <div class="ck">
+      <div class="ckc">
+        <div class="t">1 · Criar a reunião</div>
+        <p>Abre o Google Agenda com data, horário e o e-mail do lead já preenchidos. Lá, clique em <b>Adicionar videoconferência do Google Meet</b> e salve.</p>
+        <a class="btn gold" id="bAgenda" href="#" target="_blank" rel="noopener">Abrir no Google Agenda</a>
+      </div>
+      <div class="ckc">
+        <div class="t">2 · Colar o link do Meet</div>
+        <p>Copie o link da reunião no Google Agenda e cole aqui.</p>
+        <label for="fMeet">Link do Meet</label><input id="fMeet" type="url" placeholder="https://meet.google.com/abc-defg-hij">
+      </div>
+      <div class="ckc">
+        <div class="t">3 · Enviar para o lead</div>
+        <div class="msg" id="msg"></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
+          <button class="btn gold" type="button" id="bCopiar">Copiar mensagem</button>
+          <a class="btn ghost" id="bWpp" href="#" target="_blank" rel="noopener">Abrir WhatsApp</a>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:16px">
+      <button class="btn gold" type="button" id="bSalvar">Salvar agendamento</button>
+      <span class="note" id="note" role="status"></span>
+    </div>
+  </section>
+
+  <section class="panel list" aria-label="Agendamentos">
+    <h2>Seus agendamentos de hoje</h2><p style="margin:-6px 0 12px;color:var(--mut);font-size:13px">Mostra o que foi salvo neste aparelho, nesta sessão. A lista completa fica no cockpit.</p>
+    <div class="tbl"><table id="tab"></table></div>
+  </section>
+</div>
+
+<script>
+(function(){
+var $=function(id){return document.getElementById(id)};
+var MES=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'],DIA=['domingo','segunda','terça','quarta','quinta','sexta','sábado'];
+var brl=function(v){return 'R$ '+Math.round(v).toLocaleString('pt-BR')};
+var first=function(n){return (n||'').trim().split(/\s+/)[0]||''};
+var db=null,AG=[];
+var registrada=false;
+var RES_TXT={nao_atendeu:'Não atendeu',atendeu:'Atendeu, sem interesse',qualificado:'Qualificado',followup:'Follow-up',agendado:'Agendado'};
+var ids=['fRes','fSdr','fLead','fWpp','fLoja','fTempo','fMeta','fFat','fDesafio','fData','fHora','fEmail','fMeet','fObs'];
+function whenTxt(){var d=$('fData').value,h=$('fHora').value;if(!d)return '';var dt=new Date(d+'T12:00:00');return DIA[dt.getDay()]+', '+d.slice(8,10)+'/'+d.slice(5,7)+(h?' às '+h.replace(':','h'):'')}
+function msgTxt(){var n=first($('fLead').value)||'tudo bem';var w=whenTxt();var l=$('fMeet').value.trim();
+  return 'Oi, '+n+'! Aqui é '+(first($('fSdr').value)||'[seu nome]')+', da E-commerce Million.\n\nSua inscrição na consultoria Black Million está confirmada'+(w?' para '+w:'')+'.\n\nLink da reunião: '+(l||'[cole o link do Meet]')+'\n\nSe surgir algum imprevisto, é só me avisar por aqui. Até lá!'}
+function crmTxt(){
+  var v=function(id){return ($(id).value||'').trim()};var meta=+v('fMeta')||0,fat=+v('fFat')||0;
+  var L=['LIGAÇÃO SDR · AÇÃO BLACK MILLION','Data da ligação: '+new Date().toLocaleDateString('pt-BR')+' · SDR: '+(v('fSdr')||'—'),'',
+  'Lead: '+(v('fLead')||'—'),'WhatsApp: '+(v('fWpp')||'—'),'E-mail: '+(v('fEmail')||'—'),'Loja / marketplace: '+(v('fLoja')||'—'),'',
+  'Tempo de operação: '+(v('fTempo')||'—'),'Meta de faturamento mensal: '+(meta?brl(meta):'—'),'Faturamento atual: '+(fat?brl(fat):'—'),'Gap até a meta: '+(meta&&fat?brl(Math.max(0,meta-fat)):'—'),
+  'Maior desafio: '+(v('fDesafio')||'—'),'',
+  'Resultado: '+(RES_TXT[v('fRes')]||'—'),'Status: '+(v('fRes')==='agendado'?'Consultoria agendada':'Sem agendamento'),'Consultoria: '+(whenTxt()||'—'),'Link do Meet: '+(v('fMeet')||'—')];
+  if(v('fObs'))L.push('','Observações: '+v('fObs'));return L.join('\n')}
+function upd(){
+  var lead=first($('fLead').value)||'Lead',sdr=$('fSdr').value||'seu nome';
+  document.querySelectorAll('[data-lead]').forEach(function(e){e.textContent=lead});
+  document.querySelectorAll('[data-sdr]').forEach(function(e){e.textContent=sdr});
+  $('sayWhen').textContent=whenTxt()||'dia e horário';
+  var meta=+$('fMeta').value||0,fat=+$('fFat').value||0,q=$('qual');q.textContent='';
+  if(meta||fat){var b=document.createElement('span');var gap=meta-fat;b.className='badge '+(fat>0?'ok':'no');b.textContent=fat>0?'Faturamento '+brl(fat)+(meta?' · gap até a meta: '+brl(Math.max(0,gap)):''):'Sem faturamento informado';q.appendChild(b)}
+  $('msg').textContent=msgTxt();$('crm').value=crmTxt();$('crmS').textContent='';
+  var d=$('fData').value,h=$('fHora').value,cal='https://calendar.google.com/calendar/render?action=TEMPLATE';
+  cal+='&text='+encodeURIComponent('Consultoria Black Million · '+($('fLead').value.trim()||'Lead')+' · E-commerce Million');
+  if(d&&h){var s=new Date(d+'T'+h+':00'),e=new Date(s.getTime()+45*60000);var f=function(x){return x.toISOString().replace(/[-:]/g,'').replace(/\.\d{3}/,'')};cal+='&dates='+f(s)+'/'+f(e)}
+  cal+='&details='+encodeURIComponent('Consultoria Black Million da E-commerce Million.\nLoja: '+($('fLoja').value||'-')+'\nDesafio: '+($('fDesafio').value||'-'));
+  var em=$('fEmail').value.trim();if(em)cal+='&add='+encodeURIComponent(em);
+  $('bAgenda').href=cal;
+  var w=($('fWpp').value||'').replace(/\D/g,'');if(w&&w.length<=11)w='55'+w;$('bWpp').href=w?'https://wa.me/'+w+'?text='+encodeURIComponent(msgTxt()):'#';
+}
+ids.forEach(function(id){$(id).addEventListener('input',upd);$(id).addEventListener('change',upd)});
+$('bCrm').addEventListener('click',function(){var t=crmTxt();$('crm').value=t;var ok=function(){$('crmS').textContent='Copiado ✓'};
+  var fb=function(){var e=$('crm');e.focus();e.select();$('crmS').textContent='Selecionado: use Ctrl+C'};
+  if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(t).then(ok,fb);else fb()});
+$('bCopiar').addEventListener('click',function(){var t=msgTxt();var done=function(){$('note').textContent='Mensagem copiada.'};
+  if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(t).then(done,function(){sel()});else sel();
+  function sel(){var r=document.createRange();r.selectNodeContents($('msg'));var s=getSelection();s.removeAllRanges();s.addRange(r);$('note').textContent='Texto selecionado: use Ctrl+C para copiar.'}});
+$('bWpp').addEventListener('click',function(e){if($('bWpp').getAttribute('href')==='#'){e.preventDefault();$('note').textContent='Preencha o WhatsApp do lead na ficha.'}});
+function limpar(){registrada=false;ids.forEach(function(id){if(id!=='fSdr')$(id).value=''});var t=new Date();$('fData').value=t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0')+'-'+String(t.getDate()).padStart(2,'0')}
+async function registrar(res){var v=function(id){return ($(id).value||'').trim()};var hoje=new Date();var d=hoje.getFullYear()+'-'+String(hoje.getMonth()+1).padStart(2,'0')+'-'+String(hoje.getDate()).padStart(2,'0');
+  await db.collection('ligacoes').add({acao:'Black Million',sdr:v('fSdr'),lead:v('fLead'),whatsapp:v('fWpp'),resultado:res,data:d,mes:d.slice(0,7),criadoEm:hoje.toISOString()});registrada=true}
+$('bReg').addEventListener('click',async function(){var res=$('fRes').value,n=$('regNote');
+  if(!$('fSdr').value){n.textContent='Selecione o SDR.';$('fSdr').focus();return}
+  if(!res){n.textContent='Selecione o resultado da ligação.';$('fRes').focus();return}
+  if(registrada){n.textContent='Esta ligação já foi registrada. Clique em Nova ligação para a próxima.';return}
+  if(!db){n.textContent='Não foi possível conectar ao banco de dados.';return}
+  $('bReg').disabled=true;try{await registrar(res);n.textContent='Ligação registrada no cockpit.'+(res==='agendado'?' Agora salve o agendamento abaixo.':'')}catch(e){n.textContent='Não deu para registrar. Tente de novo.'}$('bReg').disabled=false});
+$('bLimpar').addEventListener('click',function(){limpar();$('regNote').textContent='';upd();$('note').textContent='';window.scrollTo({top:0,behavior:'smooth'});$('fLead').focus()});
+$('bSalvar').addEventListener('click',async function(){
+  var v={};ids.forEach(function(id){v[id]=$(id).value.trim()});
+  if(!v.fLead||!v.fData||!v.fHora){$('note').textContent='Preencha pelo menos o nome do lead, a data e o horário.';return}
+  if(!v.fSdr){$('note').textContent='Selecione o SDR na ficha.';$('fSdr').focus();return}
+  if(!db){$('note').textContent='Não foi possível conectar ao banco de dados.';return}
+  var row={acao:'Black Million',sdr:v.fSdr,lead:v.fLead,whatsapp:v.fWpp,loja:v.fLoja,tempo:v.fTempo,meta:+v.fMeta||0,faturamento:+v.fFat||0,desafio:v.fDesafio,email:v.fEmail,data:v.fData,hora:v.fHora,meet:/^https:\/\//.test(v.fMeet)?v.fMeet:'',obs:v.fObs,criadoEm:new Date().toISOString()};
+  $('bSalvar').disabled=true;
+  try{await db.collection('agendamentos').add(row);if(!registrada){$('fRes').value='agendado';await registrar('agendado');$('regNote').textContent='Ligação registrada no cockpit como Agendado.'}$('note').textContent='Agendamento salvo.'}catch(e){$('note').textContent='Não deu para salvar agora. Tente de novo.'}
+  $('bSalvar').disabled=false});
+function renderList(){var t=$('tab');t.textContent='';var hr=t.insertRow();['Data','Horário','Lead','Loja','Faturamento','SDR','Meet'].forEach(function(h){var th=document.createElement('th');th.textContent=h;hr.appendChild(th)});
+  if(!AG.length){var r=t.insertRow(),c=r.insertCell();c.colSpan=7;c.className='empty';c.textContent='Nenhum agendamento salvo ainda.';return}
+  AG.slice().sort(function(a,b){return (a.data+a.hora).localeCompare(b.data+b.hora)}).forEach(function(a){var r=t.insertRow();
+    r.insertCell().textContent=a.data?a.data.slice(8,10)+'/'+a.data.slice(5,7):'—';r.insertCell().textContent=a.hora||'—';r.insertCell().textContent=a.lead||'—';r.insertCell().textContent=a.loja||'—';r.insertCell().textContent=a.faturamento?brl(a.faturamento):'—';r.insertCell().textContent=a.sdr||'—';
+    var c=r.insertCell();if(/^https:\/\//.test(a.meet||'')){var l=document.createElement('a');l.href=a.meet;l.target='_blank';l.rel='noopener';l.textContent='Abrir';c.appendChild(l)}else c.textContent='—'})}
+var td=new Date();$('fData').value=td.getFullYear()+'-'+String(td.getMonth()+1).padStart(2,'0')+'-'+String(td.getDate()).padStart(2,'0');
+upd();renderList();
+(async function(){try{db=window.claude&&window.claude.use?await window.claude.use('db'):null}catch(e){db=null}
+  if(!db)return;db.collection('agendamentos').onSnapshot(function(s){AG=s.docs.map(function(d){var o=d.data()||{};var g=function(k){return typeof o[k]==='string'?o[k]:''};return{data:g('data'),hora:g('hora'),lead:g('lead'),loja:g('loja'),sdr:g('sdr'),meet:g('meet'),faturamento:+o.faturamento||0}});renderList()},function(){})})();
+})();
+</script>
+</body></html>
