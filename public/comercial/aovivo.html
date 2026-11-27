@@ -211,6 +211,14 @@ html.mob .em-user{position:static;margin:0 auto 20px;width:max-content}
 html.mob .remg{grid-template-columns:1fr}html.mob .sale-card{min-width:0;padding:22px 20px}html.mob .sale-n{font-size:28px}html.mob .sale-v{font-size:42px}
 html.mob .cg2{grid-template-columns:1fr}
 html.mob .cfgb{top:auto;bottom:60px;right:10px;font-size:12px;padding:6px 11px}
+.rzl{display:grid;gap:8px;margin-top:6px}.rzx{color:var(--mut);font-size:14px;padding:6px 0}
+.rzr{display:grid;grid-template-columns:auto 1fr repeat(4,auto);align-items:center;gap:14px;border-top:1px solid var(--line);padding-top:8px}
+.rzr:first-child{border-top:0;padding-top:0}#rzSdr .rzr{grid-template-columns:auto 1fr auto auto}#rzClo .rzr{grid-template-columns:repeat(4,1fr);gap:4px 10px}#rzClo .rzn{grid-column:1/-1;display:flex;justify-content:space-between;align-items:baseline;gap:10px}#rzClo .rzv{text-align:left}
+.rzp{font:800 20px Sora,sans-serif;color:var(--gold2);min-width:30px}.rzr:first-child .rzp{color:#8dff9a}
+.rzn{min-width:0}.rzn b{display:block;font:700 17px Sora,sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.rzn small{font-size:12px;color:var(--mut)}.rzn i{font-style:normal}.gf{color:#8dff9a}
+.rzv{text-align:right}.rzv b{display:block;font:800 22px Sora,sans-serif;white-space:nowrap}.rzv small{font:600 10px Inter,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:var(--dim)}
+.rzm b{color:var(--gold2)}
+html.mob .rzr{gap:8px}html.mob .rzv b{font-size:15px}html.mob .rzn b{font-size:14px}html.mob .rzv{text-align:left}
 </style>
 
 <div class="fit"><div class="stage" id="stage">
@@ -235,6 +243,7 @@ html.mob .cfgb{top:auto;bottom:60px;right:10px;font-size:12px;padding:6px 11px}
     </section>
 
     <section class="team" id="cMil">
+      <div class="afterbar" id="rBar" hidden>⚡ <span id="rBarT">Fora do horário comercial · + R$ 10 por agendamento</span></div>
       <div class="th"><h2>Razor <small class="tsub">E-commerce Million</small></h2><span class="lab">Time 02</span></div>
       <div class="hero">
         <div class="gauge"><div id="gMil"></div><div class="gv num" id="vMil">R$ 0</div><div class="gs" id="sMil"></div><div data-team="million"></div></div>
@@ -249,22 +258,8 @@ html.mob .cfgb{top:auto;bottom:60px;right:10px;font-size:12px;padding:6px 11px}
         </div>
       </div>
       <div class="two">
-        <div class="box">
-          <h3><span class="tag">SDR</span> Taxa de agendamento</h3>
-          <table>
-            <tr><th></th><th>25%</th><th>40%</th><th>60%</th><th>80%</th></tr>
-            <tr><td>Base + bônus</td><td class="num">1.950</td><td class="b num">+100</td><td class="b num">+200</td><td class="b num">+500</td></tr>
-            <tr class="tot"><td>Acumulado</td><td class="num">1.950</td><td class="num">2.050</td><td class="num">2.250</td><td class="num">2.750</td></tr>
-          </table>
-        </div>
-        <div class="box">
-          <h3><span class="tag">Closer</span> Meta batida</h3>
-          <table>
-            <tr><th></th><th>ROIA</th><th>ROIA Bronze</th><th>PRO Silver</th><th>PRO Gold</th></tr>
-            <tr><td>Base + bônus</td><td class="num">2.300</td><td class="b num">+150</td><td class="b num">+250</td><td class="b num">+700</td></tr>
-            <tr class="tot"><td>Acumulado</td><td class="num">2.300</td><td class="num">2.450</td><td class="num">2.700</td><td class="num">3.400</td></tr>
-          </table>
-        </div>
+        <div class="box rz"><h3><span class="tag">SDR</span> Agendamentos</h3><div class="rzl" id="rzSdr"><div class="rzx">Aguardando agendamentos…</div></div></div>
+        <div class="box rz"><h3><span class="tag">Closer</span> Reuniões e vendas</h3><div class="rzl" id="rzClo"><div class="rzx">Aguardando reuniões…</div></div></div>
       </div>
       <div class="chips mtgrow">
         <div class="chip"><div class="v num">+ R$ 10</div><span>por agendamento<small>fora do horário comercial (SDR)</small></span></div>
@@ -384,11 +379,26 @@ function renderRem(){var box=document.getElementById('remApex');if(!CLOSERS.leng
 function hm(x){var a=String(x||'0:0').split(':');return (+a[0])*60+(+a[1]||0)}
 function spNow(){var p=new Intl.DateTimeFormat('en-US',{timeZone:'America/Sao_Paulo',weekday:'short',hour:'2-digit',minute:'2-digit',hour12:false}).formatToParts(new Date());var g=function(t){var f=p.filter(function(x){return x.type===t})[0];return f?f.value:''};return{wd:g('weekday'),min:(+g('hour')%24)*60+(+g('minute'))}}
 function isFora(){var n=spNow();if(n.wd==='Sun')return !!CFG.domingo_fora;if(n.min<hm(CFG.inicio))return true;return n.min>=hm(n.wd==='Sat'?CFG.fim_sabado:CFG.fim_semana)}
-function applyCfg(){var f=isFora();document.getElementById('cRota').classList.toggle('after',f);document.getElementById('aBar').hidden=!f;
+function applyCfg(){var f=isFora();document.getElementById('cRota').classList.toggle('after',f);document.getElementById('aBar').hidden=!f;document.getElementById('cMil').classList.toggle('after',f);document.getElementById('rBar').hidden=!f;document.getElementById('rBarT').textContent='Fora do horário comercial · + '+brl(RZ.sdr_extra)+' por agendamento';
   var pc=((CFG.comissao_fora||0)*100).toLocaleString('pt-BR',{maximumFractionDigits:2})+'%';document.getElementById('aBarT').textContent='Bônus fora do horário comercial ativo · comissão '+pc;
   document.getElementById('foraPct').textContent=pc;document.getElementById('foraTxt').textContent='seg a sex após '+CFG.fim_semana+' · sábado após '+CFG.fim_sabado+' · antes das '+CFG.inicio+(CFG.domingo_fora?' · domingo':'')}
 setInterval(applyCfg,30000);
-function onPlacar(o){if(o.rota_metas&&o.rota_metas.roia){var r=o.rota_metas;TEAMS.rota.metas=[r.roia,r.pro,r.pro*(o.rota_param&&o.rota_param.inicio_acel?1.5:1.5),r.pro*((o.rota_param&&o.rota_param.limite)||2.4)];TEAMS.rota.sig=null}
+/* Razor: regras de remuneração (padrões; config/razor sobrescreve) e cards de SDR e closer */
+var RZ={closers:['zayko'],nomes:{zayko:'Zayko Felix',vinicius:'Vinícius Soares'},closer_base:2300,closer_bonus:[0,150,250,700],sdr_base:1950,sdr_escada:[.25,.4,.6,.8],sdr_bonus:[0,100,200,500],sdr_extra:10},RZD={sdr:[],clo:[]};
+function rzPct(x){return (x*100).toLocaleString('pt-BR',{maximumFractionDigits:1})+'%'}
+function renderRazor(){var M=TEAMS.million.metas,sum=function(a,n){var t=0;for(var i=0;i<n;i++)t+=a[i]||0;return t};
+  var sb=document.getElementById('rzSdr'),cb=document.getElementById('rzClo'),sig=JSON.stringify([RZD,RZ,M]);if(sb.dataset.k===sig)return;sb.dataset.k=sig;
+  sb.innerHTML=RZD.sdr.length?RZD.sdr.map(function(x,i){var taxa=x.atendidas?x.agend/x.atendidas:null,lv=taxa==null?0:RZ.sdr_escada.filter(function(e){return taxa>=e}).length,
+      extra=(x.fora||0)*RZ.sdr_extra,rec=RZ.sdr_base+sum(RZ.sdr_bonus,lv)+extra,nm=['—','ROIA','ROIA Bronze','PRO Silver','PRO Gold'][lv];
+    return '<div class="rzr"><span class="rzp num">'+(i+1)+'º</span><div class="rzn"><b>'+esc(x.nome)+'</b><small class="num">'+(taxa==null?'taxa — · sem ligações registradas':'taxa '+rzPct(taxa)+' · '+nm)+(x.fora?' · <i class="gf">'+x.fora+' fora do horário +'+brl(extra)+'</i>':'')+'</small></div>'+
+      '<div class="rzv num"><b>'+x.agend+'</b><small>agend.</small></div><div class="rzv num rzm"><b>'+brl(rec)+'</b><small>a receber</small></div></div>'}).join(''):'<div class="rzx">Nenhum agendamento neste mês.</div>';
+  var list=RZD.clo.slice();RZ.closers.forEach(function(id){if(!list.some(function(c){return c.id===id}))list.push({id:id,reunioes:0,fechadas:0,valor:0})});
+  cb.innerHTML=list.map(function(c){var nome=c.nome||RZ.nomes[c.id]||c.id,conv=c.reunioes?c.fechadas/c.reunioes:null,isC=RZ.closers.indexOf(c.id)>=0,
+      lv=M.filter(function(m){return c.valor>=m}).length,base=RZ.closer_base*Math.min(1,M[0]?c.valor/M[0]:0),rec=base+sum(RZ.closer_bonus,lv);
+    return '<div class="rzr"><div class="rzn"><b>'+esc(nome)+'</b><small class="num">'+brl(c.valor)+' vendidos</small></div>'+
+      '<div class="rzv num"><b>'+(c.reunioes||0)+'</b><small>reuniões</small></div><div class="rzv num"><b>'+(c.fechadas||0)+'</b><small>fechadas</small></div>'+
+      '<div class="rzv num"><b>'+(conv==null?'—':rzPct(conv))+'</b><small>conversão</small></div><div class="rzv num rzm"><b>'+(isC?brl(rec):'—')+'</b><small>a receber</small></div></div>'}).join('')}
+function onPlacar(o){if(Array.isArray(o.razor_sdr))RZD.sdr=o.razor_sdr;if(Array.isArray(o.razor_closers))RZD.clo=o.razor_closers;renderRazor();if(o.rota_metas&&o.rota_metas.roia){var r=o.rota_metas;TEAMS.rota.metas=[r.roia,r.pro,r.pro*(o.rota_param&&o.rota_param.inicio_acel?1.5:1.5),r.pro*((o.rota_param&&o.rota_param.limite)||2.4)];TEAMS.rota.sig=null}
   CLOSERS=Array.isArray(o.rota_closers)?o.rota_closers:[];PARAM=o.rota_param||{};
   var ev=Array.isArray(o.eventos)?o.eventos:[];
   if(EVSEEN===null){EVSEEN={};ev.forEach(function(e){EVSEEN[e.id]=1})}else ev.forEach(function(e){if(!EVSEEN[e.id]){EVSEEN[e.id]=1;EVQ.push(e)}});
@@ -444,6 +454,7 @@ render();setTimeout(function(){startAnim(render)},2500);
   if(!db)return;
   try{var u=await window.claude.use('user');var cw=u?await u.can('data.write'):null;canWrite=cw!==false}catch(e){canWrite=true}
   render();
+  db.doc('config/razor').onSnapshot(function(s){var o=s.exists?s.data():null;if(o){RZ=Object.assign({},RZ,o);renderRazor();applyCfg()}});
   db.doc('config/apex').onSnapshot(function(s){var o=s.exists?s.data():null;if(o){CFG=Object.assign({},CFG,o);applyCfg()}});
   if(canWrite&&!window.__PUBLICO)document.getElementById('cfgB').hidden=false;
   db.doc('placar/'+mk).onSnapshot(function(s){var o=s.exists?s.data():{};onPlacar(o);VAL.rota=+o.rota||0;VAL.million=+o.million||0;checkMetas();setTimeout(function(){startAnim(render)},0);ROTA.vend=o.rota_vendedores&&typeof o.rota_vendedores==='object'?o.rota_vendedores:null;ROTA.em=typeof o.rota_atualizado==='string'?o.rota_atualizado:null;ROTA.fonte=o.rota_fonte==='planilha'?'planilha':'';render()},function(){});
