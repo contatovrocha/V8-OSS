@@ -2,6 +2,7 @@
 (function(){
   var SB_URL='https://hmnhcinkmfwtutkbxejb.supabase.co', SB_KEY='sb_publishable_U-B2cBm468M1lHoGZIzSnA_lmBsWe1S';
   var sb=window.supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,autoRefreshToken:true}});
+  window.EMSB=sb;
   var resolveReady, ready=new Promise(function(r){resolveReady=r}), allowed=false, listeners=[];
   function esc(t){var d=document.createElement('div');d.textContent=t;return d.innerHTML}
   var css=document.createElement('style');css.textContent='.em-gate{position:fixed;inset:0;z-index:999;display:grid;place-items:center;background:radial-gradient(900px 500px at 50% 0%,rgba(212,166,74,.12),transparent 60%),#050505;font-family:Inter,system-ui,sans-serif;color:#f5f2ea;padding:16px}.em-card{width:100%;max-width:400px;background:#0e0d0b;border:1px solid #2a251c;border-radius:22px;padding:30px}.em-card .e{font:600 12px Inter,sans-serif;letter-spacing:.2em;text-transform:uppercase;color:#d4a64a}.em-card h1{font:800 28px Sora,Inter,sans-serif;margin:6px 0 4px}.em-card p{color:#a39d91;font-size:14px;margin:0 0 18px}.em-card label{display:block;font-size:12.5px;color:#a39d91;margin:12px 0 6px}.em-card input{width:100%;box-sizing:border-box;background:#090807;border:1px solid #2a251c;border-radius:12px;color:#f5f2ea;font:500 15px Inter,sans-serif;padding:12px 14px;outline:0}.em-card input:focus{border-color:#d4a64a}.em-card button.p{width:100%;margin-top:18px;background:linear-gradient(180deg,#f6dc95,#d4a64a 55%,#b88a33);color:#1a1205;border:0;border-radius:12px;padding:13px;font:700 15px Inter,sans-serif;cursor:pointer}.em-card button.p:disabled{opacity:.6}.em-msg{min-height:20px;margin-top:12px;font-size:13px;color:#e8a33c}.em-alt{margin-top:14px;background:none;border:0;color:#a39d91;font:500 13px Inter,sans-serif;cursor:pointer;text-decoration:underline}.em-user{position:fixed;right:14px;bottom:14px;z-index:90;display:flex;gap:8px;align-items:center;background:rgba(14,13,11,.9);border:1px solid #2a251c;border-radius:99px;padding:6px 8px 6px 14px;font:500 12px Inter,sans-serif;color:#a39d91}.em-user button{background:none;border:1px solid #2a251c;color:#f5f2ea;border-radius:99px;padding:4px 10px;font:600 12px Inter,sans-serif;cursor:pointer}';(document.head||document.documentElement).appendChild(css);
@@ -20,7 +21,7 @@
     setTimeout(function(){var i=document.getElementById(pe?'emP':'emE');if(i)i.focus()},50);
   }
   async function afterLogin(session){
-    var r=await sb.rpc('em_pode');allowed=!r.error&&r.data===true;
+    var r=await sb.rpc(window.EM_ACESSO||'em_pode');allowed=!r.error&&r.data===true;
     if(!allowed){await sb.auth.signOut();showGate('Seu e-mail ainda não tem acesso a este painel. Peça ao gestor para liberar.');return}
     if(gate){gate.remove();gate=null}
     if(window.self!==window.top){resolveReady();return}

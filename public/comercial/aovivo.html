@@ -234,7 +234,7 @@ html.mob .rzr{gap:8px}html.mob .rzv b{font-size:15px}html.mob .rzn b{font-size:1
       <div class="hero">
         <div class="gauge"><div id="gRota"></div><div class="gv num" id="vRota">R$ 0</div><div class="gs" id="sRota"></div><div data-team="rota"></div></div>
         <div>
-<div class="st" style="margin-bottom:8px">Metas do time · da planilha</div>
+<div class="st" style="margin-bottom:8px">Metas do time</div>
           <div class="metas4" id="mRota"></div></div>
       </div>
       <div class="st">Remuneração ao vivo · por closer</div>
@@ -282,7 +282,7 @@ html.mob .rzr{gap:8px}html.mob .rzv b{font-size:15px}html.mob .rzn b{font-size:1
 <div class="cfg-b">
 <section><h3>Horário comercial</h3><div class="cg2"><label>Início<input id="cIni" type="time"></label><label>Fim seg a sex<input id="cFimS" type="time"></label><label>Fim sábado<input id="cFimSab" type="time"></label><label class="ck"><input id="cDom" type="checkbox"> Domingo conta como fora do horário</label></div></section>
 <section><h3>Comissão fora do horário</h3><div class="cg2"><label>Comissão base fora do horário (%)<input id="cFora" type="number" min="0" max="20" step="0.1"></label><label>Comissão base normal (planilha)<input id="cBase" type="text" readonly></label></div><p class="cnote">Vendas que entram na planilha fora do horário comercial recebem esta comissão em vez da comissão base normal.</p></section>
-<section><h3>Vem da planilha (somente leitura)</h3><div class="cro" id="cRO"></div><p class="cnote">Metas, aceleradores, prêmios de conversão e margem são lidos da aba Parametros e Fechamento_Closers. Para mudar, altere a planilha.</p></section>
+<section><h3>Regras do sistema (somente leitura aqui)</h3><div class="cro" id="cRO"></div><p class="cnote">Metas, faixas, prêmios de conversão e margem são editados no Cockpit › Rota Brusca. A planilha não é mais usada.</p></section>
 <section><h3>Histórico</h3><div class="chist" id="cHist">Sem alterações.</div></section>
 <p class="cerr" id="cErr" role="alert"></p></div>
 <div class="cfg-f"><button type="button" id="cCancel" class="o">Cancelar</button><button type="button" id="cRestore" class="o">Restaurar alterações</button><button type="button" id="cSave" class="g">Salvar configurações</button></div></aside>
@@ -353,8 +353,8 @@ function render(){
     document.querySelectorAll(t==='rota'?'#mRota .mt':'#mMil .mt').forEach(function(el,i){var nh=va>=T.metas[i];if(nh&&!el.classList.contains('hit')&&window.FX)FX.burst(el);el.classList.toggle('hit',v>=T.metas[i]&&nh);el.classList.toggle('cur',i===lvl)});
     document.querySelectorAll('.seg[data-team="'+t+'"]').forEach(function(el){segBar(el,va/T.metas[+el.dataset.i])});
     var slot=document.querySelector('[data-team="'+t+'"]');if(slot.querySelector('input'))return;slot.textContent='';
-    if(t==='rota'&&ROTA.fonte==='planilha'){var box=document.createElement('div');box.className='vend';Object.keys(ROTA.vend||{}).sort(function(a,b){return ROTA.vend[b]-ROTA.vend[a]}).forEach(function(n){var r=document.createElement('div');var a=document.createElement('span');a.textContent=n;var b=document.createElement('b');b.className='num';b.textContent=brl(ROTA.vend[n]);r.appendChild(a);r.appendChild(b);box.appendChild(r)});
-      var up=document.createElement('div');up.className='upd';var d=ROTA.em?new Date(ROTA.em):null;up.textContent='Espelhado da planilha'+(d&&!isNaN(d)?' · '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'):'');box.appendChild(up);slot.appendChild(box);return}
+    if(t==='rota'&&(ROTA.fonte==='planilha'||ROTA.fonte==='sistema')){var box=document.createElement('div');box.className='vend';Object.keys(ROTA.vend||{}).sort(function(a,b){return ROTA.vend[b]-ROTA.vend[a]}).forEach(function(n){var r=document.createElement('div');var a=document.createElement('span');a.textContent=n;var b=document.createElement('b');b.className='num';b.textContent=brl(ROTA.vend[n]);r.appendChild(a);r.appendChild(b);box.appendChild(r)});
+      var up=document.createElement('div');up.className='upd';var d=ROTA.em?new Date(ROTA.em):null;up.textContent=(ROTA.fonte==='sistema'?'Atualizado pelo sistema':'Espelhado da planilha')+(d&&!isNaN(d)?' · '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'):'');box.appendChild(up);slot.appendChild(box);return}
     if(canWrite){var b=document.createElement('button');b.type='button';b.className='edit';b.textContent='Atualizar realizado';b.onclick=function(){openEdit(t,slot)};slot.appendChild(b)}
   });
 }
@@ -384,13 +384,14 @@ function applyCfg(){var f=isFora();document.getElementById('cRota').classList.to
   document.getElementById('foraPct').textContent=pc;document.getElementById('foraTxt').textContent='seg a sex após '+CFG.fim_semana+' · sábado após '+CFG.fim_sabado+' · antes das '+CFG.inicio+(CFG.domingo_fora?' · domingo':'')}
 setInterval(applyCfg,30000);
 /* Razor: regras de remuneração (padrões; config/razor sobrescreve) e cards de SDR e closer */
-var RZ={closers:['zayko'],nomes:{zayko:'Zayko Felix',vinicius:'Vinícius Soares'},closer_base:2300,closer_bonus:[0,150,250,700],sdr_base:1950,sdr_escada:[.25,.4,.6,.8],sdr_bonus:[0,100,200,500],sdr_extra:10},RZD={sdr:[],clo:[]};
+var RZ={sdrs:['Vinícius Soares','Taís Braz'],closers:['zayko'],nomes:{zayko:'Zayko Felix',vinicius:'Vinícius Soares'},closer_base:2300,closer_bonus:[0,150,250,700],sdr_base:1950,sdr_escada:[.25,.4,.6,.8],sdr_bonus:[0,100,200,500],sdr_extra:10},RZD={sdr:[],clo:[]};
 function rzPct(x){return (x*100).toLocaleString('pt-BR',{maximumFractionDigits:1})+'%'}
 function renderRazor(){var M=TEAMS.million.metas,sum=function(a,n){var t=0;for(var i=0;i<n;i++)t+=a[i]||0;return t};
   var sb=document.getElementById('rzSdr'),cb=document.getElementById('rzClo'),sig=JSON.stringify([RZD,RZ,M]);if(sb.dataset.k===sig)return;sb.dataset.k=sig;
-  sb.innerHTML=RZD.sdr.length?RZD.sdr.map(function(x,i){var taxa=x.atendidas?x.agend/x.atendidas:null,lv=taxa==null?0:RZ.sdr_escada.filter(function(e){return taxa>=e}).length,
+  var sl=RZD.sdr.slice();RZ.sdrs.forEach(function(n){if(!sl.some(function(x){return x.nome===n}))sl.push({nome:n,agend:0,fora:0,atendidas:0})});sl.sort(function(a,b){return (b.agend-a.agend)||RZ.sdrs.indexOf(a.nome)-RZ.sdrs.indexOf(b.nome)});
+  sb.innerHTML=sl.length?sl.map(function(x,i){var taxa=x.atendidas?x.agend/x.atendidas:null,lv=taxa==null?0:RZ.sdr_escada.filter(function(e){return taxa>=e}).length,
       extra=(x.fora||0)*RZ.sdr_extra,rec=RZ.sdr_base+sum(RZ.sdr_bonus,lv)+extra,nm=['—','ROIA','ROIA Bronze','PRO Silver','PRO Gold'][lv];
-    return '<div class="rzr"><span class="rzp num">'+(i+1)+'º</span><div class="rzn"><b>'+esc(x.nome)+'</b><small class="num">'+(taxa==null?'taxa — · sem ligações registradas':'taxa '+rzPct(taxa)+' · '+nm)+(x.fora?' · <i class="gf">'+x.fora+' fora do horário +'+brl(extra)+'</i>':'')+'</small></div>'+
+    return '<div class="rzr"><span class="rzp num">'+(i+1)+'º</span><div class="rzn"><b>'+esc(x.nome)+'</b><small class="num">'+(taxa==null?'agendamentos do CRM':'taxa '+rzPct(taxa)+' · '+nm)+(x.fora?' · <i class="gf">'+x.fora+' fora do horário +'+brl(extra)+'</i>':'')+'</small></div>'+
       '<div class="rzv num"><b>'+x.agend+'</b><small>agend.</small></div><div class="rzv num rzm"><b>'+brl(rec)+'</b><small>a receber</small></div></div>'}).join(''):'<div class="rzx">Nenhum agendamento neste mês.</div>';
   var list=RZD.clo.slice();RZ.closers.forEach(function(id){if(!list.some(function(c){return c.id===id}))list.push({id:id,reunioes:0,fechadas:0,valor:0})});
   cb.innerHTML=list.map(function(c){var nome=c.nome||RZ.nomes[c.id]||c.id,conv=c.reunioes?c.fechadas/c.reunioes:null,isC=RZ.closers.indexOf(c.id)>=0,
@@ -457,7 +458,7 @@ render();setTimeout(function(){startAnim(render)},2500);
   db.doc('config/razor').onSnapshot(function(s){var o=s.exists?s.data():null;if(o){RZ=Object.assign({},RZ,o);renderRazor();applyCfg()}});
   db.doc('config/apex').onSnapshot(function(s){var o=s.exists?s.data():null;if(o){CFG=Object.assign({},CFG,o);applyCfg()}});
   if(canWrite&&!window.__PUBLICO)document.getElementById('cfgB').hidden=false;
-  db.doc('placar/'+mk).onSnapshot(function(s){var o=s.exists?s.data():{};onPlacar(o);VAL.rota=+o.rota||0;VAL.million=+o.million||0;checkMetas();setTimeout(function(){startAnim(render)},0);ROTA.vend=o.rota_vendedores&&typeof o.rota_vendedores==='object'?o.rota_vendedores:null;ROTA.em=typeof o.rota_atualizado==='string'?o.rota_atualizado:null;ROTA.fonte=o.rota_fonte==='planilha'?'planilha':'';render()},function(){});
+  db.doc('placar/'+mk).onSnapshot(function(s){var o=s.exists?s.data():{};onPlacar(o);VAL.rota=+o.rota||0;VAL.million=+o.million||0;checkMetas();setTimeout(function(){startAnim(render)},0);ROTA.vend=o.rota_vendedores&&typeof o.rota_vendedores==='object'?o.rota_vendedores:null;ROTA.em=typeof o.rota_atualizado==='string'?o.rota_atualizado:null;ROTA.fonte=o.rota_fonte==='planilha'||o.rota_fonte==='sistema'?o.rota_fonte:'';render()},function(){});
 })();
 })();
 </script>

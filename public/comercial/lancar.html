@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#050505">
+<title>Lançar venda · Apex</title>
+<link rel="icon" href="favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script>window.EM_ACESSO='rb_vendedor_ok'</script>
+<script src="em-db.js"></script>
+<style>
+:root{--bg:#050505;--panel:#0e0d0b;--panel2:#13110e;--field:#090807;--line:#2a251c;--fg:#f5f2ea;--mut:#a39d91;--dim:#6b665c;--gold:#d4a64a;--gold2:#f3d58a;--ok:#6dff8a;--bad:#ff8a7a;--neo:#00ffd0}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:radial-gradient(900px 500px at 50% -10%,rgba(212,166,74,.12),transparent 60%),var(--bg);color:var(--fg);font:400 15px/1.45 Inter,system-ui,sans-serif;min-height:100vh}
+.num{font-variant-numeric:tabular-nums}
+.wrap{max-width:520px;margin:0 auto;padding:20px max(16px,env(safe-area-inset-left)) 90px}
+.e{font:700 11px Inter,sans-serif;letter-spacing:.2em;text-transform:uppercase;color:var(--gold)}
+h1{font:800 26px Sora,sans-serif;margin-top:4px}
+.sub{color:var(--mut);font-size:13.5px;margin-top:2px}
+.card{background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:20px;padding:16px;margin-top:14px}
+.card h2{font:700 12px Inter,sans-serif;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+label{display:block;font:500 12px Inter,sans-serif;color:var(--mut);margin:10px 0 5px}
+input,select{width:100%;background:var(--field);border:1px solid #3a3020;border-radius:12px;color:var(--fg);font:700 17px Sora,sans-serif;padding:12px 14px;outline:0;color-scheme:dark}
+input:focus,select:focus{border-color:var(--gold)}
+input.big{font-size:26px;padding:14px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+button.p{width:100%;margin-top:14px;background:linear-gradient(180deg,#f6dc95,#d4a64a 55%,#b88a33);color:#1a1205;border:0;border-radius:14px;padding:15px;font:800 16px Inter,sans-serif;cursor:pointer}
+button.p:disabled{opacity:.55}
+button.o{background:none;border:1px solid var(--line);color:var(--fg);border-radius:10px;padding:7px 12px;font:600 12.5px Inter,sans-serif;cursor:pointer}
+.msg{min-height:20px;margin-top:10px;font-size:13.5px}
+.msg.ok{color:var(--ok)}.msg.bad{color:var(--bad)}.msg.fora{color:var(--neo)}
+.rows{display:grid;grid-template-columns:1fr auto;gap:6px 12px;font-size:14px}
+.rows span{color:var(--mut)}.rows b{font:700 15px Sora,sans-serif;text-align:right}
+.rows .sep{grid-column:1/-1;border-top:1px solid var(--line);margin:4px 0}
+.rows .t{color:var(--fg);font-weight:700}.rows b.g{color:var(--gold2);font-size:22px}.rows b.ok{color:var(--ok)}
+.bar{height:8px;border-radius:9px;background:#1d1a14;overflow:hidden;margin:4px 0 10px}.bar i{display:block;height:100%;background:linear-gradient(90deg,#9c7426,#f3d58a)}
+.kp{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.kp div{border:1px solid var(--line);border-radius:12px;padding:8px 10px;background:var(--field)}
+.kp small{display:block;font:600 10px Inter,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:var(--dim)}.kp b{font:800 17px Sora,sans-serif}
+.list{display:grid;gap:8px}
+.it{display:grid;grid-template-columns:auto 1fr auto auto;gap:10px;align-items:center;border:1px solid var(--line);border-radius:12px;padding:9px 11px;background:var(--field)}
+.it .h{font:600 12px Inter,sans-serif;color:var(--dim)}.it b{font:700 15px Sora,sans-serif}.it small{display:block;color:var(--mut);font-size:12px}
+.tag{font:700 10px Inter,sans-serif;letter-spacing:.08em;text-transform:uppercase;border-radius:99px;padding:3px 8px;border:1px solid var(--line);color:var(--mut);white-space:nowrap}
+.tag.fora{border-color:var(--neo);color:var(--neo)}
+.x{background:none;border:1px solid var(--line);color:var(--mut);border-radius:8px;width:30px;height:30px;cursor:pointer}
+.empty{color:var(--dim);font-size:13.5px}
+.lock{color:var(--bad);font-size:13px;margin-top:6px}
+a.lk{color:var(--mut);font-size:12.5px}
+</style>
+</head>
+<body>
+<div class="wrap" id="app" hidden>
+  <div class="e">Rota Brusca · Apex</div>
+  <h1 id="hi">Olá</h1>
+  <p class="sub">Lance cada venda na hora em que fechar: ela aparece no placar ao vivo.</p>
+
+  <form class="card" id="fVenda" autocomplete="off">
+    <h2>Lançar venda <span class="tag" id="horaTag">—</span></h2>
+    <div id="boxCloser" hidden><label for="vCloser">Closer</label><select id="vCloser"></select></div>
+    <label for="vValor">Valor da venda (R$)</label>
+    <input id="vValor" class="big num" type="number" inputmode="decimal" step="0.01" min="0.01" placeholder="0,00" required>
+    <label for="vCli">Cliente ou nº do pedido (opcional)</label>
+    <input id="vCli" type="text" maxlength="120" style="font-weight:500">
+    <button class="p" id="vBtn" type="submit">Lançar venda</button>
+    <div class="msg" id="vMsg" role="status"></div>
+  </form>
+
+  <form class="card" id="fAtiv" autocomplete="off">
+    <h2>Números do dia (CRM) <span class="tag" id="ativData">hoje</span></h2>
+    <div class="g2">
+      <div><label for="aL">Leads novos</label><input id="aL" class="num" type="number" inputmode="numeric" min="0" step="1"></div>
+      <div><label for="aVL">Vendas p/ leads novos</label><input id="aVL" class="num" type="number" inputmode="numeric" min="0" step="1"></div>
+      <div><label for="aC">Conversas / conexões</label><input id="aC" class="num" type="number" inputmode="numeric" min="0" step="1"></div>
+      <div><label for="aVC">Vendas em conversas</label><input id="aVC" class="num" type="number" inputmode="numeric" min="0" step="1"></div>
+    </div>
+    <button class="p" id="aBtn" type="submit" style="background:none;border:1px solid var(--gold);color:var(--gold2)">Salvar números do dia</button>
+    <div class="msg" id="aMsg" role="status"></div>
+  </form>
+
+  <section class="card" id="meuMes">
+    <h2>Meu mês <span class="tag" id="mesTag">—</span></h2>
+    <div id="mesBox"><p class="empty">Carregando…</p></div>
+  </section>
+
+  <section class="card">
+    <h2>Minhas vendas do mês <span class="tag num" id="qtdTag">0</span></h2>
+    <div class="list" id="lista"><p class="empty">Nenhuma venda lançada ainda.</p></div>
+    <p class="sub" style="margin-top:10px;font-size:12px">Errou? Você pode apagar uma venda em até 24 horas. Depois disso, peça ao gerente.</p>
+  </section>
+  <p style="text-align:center;margin-top:18px"><a class="lk" href="aovivo.html">Ver placar ao vivo</a></p>
+</div>
+<script>
+(async function(){
+  var db=await window.claude.use('db');var sb=window.EMSB;var $=function(i){return document.getElementById(i)};
+  var BRL=function(v){return (+v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})},PCT=function(v){return v==null?'—':(v*100).toLocaleString('pt-BR',{maximumFractionDigits:1})+'%'};
+  var esc=function(t){var d=document.createElement('div');d.textContent=t==null?'':String(t);return d.innerHTML};
+  function sp(){var p=new Intl.DateTimeFormat('en-CA',{timeZone:'America/Sao_Paulo',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}).formatToParts(new Date()),g=function(t){return p.find(function(x){return x.type===t}).value};return{dia:g('year')+'-'+g('month')+'-'+g('day'),mes:g('year')+'-'+g('month'),hora:(g('hour')%24<10?'0':'')+(+g('hour')%24)+':'+g('minute')}}
+  var eu=(await sb.rpc('rb_eu')).data||{},CL=eu.closer,closers=[];
+  $('app').hidden=false;$('hi').textContent='Olá'+(eu.nome?', '+eu.nome.split(' ')[0]:'');
+  if(!CL){var r=await sb.from('rb_closers').select('id,nome').eq('ativo',true).order('nome');closers=r.data||[];$('boxCloser').hidden=false;
+    $('vCloser').innerHTML=closers.map(function(c){return '<option value="'+esc(c.id)+'">'+esc(c.nome)+'</option>'}).join('');CL=closers[0]&&closers[0].id;
+    $('vCloser').onchange=function(){CL=this.value;loadAll()}}
+  function tick(){var s=sp();$('horaTag').textContent=s.hora;$('ativData').textContent=s.dia.split('-').reverse().join('/');$('mesTag').textContent=s.mes.split('-').reverse().join('/')}
+  tick();setInterval(tick,20000);
+
+  $('fVenda').onsubmit=async function(e){e.preventDefault();var v=Math.round((+$('vValor').value||0)*100)/100,m=$('vMsg');
+    if(!(v>0)){m.className='msg bad';m.textContent='Informe um valor maior que zero.';return}
+    if(!CL){m.className='msg bad';m.textContent='Seu login ainda não está ligado a um closer. Peça ao adm.';return}
+    $('vBtn').disabled=true;m.className='msg';m.textContent='Lançando…';
+    var r=await sb.from('rb_vendas').insert({closer:CL,valor:v,cliente:$('vCli').value.trim()||null}).select('id,fora,valor').single();
+    $('vBtn').disabled=false;
+    if(r.error){m.className='msg bad';m.textContent=/fechado/.test(r.error.message)?'Este mês já foi fechado.':'Não deu para lançar agora. Tente de novo.';return}
+    m.className='msg '+(r.data.fora?'fora':'ok');m.textContent='Venda de '+BRL(r.data.valor)+' lançada'+(r.data.fora?' · fora do horário comercial, comissão especial ⚡':'')+'.';
+    $('vValor').value='';$('vCli').value='';loadAll()};
+
+  $('fAtiv').onsubmit=async function(e){e.preventDefault();var m=$('aMsg'),n=function(i){return Math.max(0,Math.round(+$(i).value||0))};
+    if(!CL)return;$('aBtn').disabled=true;
+    var r=await sb.from('rb_atividade').upsert({closer:CL,data:sp().dia,leads_novos:n('aL'),vendas_leads:n('aVL'),conversas:n('aC'),vendas_conversas:n('aVC')},{onConflict:'closer,data'});
+    $('aBtn').disabled=false;m.className='msg '+(r.error?'bad':'ok');m.textContent=r.error?'Não deu para salvar agora.':'Números do dia salvos.';if(!r.error)loadMes()};
+
+  async function loadAtiv(){if(!CL)return;var r=await sb.from('rb_atividade').select('*').eq('closer',CL).eq('data',sp().dia).maybeSingle();var a=r.data||{};
+    if(document.activeElement&&document.activeElement.closest&&document.activeElement.closest('#fAtiv'))return;
+    $('aL').value=a.leads_novos||'';$('aVL').value=a.vendas_leads||'';$('aC').value=a.conversas||'';$('aVC').value=a.vendas_conversas||''}
+  async function loadLista(){if(!CL)return;var r=await sb.from('rb_vendas').select('id,valor,cliente,em,fora,origem,cancelada,criado_em').eq('closer',CL).eq('competencia',sp().mes).order('em',{ascending:false}).limit(200);
+    var L=(r.data||[]).filter(function(x){return !x.cancelada});$('qtdTag').textContent=L.length;
+    $('lista').innerHTML=L.length?L.map(function(x){var d=new Date(x.em),dd=d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit',timeZone:'America/Sao_Paulo'}),hh=x.origem==='planilha'?'dia':d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit',timeZone:'America/Sao_Paulo'}),
+        pode=x.origem!=='planilha'&&(Date.now()-new Date(x.criado_em).getTime())<86400000;
+      return '<div class="it"><span class="h num">'+dd+'<br>'+hh+'</span><div><b class="num">'+BRL(x.valor)+'</b><small>'+esc(x.cliente||(x.origem==='planilha'?'importado da planilha':''))+'</small></div>'+(x.fora?'<span class="tag fora">fora do horário</span>':'<span></span>')+
+        (pode?'<button class="x" type="button" data-id="'+x.id+'" aria-label="Apagar venda de '+BRL(x.valor)+'">✕</button>':'<span></span>')+'</div>'}).join(''):'<p class="empty">Nenhuma venda lançada ainda.</p>';
+    $('lista').querySelectorAll('.x').forEach(function(b){b.onclick=async function(){if(!confirm('Apagar esta venda?'))return;var r=await sb.from('rb_vendas').delete().eq('id',b.dataset.id);if(r.error)alert('Não deu para apagar: '+r.error.message);loadAll()}})}
+  async function loadMes(){var r=await sb.rpc('rb_resumo',{p_mes:sp().mes});var k=r.data||{},c=k.closer||(k.closers||[]).find(function(x){return x.id===CL});
+    if(!c){$('mesBox').innerHTML='<p class="empty">Sem meta cadastrada para este mês. Peça ao gerente para cadastrar.</p>';return}
+    var w=function(p){return Math.min(100,Math.round((p||0)*100))};
+    $('mesBox').innerHTML='<div class="kp num"><div><small>Vendas</small><b>'+BRL(c.vendas).replace(',00','')+'</b></div><div><small>ROIA</small><b>'+PCT(c.pct_roia)+'</b></div><div><small>PRO</small><b>'+PCT(c.pct_pro)+'</b></div></div>'+
+      '<span class="sub">Meta PRO '+BRL(c.meta_pro).replace(',00','')+'</span><div class="bar"><i style="width:'+w(c.pct_pro)+'%"></i></div>'+
+      '<div class="rows num"><span>Conversão (conversas)</span><b>'+PCT(c.conv)+'</b><span>Base conquistada</span><b>'+BRL(c.base_recebida)+'</b><span>Comissão'+(c.faixa?' · '+esc(c.faixa):'')+'</span><b>'+BRL(c.comissao)+'</b>'+
+      '<span>Prêmio conversão</span><b>'+BRL(c.premio_conv)+'</b><span>Prêmio margem</span><b>'+BRL(c.premio_margem)+'</b><span>Bônus fora do horário</span><b class="ok">'+BRL(c.bonus_fora)+'</b>'+
+      '<i class="sep"></i><span class="t">A receber hoje</span><b class="g">'+BRL(c.rem_ao_vivo)+'</b></div>'+(k.fechado?'<p class="lock">Mês fechado: valores congelados.</p>':'')}
+  function loadAll(){loadLista();loadMes();loadAtiv()}
+  loadAll();setInterval(function(){loadLista();loadMes()},30000);
+})();
+</script>
+</body>
+</html>
