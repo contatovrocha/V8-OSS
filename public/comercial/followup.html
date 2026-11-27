@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Follow-up Black Million</title>
+<link rel="icon" href="favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap">
+<style>
+:root{--bg:#ffffff;--fg:#17140f;--mut:#5f584c;--dim:#8a8274;--line:#e7e1d5;--soft:#faf7f1;--gold:#a8782a;--gold2:#c9973f;--call:#1f7a4d;--callbg:#eaf6ef;--wpp:#1d6fa5;--wppbg:#eaf3fa;--warn:#9a4b16;--warnbg:#fdf1e7}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{background:var(--bg);color:var(--fg);font:400 15px/1.55 Inter,system-ui,sans-serif}
+.wrap{max-width:920px;margin:0 auto;padding:36px 24px 60px}
+header{border-bottom:2px solid var(--fg);padding-bottom:18px;margin-bottom:22px}
+.eye{font:700 12px Inter,sans-serif;letter-spacing:.2em;text-transform:uppercase;color:var(--gold)}
+h1{font:800 34px/1.15 Sora,sans-serif;letter-spacing:-.02em;margin-top:6px}
+.lead{color:var(--mut);margin-top:8px;max-width:680px}
+.legend{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.ch{display:inline-flex;align-items:center;gap:6px;font:700 11px Inter,sans-serif;letter-spacing:.1em;text-transform:uppercase;border-radius:99px;padding:4px 10px}
+.ch.call{background:var(--callbg);color:var(--call)}.ch.wpp{background:var(--wppbg);color:var(--wpp)}.ch.note{background:var(--soft);color:var(--mut);border:1px solid var(--line)}
+.rules{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:18px 0 6px}
+.rules div{border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:var(--soft);font-size:13px;color:var(--mut)}
+.rules b{display:block;color:var(--fg);font:700 14px Sora,sans-serif;margin-bottom:2px}
+.vars{font-size:13px;color:var(--mut);margin-top:10px}
+.vars code{font:600 12.5px ui-monospace,Menlo,monospace;background:#f3eee4;border-radius:5px;padding:1px 5px;color:var(--fg)}
+nav{display:flex;flex-wrap:wrap;gap:8px;margin:22px 0 4px}
+nav a{font:600 13px Inter,sans-serif;color:var(--fg);text-decoration:none;border:1px solid var(--line);border-radius:99px;padding:6px 12px}
+nav a:hover{border-color:var(--gold2)}
+section{margin-top:34px}
+h2{font:800 23px Sora,sans-serif;letter-spacing:-.01em;display:flex;align-items:baseline;gap:10px}
+h2 small{font:600 13px Inter,sans-serif;color:var(--dim)}
+.when{font-size:14px;color:var(--mut);margin:4px 0 14px}
+.day{font:700 12px Inter,sans-serif;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin:22px 0 8px;display:flex;align-items:center;gap:10px}
+.day::after{content:"";flex:1;height:1px;background:var(--line)}
+.step{position:relative;border:1px solid var(--line);border-radius:14px;padding:14px 16px 14px 16px;margin-bottom:10px;break-inside:avoid;background:#fff}
+.step.call{border-left:4px solid var(--call)}.step.wpp{border-left:4px solid var(--wpp)}
+.sh{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap}
+.sh .t{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.sh b{font:700 15px Sora,sans-serif}
+.sh .h{font:600 12.5px Inter,sans-serif;color:var(--dim)}
+.msg{background:var(--soft);border-radius:10px;padding:10px 12px;white-space:pre-line;color:var(--fg)}
+.step.wpp .msg{background:var(--wppbg)}
+.say{margin:6px 0;padding-left:12px;border-left:2px solid var(--line)}
+.say q{quotes:"“" "”"}
+.tip{font-size:13px;color:var(--mut);margin-top:8px}
+.tip b{color:var(--fg)}
+.if{margin-top:8px;display:grid;gap:4px;font-size:13.5px}
+.if div{display:grid;grid-template-columns:150px 1fr;gap:10px}
+.if span{font:700 11px Inter,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);padding-top:2px}
+.copy{font:600 12px Inter,sans-serif;border:1px solid var(--line);background:#fff;color:var(--fg);border-radius:8px;padding:4px 10px;cursor:pointer}
+.copy:hover{border-color:var(--gold2)}.copy.ok{border-color:var(--call);color:var(--call)}
+.obj{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.obj div{border:1px solid var(--line);border-radius:12px;padding:12px 14px;break-inside:avoid}
+.obj b{display:block;font:700 14px Sora,sans-serif;margin-bottom:4px}
+.obj p{color:var(--fg);font-size:14px}
+.box{border:1px solid var(--warnbg);background:var(--warnbg);border-radius:12px;padding:12px 14px;color:var(--warn);font-size:14px;margin-top:12px}
+footer{margin-top:40px;padding-top:14px;border-top:1px solid var(--line);font-size:12.5px;color:var(--dim);display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+@media (max-width:700px){h1{font-size:27px}.rules,.obj{grid-template-columns:1fr}.if div{grid-template-columns:1fr;gap:0}.wrap{padding:24px 16px 48px}}
+@media print{body{font-size:12.5px}.wrap{padding:0;max-width:none}.copy,nav{display:none}section{margin-top:22px}h1{font-size:28px}.step{padding:10px 12px}@page{margin:14mm}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <div class="eye">E-commerce Million · Black Million</div>
+  <h1>Script de follow-up com ligações</h1>
+  <p class="lead">Cadência de mensagens no WhatsApp com ligações entre elas, para levar o lead até a consultoria e da consultoria até a decisão. Use junto com o Script SDR: registre cada ligação lá com o resultado.</p>
+  <div class="legend"><span class="ch call">📞 Ligação</span><span class="ch wpp">💬 WhatsApp</span></div>
+  <div class="rules">
+    <div><b>Máximo 2 ligações por dia</b>Alterne os horários: manhã, depois tarde ou início da noite.</div>
+    <div><b>Mensagem curta, uma pergunta</b>Sempre termine com duas opções de horário, nunca com "quando pode?".</div>
+    <div><b>Anote tudo na ficha</b>Meta, faturamento e desafio do lead entram na próxima ligação.</div>
+  </div>
+  <p class="vars">Troque antes de enviar: <code>{nome}</code> lead · <code>{eu}</code> seu nome · <code>{meta}</code> meta mensal · <code>{desafio}</code> desafio nas palavras do lead · <code>{h1}</code> <code>{h2}</code> dois horários · <code>{link}</code> link do Meet · <code>{prazo}</code> data limite da Black Million</p>
+  <nav><a href="#a">A · Ainda não agendou</a><a href="#b">B · Faltou na consultoria</a><a href="#c">C · Consultoria sem fechamento</a><a href="#obj">Objeções</a></nav>
+</header>
+
+<section id="a">
+  <h2>A · Lead que ainda não agendou <small>5 dias · 9 contatos</small></h2>
+  <p class="when">Para quem não atendeu a primeira ligação ou atendeu e pediu para falar depois.</p>
+
+  <div class="day">Dia 1</div>
+  <div class="step call"><div class="sh"><div class="t"><span class="ch call">📞 Ligação 1</span><b>Primeira ligação</b></div><span class="h">a qualquer hora</span></div>
+    <p>Siga o <b>Script SDR</b> completo (abertura, tempo de operação, gancho Black Million, meta, faturamento, desafio, agenda).</p>
+    <div class="if"><div><span>Atendeu e agendou</span>fim da cadência. Mande o link e o lembrete.</div><div><span>Pediu para retornar</span>combine dia e hora exatos e mande a mensagem 1B.</div><div><span>Não atendeu</span>mande a mensagem 1 em até 5 minutos.</div></div></div>
+
+  <div class="step wpp"><div class="sh"><div class="t"><span class="ch wpp">💬 Mensagem 1</span><b>Logo após não atender</b></div><button class="copy" type="button">Copiar</button></div>
+    <div class="msg">Oi, {nome}! Aqui é {eu}, da E-commerce Million. Acabei de te ligar 🙂
+
+É sobre a Black Million: o Fabrício e o Fabiano montaram um programa de aceleração para fechar o mês e estamos selecionando 10 operações de marketplace.
+
+Posso te ligar em 2 minutinhos?</div></div>
+
+  <div class="step wpp"><div class="sh"><div class="t"><span class="ch wpp">💬 Mensagem 1B</span><b>Quando o lead pediu retorno</b></div><button class="copy" type="button">Copiar</button></div>
+    <div class="msg">{nome}, combinado! Te ligo {h1} para a gente terminar aquela conversa sobre a sua operação. Se mudar alguma coisa, me avisa por aqui 👍</div></div>
+
+  <div class="step call"><div class="sh"><div class="t"><span class="ch call">📞 Ligação 2</span><b>Segunda tentativa</b></div><span class="h">2 a 3 horas depois</span></div>
+    <div class="say"><q>Oi, {nome}! {eu}, da E-commerce Million. Te mandei uma mensagem agora há pouco. É rapidinho: você tem operação no marketplace, né?</q></div>
+    <p class="tip">Se confirmar, siga o Script SDR do passo 2 em diante. <b>Não atendeu?</b> Não mande mensagem agora, espere o dia 2.</p></div>
+
+  <div class="day">Dia 2</div>
+  <div class="step wpp"><div class="sh"><div class="t"><span class="ch wpp">💬 Mensagem 2</span><b>Curiosidade</b></div><span class="h">manhã · <button class="copy" type="button">Copiar</button></span></div>
+    <div class="msg">Bom dia, {nome}! Rapidinho:
+
+A maioria das operações de marketplace que a gente analisa trava em um destes pontos: margem, anúncio ou conversão.
+
+Na consultoria da Black Million o nosso especialista olha a sua operação e mostra qual deles está segurando o seu faturamento. Para empresas qualificadas o cadastro é gratuito.
+
+Tenho {h1} ou {h2} hoje. Qual fica melhor?</div></div>
+
+  <div class="step call"><div class="sh"><div class="t"><span class="ch call">📞 Ligação 3</span><b>Retomada</b></div><span class="h">tarde</span></div>
+    <div class="say"><q>Oi, {nome}! {eu}, da E-commerce Million. Te mandei de manhã sobre a consultoria da Black Million. Me conta: hoje, qual é a sua meta de faturamento por mês?</q></div>
+    <p class="tip">Fez a pergunta e ele respondeu: siga o Script SDR do passo 4 (faturamento atual) e feche a agenda.</p></div>
+
+  <div class="day">Dia 3</div>
+  <div class="step wpp"><div class="sh"><div class="t"><span class="ch wpp">💬 Mensagem 3</span><b>Áudio curto (até 30 s)</b></div><span class="h">manhã · <button class="copy" type="button">Copiar</button></span></div>
+    <div class="msg">[Áudio] Oi, {nome}, aqui é {eu}, da E-commerce Million. Tô separando hoje as últimas operações para a Black Million e lembrei de você. Se você quer chegar na sua meta ainda neste mês, a consultoria é o primeiro passo, e é online. Me responde aqui qual horário fica bom que eu já te encaixo. Abraço!</div>
+    <p class="tip">Áudio tem mais resposta do que texto no terceiro contato. Fale o nome do lead logo no início.</p></div>
+
+  <div class="step call"><div class="sh"><div class="t"><span class="ch call">📞 Ligação 4</span><b>Com o que você já sabe</b></div><span class="h">fim da tarde</span></div>
+    <div class="say"><q>{nome}, {eu}, da E-commerce Million. Da última vez você me falou que a meta é {meta} e que o que mais trava hoje é {desafio}. É exatamente isso que o especialista ataca na consultoria. Consigo {h1} ou {h2}: qual você prefere?</q></div>
+    <p class="tip">Se o lead nunca atendeu, use a abertura da ligação 2.</p></div>
+
+  <div class="day">Dia 4</div>
+  <div class="step wpp"><div class="sh"><div class="t"><span class="ch wpp">💬 Mensagem 4</span><b>Prazo</b></div><span class="h">manhã · <button class="copy" type="button">Copiar</button></span></div>
+    <div class="msg">{nome}, as inscrições da Black Million fecham {prazo}.
+
+Depois disso as consultorias voltam para a agenda normal. Quer que eu reserve um horário para você antes disso? Tenho {h1} ou {h2}.</div></div>
+
+  <div class="day">Dia 5</div>
+  <div class="step call"><div class="sh"><div class="t"><span class="ch call">📞 Ligação 5</span><b>Última tentativa</b></div><span class="h">horário diferente das anteriores</span></div>
+    <div class="say"><q>Oi, {nome}! {eu}, da E-commerce Million. Tô fechando a lista da Black Million hoje e não queria deixar você de fora sem te perguntar: faz sentido para você agora ou é melhor eu te procurar no próximo mês?</q></div>
+    <p class="tip">A pergunta dá uma saída honesta. Quem está interessado costuma responder "faz sentido" e agenda ali.</p></div>
+
+  <div class="step wpp"><div class="sh"><div class="t"><span class="ch wpp">💬 Mensagem 5</span><b>Encerramento</b></div><span class="h">se não atender · <button class="copy" type="button">Copiar</button></span></div>
+    <div class="msg">{nome}, tentei falar com você nos últimos dias e não quero ficar insistindo 🙂
+
+Vou encerrar a sua inscrição na Black Million. Se ainda fizer sentido, é só me responder SIM aqui que eu te encaixo no próximo horário livre.</div>
+    <p class="tip">Registre como <b>Follow-up</b> no Script e volte a falar no início do próximo mês.</p></div>
+</section>
+
+<section id="b">
+  <h2>B · Agendou e faltou na consultoria <small>mesmo dia + 1 dia</small></h2>
+  <p class="when">O lead não entrou na reunião. Aja rápido: quanto antes, maior a chance de reagendar.</p>
+
+  <div class="step wpp"><div class="sh"><div class="t"><span class="ch wpp">💬 Mensagem 1</span><b>5 minutos depois do horário</b></div><button class="copy" type="button">Copiar</button></div>
+    <div class="msg">{nome}, tô aqui na sala com o especialista te esperando 🙂
+{link}
+
+Consegue entrar agora?</div></div>
+
+  <div class="step call"><div class="sh"><div class="t"><span class="ch call">📞 Ligação 1</span><b>10 minutos depois do horário</b></div></div>
+    <div class="say"><q>Oi, {nome}, tudo bem? {eu}, da E-commerce Million. A gente estava te esperando na consultoria agora. Aconteceu alguma coisa? Consigo segurar o especialista mais alguns minutos, ou a gente remarca para {h1}.</q></div></div>
+
+  <div class="step wpp"><div class="sh"><div class="t"><span class="ch wpp">💬 Mensagem 2</span><b>No fim do dia</b></div><button class="copy" type="button">Copiar</button></div>
+    <div class="msg">{nome}, imagino que o dia apertou, acontece! Deixei a sua vaga da Black Million guardada.
+
+Consigo amanhã {h1} ou {h2}. Qual fica melhor?</div></div>
+
+  <div class="step call"><div class="sh"><div class="t"><span class="ch call">📞 Ligação 2</span><b>Dia seguinte, de manhã</b></div></div>
+    <div class="say"><q>{nome}, bom dia! {eu}, da E-commerce Million. Guardei a sua vaga da consultoria. Você me falou que quer chegar em {meta} por mês. Vamos remarcar? Tenho {h1} ou {h2}.</q></div>
+    <p class="tip">Não atendeu nem respondeu? Volte para a cadência A no dia 3.</p></div>
+</section>
+
+<section id="c">
+  <h2>C · Fez a consultoria e não fechou <small>3 dias · closer</small></h2>
+  <p class="when">Para o closer. O objetivo é tirar a dúvida que ficou e levar à decisão dentro do prazo da Black Million.</p>
+
+  <div class="step wpp"><div class="sh"><div class="t"><span class="ch wpp">💬 Mensagem 1</span><b>Até 1 hora depois da consultoria</b></div><button class="copy" type="button">Copiar</button></div>
+    <div class="msg">{nome}, obrigado pelo tempo hoje!
+
+Resumindo o que vimos: o ponto que mais está segurando a sua operação é {desafio}, e o plano que o especialista mostrou ataca isso direto.
+
+Ficou alguma dúvida sobre a proposta? Me chama aqui que eu te explico.</div></div>
+
+  <div class="step call"><div class="sh"><div class="t"><span class="ch call">📞 Ligação 1</span><b>Dia seguinte</b></div></div>
+    <div class="say"><q>Oi, {nome}! {eu}, da E-commerce Million. Fiquei pensando na nossa conversa de ontem. De zero a dez, o quanto a proposta faz sentido para você?</q></div>
+    <div class="if"><div><span>Respondeu 8 a 10</span><q>Então o que falta para a gente começar hoje?</q></div><div><span>Respondeu 5 a 7</span><q>O que faltou para ser um dez?</q> Trate a dúvida (veja as objeções).</div><div><span>Abaixo de 5</span>agradeça, pergunte o motivo e registre. Não force.</div></div></div>
+
+  <div class="step wpp"><div class="sh"><div class="t"><span class="ch wpp">💬 Mensagem 2</span><b>Dia 2 · prazo</b></div><button class="copy" type="button">Copiar</button></div>
+    <div class="msg">{nome}, passando para lembrar: a condição da Black Million vale até {prazo}.
+
+Se você quer chegar em {meta} ainda neste mês, o melhor momento para começar é agora. Quer que eu já deixe tudo pronto para você?</div></div>
+
+  <div class="step call"><div class="sh"><div class="t"><span class="ch call">📞 Ligação 2</span><b>Dia 3 · decisão</b></div></div>
+    <div class="say"><q>{nome}, {eu} aqui. Hoje é o último dia da condição Black Million e eu queria ouvir de você: vamos seguir juntos ou deixamos para outro momento?</q></div>
+    <p class="tip">Peça uma resposta clara, sim ou não. Um "não" bem registrado vale mais do que um lead parado.</p></div>
+</section>
+
+<section id="obj">
+  <h2>Objeções nas ligações</h2>
+  <div class="obj">
+    <div><b>"Tô sem tempo agora."</b><p>“Entendo, por isso vou ser rápido: só preciso marcar o horário. A consultoria é online e você escolhe quando. {h1} ou {h2}?”</p></div>
+    <div><b>"Me manda por WhatsApp."</b><p>“Mando sim! Só que para ver se a sua operação se qualifica eu preciso de duas respostas, leva um minuto: qual é a sua meta de faturamento por mês?”</p></div>
+    <div><b>"Quanto custa?"</b><p>“Para empresas qualificadas o cadastro é gratuito. Na consultoria o especialista analisa a sua operação e mostra os ajustes.”</p></div>
+    <div><b>"Vou pensar."</b><p>“Claro. Me ajuda a entender: o que você precisa ver para decidir? Se for isso, a consultoria responde.”</p></div>
+    <div><b>"Preciso falar com meu sócio."</b><p>“Ótimo, traz ele junto na consultoria! Qual horário os dois conseguem: {h1} ou {h2}?”</p></div>
+    <div><b>"Já tenho agência / consultoria."</b><p>“Perfeito, isso ajuda. A análise funciona como uma segunda opinião sobre a sua operação, e você sai com os pontos de melhoria na mão.”</p></div>
+  </div>
+  <div class="box">Depois de cada ligação, registre o resultado no Script SDR (Atendeu, Follow-up ou Agendado). É isso que aparece no placar e no ranking de agendamentos.</div>
+</section>
+
+<footer><span>E-commerce Million · Ação Black Million</span><span>Use com o Script SDR · sistema.v8.ia.br</span></footer>
+</div>
+<script>
+document.querySelectorAll('.copy').forEach(function(b){b.addEventListener('click',function(){var m=b.closest('.step').querySelector('.msg');if(!m)return;var t=m.innerText.trim();
+  var done=function(){b.textContent='Copiado';b.classList.add('ok');setTimeout(function(){b.textContent='Copiar';b.classList.remove('ok')},1600)};
+  if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(t).then(done,function(){});else{var r=document.createRange();r.selectNodeContents(m);var s=getSelection();s.removeAllRanges();s.addRange(r);try{document.execCommand('copy');done()}catch(e){}s.removeAllRanges()}})});
+</script>
+</body>
+</html>
