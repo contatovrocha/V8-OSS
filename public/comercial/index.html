@@ -2,7 +2,7 @@
 <html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
 <link rel="icon" type="image/png" href="favicon.png">
-<script src="fx.js" defer></script>
+<script src="fx.js" defer></script><script src="sfx.js" defer></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script src="em-db.js"></script>
 </head><body>
@@ -462,7 +462,7 @@ function funnel(meta,ticket,R){var vendas=Math.ceil(meta/ticket);var reun=vendas
 
 var ANIM={t:0,start:null,done:false};
 function heat(p){p=Math.max(0,Math.min(1,p));var h=p<=.5?4+68*p:38+204*(p-.5);return 'hsl('+h.toFixed(0)+',70%,'+(52+6*p).toFixed(0)+'%)'}
-function startAnim(paint){if(ANIM.start)return;ANIM.start=performance.now();
+function startAnim(paint){if(ANIM.start)return;ANIM.start=performance.now();if(window.SFX)SFX.whoosh(1800);
   if(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches){ANIM.t=1;ANIM.done=true;paint();return}
   var D=1800;(function step(now){var x=Math.min(1,Math.max(0,(now-ANIM.start)/D));ANIM.t=1-Math.pow(1-x,3);paint();if(x<1)requestAnimationFrame(step);else{ANIM.done=true;paint()}})(ANIM.start)}
 function bigGauge(fr,color,labels,markerFr){
@@ -622,6 +622,12 @@ function realFunil(mk,qtdVendas){var L=ligMes(mk),c=function(f){return L.filter(
   return{leads:L.length,atend:c(function(l){return l.resultado!=='nao_atendeu'}),qual:c(function(l){return['qualificado','followup','agendado'].indexOf(l.resultado)>=0}),fup:c(function(l){return l.resultado==='followup'}),agend:c(function(l){return l.resultado==='agendado'}),
     reun:TEAM.filter(function(t){return t.papel==='closer'}).reduce(function(a,t){return a+(RANK[mk+'_'+t.id]||0)},0),vendas:qtdVendas}}
 var GD=null,gSig='',HITP={};
+/* meta nova do Razor: pop-up gigante + som. O primeiro carregamento neste aparelho só registra o nível atual. */
+var CKH=null;function ckMetas(){if(!GD||!window.SFX)return;var d=new Date(),key='em_ck_hits_'+d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'),n=METAS.filter(function(m){return GD.rec>=m.v}).length;
+  if(CKH===null){try{CKH=JSON.parse(localStorage.getItem(key)||'null')}catch(e){}if(typeof CKH!=='number')CKH=n}
+  var q=[];for(var i=CKH;i<n;i++)q.push(METAS[i]);CKH=n;try{localStorage.setItem(key,JSON.stringify(n))}catch(e){}
+  (function next(){var m=q.shift();if(m)SFX.celebrate({time:'Razor',sub:'E-commerce Million',meta:m.n,valor:'R$ '+m.v.toLocaleString('pt-BR')},next)})()}
+(function w(){if(!window.SFX)return setTimeout(w,200);SFX.onUnlock(function(){if(!ANIM.done)return;ANIM.start=null;ANIM.done=false;ANIM.t=0;gSig='';startAnim(paintGauges)})})();
 function paintGauges(){if(!GD)return;var t=ANIM.t,rec=GD.rec,ticket=GD.ticket,R=GD.R;
   var sig=[rec,ticket,sel,R.join(',')].join('|');if(ANIM.done&&sig===gSig)return;if(ANIM.done)gSig=sig;
   var gh='',burstIdx=[];METAS.forEach(function(mt,i){var f=funnel(mt.v,ticket,R),pr=rec/mt.v,p=pr*t;if(p>=1&&!HITP[i])burstIdx.push(i);HITP[i]=p>=1;var c=heat(Math.min(p,1)),fv=Math.max(0,Math.ceil((mt.v-rec)/ticket));
@@ -663,7 +669,7 @@ render();setTimeout(function(){startAnim(paintGauges)},2500);
   try{var u=await window.claude.use('user');if(u){var cw=await u.can('data.write');if(cw===false){canWrite=false;$('vBtn').disabled=true;$('entrada').readOnly=true;$('rkNote').textContent='Acesso só de leitura';render();msg.textContent='Acesso só de leitura: peça acesso de Colaborador para lançar vendas e leads.'}}}catch(e){}
   var timer=setTimeout(function(){if(!SALES.length)msg.textContent='Ainda carregando os lançamentos do time…'},10000);
   db.collection('vendas').onSnapshot(function(snap){if(!snap.metadata.fromCache)clearTimeout(timer);SALES=snap.docs.map(function(d){var o=d.data()||{};return{id:d.id,data:typeof o.data==='string'?o.data:'',mes:typeof o.mes==='string'?o.mes:'',valor:+o.valor||0,produto:typeof o.produto==='string'?o.produto:'',vendedor:typeof o.vendedor==='string'?o.vendedor:'',cliente:typeof o.cliente==='string'?o.cliente:''}}).filter(function(x){return x.valor>0});
-    if(msg.textContent.indexOf('carregando')>=0)msg.textContent='';render();startAnim(paintGauges)},function(){clearTimeout(timer);msg.textContent='Não foi possível carregar os lançamentos agora.'});
+    if(msg.textContent.indexOf('carregando')>=0)msg.textContent='';render();startAnim(paintGauges);ckMetas()},function(){clearTimeout(timer);msg.textContent='Não foi possível carregar os lançamentos agora.'});
   db.collection('ligacoes').onSnapshot(function(snap){LIG=snap.docs.map(function(d){var o=d.data()||{};return{mes:typeof o.mes==='string'?o.mes:'',sdr:typeof o.sdr==='string'?o.sdr:'',resultado:typeof o.resultado==='string'?o.resultado:''}});render()},function(){});
   db.collection('ranking').onSnapshot(function(snap){snap.docs.forEach(function(d){var o=d.data()||{};if(typeof o.valor==='number')RANK[d.id]=o.valor});render()},function(){});
   db.collection('meses').onSnapshot(function(snap){snap.docs.forEach(function(d){var o=d.data()||{};if(typeof o.leads==='number')LEADS[d.id]=o.leads});syncLeadsInput();render()},function(){});
