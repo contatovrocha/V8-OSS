@@ -600,12 +600,21 @@ var lt=null;$('entrada').addEventListener('input',function(){if(!db||!canWrite)r
 VENDEDORES.forEach(function(v){var o=document.createElement('option');o.value=v.id;o.textContent=v.nome;$('vVend').appendChild(o)});
 var td=new Date();$('vData').value=td.getFullYear()+'-'+String(td.getMonth()+1).padStart(2,'0')+'-'+String(td.getDate()).padStart(2,'0');
 var local=[];
+/* Leva a venda do Razor para o placar ao vivo: soma no realizado e dispara a animação de venda. */
+function spFora(cfg){cfg=cfg||{};var hm=function(t){var a=String(t||'0:0').split(':');return(+a[0])*60+(+a[1]||0)};
+  var pt=new Intl.DateTimeFormat('en-US',{timeZone:'America/Sao_Paulo',weekday:'short',hour:'2-digit',minute:'2-digit',hour12:false}).formatToParts(new Date());
+  var g=function(t){var x=pt.find(function(y){return y.type===t});return x?x.value:''};var wd=g('weekday'),m=(+g('hour')%24)*60+(+g('minute'));
+  if(wd==='Sun')return cfg.domingo_fora!==false;if(m<hm(cfg.inicio||'08:00'))return true;return m>=hm(wd==='Sat'?(cfg.fim_sabado||'12:00'):(cfg.fim_semana||'18:00'))}
+async function placarVenda(row){try{var ref=db.doc('placar/'+row.mes),cs=await db.doc('config/apex').get(),cur=await ref.get(),d=(cur&&cur.exists&&cur.data())||{};
+  var nome=(VENDEDORES.find(function(v){return v.id===row.vendedor})||{}).nome||row.vendedor,ev=(Array.isArray(d.eventos)?d.eventos:[]).slice(-39),iso=new Date().toISOString();
+  ev.push({id:iso+'-razor-'+row.vendedor,em:iso,time:'razor',vendedor:nome,valor:row.valor,comissao:null,fora:spFora(cs&&cs.exists?cs.data():null)});
+  await ref.update({million:Math.round(((+d.million||0)+row.valor)*100)/100,eventos:ev})}catch(e){console.warn('placar',e)}}
 $('fVenda').addEventListener('submit',function(e){e.preventDefault();var d=$('vData').value,v=parseFloat($('vVal').value),c=$('vCli').value.trim().slice(0,80),vd=$('vVend').value;
   if(!vd){msg.textContent='Selecione quem vendeu.';$('vVend').focus();return}
   if(!d||!(v>0)){msg.textContent='Informe a data e um valor maior que zero.';return}
   var row={data:d,mes:d.slice(0,7),vendedor:vd,valor:Math.round(v*100)/100,cliente:c,criadoEm:new Date().toISOString()};
   if(!db){local.push(row);SALES=local.slice();msg.textContent='Venda lançada nesta tela. Abra o painel pelo link do claude.ai para salvar para o time.';$('vVal').value='';$('vCli').value='';render();return}
-  $('vBtn').disabled=true;db.collection('vendas').add(row).then(function(){msg.textContent='Venda de '+brl(row.valor)+' lançada.';$('vVal').value='';$('vCli').value=''}).catch(function(err){msg.textContent=err&&err.code==='invalid_argument'?'Você tem acesso só de leitura. Peça acesso de Colaborador para lançar vendas.':err&&err.code==='quota_exceeded'?'O limite de registros do painel foi atingido.':'Não deu para salvar agora. Tente de novo em instantes.'}).then(function(){$('vBtn').disabled=false})});
+  $('vBtn').disabled=true;db.collection('vendas').add(row).then(function(){msg.textContent='Venda de '+brl(row.valor)+' lançada.';placarVenda(row);$('vVal').value='';$('vCli').value=''}).catch(function(err){msg.textContent=err&&err.code==='invalid_argument'?'Você tem acesso só de leitura. Peça acesso de Colaborador para lançar vendas.':err&&err.code==='quota_exceeded'?'O limite de registros do painel foi atingido.':'Não deu para salvar agora. Tente de novo em instantes.'}).then(function(){$('vBtn').disabled=false})});
 function ligMes(mk){return LIG.filter(function(l){return l.mes===mk})}
 function ligSdr(mk,nome){return ligMes(mk).filter(function(l){return l.sdr===nome}).length}
 function agSdr(mk,nome){return ligMes(mk).filter(function(l){return l.sdr===nome&&l.resultado==='agendado'}).length}
