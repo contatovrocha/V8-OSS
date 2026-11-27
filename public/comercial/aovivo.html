@@ -384,7 +384,7 @@ function applyCfg(){var f=isFora();document.getElementById('cRota').classList.to
   document.getElementById('foraPct').textContent=pc;document.getElementById('foraTxt').textContent='seg a sex após '+CFG.fim_semana+' · sábado após '+CFG.fim_sabado+' · antes das '+CFG.inicio+(CFG.domingo_fora?' · domingo':'')}
 setInterval(applyCfg,30000);
 /* Razor: regras de remuneração (padrões; config/razor sobrescreve) e cards de SDR e closer */
-var RZ={sdrs:['Vinícius Soares','Taís Braz'],closers:['zayko'],nomes:{zayko:'Zayko Felix',vinicius:'Vinícius Soares'},closer_base:2300,closer_bonus:[0,150,250,700],sdr_base:1950,sdr_escada:[.25,.4,.6,.8],sdr_bonus:[0,100,200,500],sdr_extra:10},RZD={sdr:[],clo:[]};
+var RZ={sdrs:['Vinícius Soares','Taís Braz'],closers:['zayko'],nomes:{zayko:'Zayko Felix',vinicius:'Vinícius Soares'},closer_base:2300,closer_bonus:[0,150,250,700],closer_comissao:0.01,sdr_base:1950,sdr_escada:[.25,.4,.6,.8],sdr_bonus:[0,100,200,500],sdr_extra:10},RZD={sdr:[],clo:[]};
 function rzPct(x){return (x*100).toLocaleString('pt-BR',{maximumFractionDigits:1})+'%'}
 function renderRazor(){var M=TEAMS.million.metas,sum=function(a,n){var t=0;for(var i=0;i<n;i++)t+=a[i]||0;return t};
   var sb=document.getElementById('rzSdr'),cb=document.getElementById('rzClo'),sig=JSON.stringify([RZD,RZ,M]);if(sb.dataset.k===sig)return;sb.dataset.k=sig;
@@ -395,8 +395,8 @@ function renderRazor(){var M=TEAMS.million.metas,sum=function(a,n){var t=0;for(v
       '<div class="rzv num"><b>'+x.agend+'</b><small>agend.</small></div><div class="rzv num rzm"><b>'+brl(rec)+'</b><small>a receber</small></div></div>'}).join(''):'<div class="rzx">Nenhum agendamento neste mês.</div>';
   var list=RZD.clo.slice();RZ.closers.forEach(function(id){if(!list.some(function(c){return c.id===id}))list.push({id:id,reunioes:0,fechadas:0,valor:0})});
   cb.innerHTML=list.map(function(c){var nome=c.nome||RZ.nomes[c.id]||c.id,conv=c.reunioes?c.fechadas/c.reunioes:null,isC=RZ.closers.indexOf(c.id)>=0,
-      lv=M.filter(function(m){return c.valor>=m}).length,base=RZ.closer_base*Math.min(1,M[0]?c.valor/M[0]:0),rec=base+sum(RZ.closer_bonus,lv);
-    return '<div class="rzr"><div class="rzn"><b>'+esc(nome)+'</b><small class="num">'+brl(c.valor)+' vendidos</small></div>'+
+      lv=M.filter(function(m){return c.valor>=m}).length,base=RZ.closer_base*Math.min(1,M[0]?c.valor/M[0]:0),com=(c.valor||0)*RZ.closer_comissao,rec=base+sum(RZ.closer_bonus,lv)+com,nv=['','ROIA','ROIA Bronze','PRO Silver','PRO Gold'];
+    return '<div class="rzr"><div class="rzn"><b>'+esc(nome)+'</b><small class="num">'+brl(c.valor)+' vendidos'+(isC?(lv?' · <i class="gf">'+nv[lv]+' ✓</i>':' · faltam '+brl(M[0]-c.valor)+' p/ ROIA')+' · comissão '+brl(com):'')+'</small></div>'+
       '<div class="rzv num"><b>'+(c.reunioes||0)+'</b><small>reuniões</small></div><div class="rzv num"><b>'+(c.fechadas||0)+'</b><small>fechadas</small></div>'+
       '<div class="rzv num"><b>'+(conv==null?'—':rzPct(conv))+'</b><small>conversão</small></div><div class="rzv num rzm"><b>'+(isC?brl(rec):'—')+'</b><small>a receber</small></div></div>'}).join('')}
 function onPlacar(o){if(Array.isArray(o.razor_sdr))RZD.sdr=o.razor_sdr;if(Array.isArray(o.razor_closers))RZD.clo=o.razor_closers;renderRazor();if(o.rota_metas&&o.rota_metas.roia){var r=o.rota_metas;TEAMS.rota.metas=[r.roia,r.pro,r.pro*(o.rota_param&&o.rota_param.inicio_acel?1.5:1.5),r.pro*((o.rota_param&&o.rota_param.limite)||2.4)];TEAMS.rota.sig=null}
@@ -412,7 +412,7 @@ var HITS=null;function checkMetas(){var key='em_hits_'+mk,cur={};Object.keys(TEA
   if(HITS===null){try{HITS=JSON.parse(localStorage.getItem(key)||'null')}catch(e){}if(!HITS)HITS=cur}
   Object.keys(cur).forEach(function(t){for(var i=(HITS[t]||0);i<cur[t];i++)EVQ.push({kind:'meta',team:t,i:i})});
   HITS=cur;try{localStorage.setItem(key,JSON.stringify(cur))}catch(e){}playNext()}
-function showSale(e,done){var ov=document.getElementById('sale'),card=document.getElementById('saleCard'),fora=!!e.fora;if(window.SFX)SFX.sale(fora);
+function showSale(e,done){if(e.time==='razor'&&e.comissao==null&&e.valor){e.comissao=Math.round(e.valor*RZ.closer_comissao*100)/100;e.taxa=RZ.closer_comissao}var ov=document.getElementById('sale'),card=document.getElementById('saleCard'),fora=!!e.fora;if(window.SFX)SFX.sale(fora);
   ov.classList.toggle('fora',fora);ov.hidden=false;
   document.getElementById('saleK').textContent=fora?'⚡ Venda fora do horário':'Nova venda';
   document.getElementById('saleN').textContent=e.vendedor||'';document.getElementById('saleT').textContent=e.time==='razor'?'Razor':'Apex';
