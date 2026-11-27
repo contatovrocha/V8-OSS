@@ -65,109 +65,30 @@ footer{margin-top:40px;padding-top:14px;border-top:1px solid var(--line);font-si
 <div class="wrap">
 <header>
   <div class="eye">E-commerce Million · Black Million</div>
-  <h1>Fluxo de pós-agendamento</h1>
-  <p class="lead">O que fazer entre o agendamento e a consultoria para o lead aparecer. Mensagens no WhatsApp com confirmação por "SIM" e cancelamento de quem não responde: quem precisa é o lead.</p>
-  <div class="legend"><span class="ch wpp">💬 WhatsApp</span><span class="ch call">📞 Ligação</span></div>
-  <div class="rules">
-    <div><b>Sempre pedir o "SIM"</b>A confirmação vai na mensagem 1 e na mensagem 3.</div>
-    <div><b>Sem resposta, sem reunião</b>Não respondeu nada até 2–3 h antes: mande o cancelamento.</div>
-    <div><b>Registre no Script SDR</b>Agendado, confirmado ou cancelado. É isso que alimenta o placar.</div>
-  </div>
-  <p class="vars">Troque antes de enviar: <code>{nome}</code> lead · <code>{eu}</code> seu nome · <code>{dia}</code> <code>{hora}</code> da consultoria · <code>{link}</code> Meet · <code>{closer}</code> nome do closer · <code>{video}</code> vídeo de apresentação · <code>{aula}</code> aula gratuita · <code>{cases}</code> página de cases</p>
-  <nav><a href="#a">A · Consultoria com o especialista</a><a href="#b">B · Reunião com o closer</a><a href="#c">Quando o lead não responde</a></nav>
+  <h1>Confirmação da consultoria</h1>
+  <p class="lead">Quatro mensagens no WhatsApp para o lead confirmar e aparecer. Se ele não responder nada, cancele.</p>
+  <p class="vars">Troque antes de enviar: <code>{nome}</code> lead · <code>{eu}</code> seu nome · <code>{dia}</code> <code>{hora}</code> da consultoria · <code>{link}</code> Meet</p>
 </header>
-<section id="a"><h2>A · Consultoria com o especialista <small>Fabrício ou Fabiano</small></h2>
-<p class="when">O SDR conduz todas as mensagens. O especialista entra no fim, com a mensagem 4 e a 5.</p>
-<div class="day">Logo após agendar</div><div class="step wpp"><div class="sh"><div class="t"><span class="ch wpp">💬 Mensagem 1</span><b>Confirmação</b></div><span class="h">até 5 min depois da ligação · <button class="copy" type="button">Copiar</button></span></div><div class="msg">Fala, *{nome}*! Aqui é {eu}, da E-commerce Million 👋
+<section>
+<div class="step wpp"><div class="sh"><div class="t"><span class="ch wpp">💬 1</span><b>Confirmação</b></div><span class="h">logo após agendar · <button class="copy" type="button">Copiar</button></span></div><div class="msg">Oi, {nome}! Aqui é {eu}, da E-commerce Million.
 
-Sua consultoria da Black Million está confirmada com o nosso especialista, o Fabrício:
+Sua consultoria da Black Million está marcada:
+📅 {dia} às {hora}
+🔗 {link}
 
-📅 *{dia} · {hora}*
-Consultoria Black Million · E-commerce Million
-Link da reunião: {link}
+Responda *SIM* para confirmar sua presença.</div></div><div class="step wpp"><div class="sh"><div class="t"><span class="ch wpp">💬 2</span><b>Lembrete</b></div><span class="h">véspera, fim da tarde · <button class="copy" type="button">Copiar</button></span></div><div class="msg">Oi, {nome}! Passando para lembrar da sua consultoria amanhã às {hora}.
+🔗 {link}
 
-Neste vídeo curto o Fabrício explica como funciona a consultoria e como aproveitar ao máximo: {video}
+Está confirmado?</div></div><div class="step wpp"><div class="sh"><div class="t"><span class="ch wpp">💬 3</span><b>Dia da reunião</b></div><span class="h">de manhã · <button class="copy" type="button">Copiar</button></span></div><div class="msg">Bom dia, {nome}! Sua consultoria é hoje às {hora}.
 
-*IMPORTANTE: responda "SIM" aqui no WhatsApp para confirmar sua presença. Sem a confirmação, vamos precisar liberar o seu horário para outra operação da lista.*</div><p class="tip">Mande também o convite do Google Agenda no e-mail do lead (o Script SDR já gera o link).</p></div><div class="day">Véspera da reunião</div><div class="step wpp"><div class="sh"><div class="t"><span class="ch wpp">💬 Mensagem 2</span><b>Expectativa</b></div><span class="h">fim da tarde do dia anterior · <button class="copy" type="button">Copiar</button></span></div><div class="msg">Fala, *{nome}*!
+Me confirma com *SIM*? Sem confirmação, precisamos liberar o horário.</div></div><div class="step wpp"><div class="sh"><div class="t"><span class="ch wpp">💬 4</span><b>Na hora</b></div><span class="h">15 min antes · <button class="copy" type="button">Copiar</button></span></div><div class="msg">{nome}, começamos em 15 minutos.
+🔗 {link}
 
-o nosso especialista, o Fabrício está animado para conversar com você amanhã sobre a sua operação 🚀
+Te espero na sala!</div></div><div class="step wpp"><div class="sh"><div class="t"><span class="ch wpp">💬 Cancelamento</span><b>Se não respondeu nenhuma mensagem</b></div><span class="h">2 a 3 h antes · <button class="copy" type="button">Copiar</button></span></div><div class="msg">{nome}, como não tivemos retorno, vamos cancelar sua consultoria de hoje às {hora}.
 
-📅 *{dia} · {hora}*
-Consultoria Black Million · E-commerce Million
-Link da reunião: {link}
-
-Se ficou alguma dúvida sobre o vídeo, me chama aqui.
-
-E para você já chegar aquecido, aqui está uma aula gratuita mostrando como as operações de marketplace que aceleramos saem do platô e destravam faturamento: {aula}</div></div><div class="day">Dia da reunião · manhã</div><div class="step wpp"><div class="sh"><div class="t"><span class="ch wpp">💬 Mensagem 3</span><b>Material preparado</b></div><span class="h">de manhã (ou 3 h antes, se for à tarde) · <button class="copy" type="button">Copiar</button></span></div><div class="msg">Bom dia, *{nome}*! O Fabrício está terminando de separar o material da sua operação para a consultoria:
-
-• Margem e precificação dos seus produtos
-• Anúncios e posicionamento no marketplace
-• Tráfego e conversão da loja
-• Operação, estoque e processo comercial
-
-*Só me confirma com "SIM" que você vai estar lá. Sem confirmação, precisamos liberar o horário.*
-
-Se ainda não viu, aqui estão algumas operações que já aceleramos: {cases}
-
-Sua consultoria é hoje às {hora}. Conseguiu ver os vídeos que mandei?</div></div><div class="step call"><div class="sh"><div class="t"><span class="ch call">📞 Ligação de confirmação</span><b>Se não respondeu às mensagens 1 a 3</b></div><span class="h">até 3 h antes</span></div><div class="say"><q>Oi, {nome}! {eu}, da E-commerce Million. Tô confirmando sua consultoria de hoje às {hora} com o nosso especialista, o Fabrício. Tá de pé?</q></div><p class="tip">Atendeu e confirmou: segue o fluxo. Não atendeu: mande a mensagem de cancelamento.</p></div><div class="day">15 minutos antes</div><div class="step wpp"><div class="sh"><div class="t"><span class="ch wpp">💬 Mensagem 4</span><b>Enviada por o especialista (ou SDR em nome dele)</b></div><span class="h">15 min antes · <button class="copy" type="button">Copiar</button></span></div><div class="msg">*{nome}*, tô me preparando para a nossa consultoria daqui a 15 minutinhos.
-
-📅 *{dia} · {hora}*
-Consultoria Black Million · E-commerce Million
-Link da reunião: {link}
-
-Começamos às {hora}, combinado?</div></div><div class="step wpp"><div class="sh"><div class="t"><span class="ch wpp">💬 Mensagem 5</span><b>Na hora da reunião</b></div><span class="h">no horário marcado · <button class="copy" type="button">Copiar</button></span></div><div class="msg">*{nome}*, já estou na sala te esperando 🙂
-{link}</div><p class="tip">Passou 10 minutos e ele não entrou? Vá para a cadência B (faltou na consultoria) do script de follow-up.</p></div></section>
-<section id="b"><h2>B · Reunião com o closer <small>{closer}</small></h2>
-<p class="when">O SDR conduz as mensagens 1 a 3. O closer assume a partir dos 15 minutos antes.</p>
-<div class="day">Logo após agendar</div><div class="step wpp"><div class="sh"><div class="t"><span class="ch wpp">💬 Mensagem 1</span><b>Confirmação</b></div><span class="h">até 5 min depois da ligação · <button class="copy" type="button">Copiar</button></span></div><div class="msg">Fala, *{nome}*! Aqui é {eu}, da E-commerce Million 👋
-
-Sua consultoria da Black Million está confirmada com o {closer}, nosso estrategista:
-
-📅 *{dia} · {hora}*
-Consultoria Black Million · E-commerce Million
-Link da reunião: {link}
-
-Neste vídeo curto o Fabrício explica como funciona a consultoria e como aproveitar ao máximo: {video}
-
-*IMPORTANTE: responda "SIM" aqui no WhatsApp para confirmar sua presença. Sem a confirmação, vamos precisar liberar o seu horário para outra operação da lista.*</div><p class="tip">Mande também o convite do Google Agenda no e-mail do lead (o Script SDR já gera o link).</p></div><div class="day">Véspera da reunião</div><div class="step wpp"><div class="sh"><div class="t"><span class="ch wpp">💬 Mensagem 2</span><b>Expectativa</b></div><span class="h">fim da tarde do dia anterior · <button class="copy" type="button">Copiar</button></span></div><div class="msg">Fala, *{nome}*!
-
-o {closer}, nosso estrategista está animado para conversar com você amanhã sobre a sua operação 🚀
-
-📅 *{dia} · {hora}*
-Consultoria Black Million · E-commerce Million
-Link da reunião: {link}
-
-Se ficou alguma dúvida sobre o vídeo, me chama aqui.
-
-E para você já chegar aquecido, aqui está uma aula gratuita mostrando como as operações de marketplace que aceleramos saem do platô e destravam faturamento: {aula}</div></div><div class="day">Dia da reunião · manhã</div><div class="step wpp"><div class="sh"><div class="t"><span class="ch wpp">💬 Mensagem 3</span><b>Material preparado</b></div><span class="h">de manhã (ou 3 h antes, se for à tarde) · <button class="copy" type="button">Copiar</button></span></div><div class="msg">Bom dia, *{nome}*! O {closer} está terminando de separar o material da sua operação para a consultoria:
-
-• Margem e precificação dos seus produtos
-• Anúncios e posicionamento no marketplace
-• Tráfego e conversão da loja
-• Operação, estoque e processo comercial
-
-*Só me confirma com "SIM" que você vai estar lá. Sem confirmação, precisamos liberar o horário.*
-
-Se ainda não viu, aqui estão algumas operações que já aceleramos: {cases}
-
-Sua consultoria é hoje às {hora}. Conseguiu ver os vídeos que mandei?</div></div><div class="step call"><div class="sh"><div class="t"><span class="ch call">📞 Ligação de confirmação</span><b>Se não respondeu às mensagens 1 a 3</b></div><span class="h">até 3 h antes</span></div><div class="say"><q>Oi, {nome}! {eu}, da E-commerce Million. Tô confirmando sua consultoria de hoje às {hora} com o {closer}, nosso estrategista. Tá de pé?</q></div><p class="tip">Atendeu e confirmou: segue o fluxo. Não atendeu: mande a mensagem de cancelamento.</p></div><div class="day">15 minutos antes</div><div class="step wpp"><div class="sh"><div class="t"><span class="ch wpp">💬 Mensagem 4</span><b>Enviada por o closer</b></div><span class="h">15 min antes · <button class="copy" type="button">Copiar</button></span></div><div class="msg">*{nome}*, tô me preparando para a nossa consultoria daqui a 15 minutinhos.
-
-📅 *{dia} · {hora}*
-Consultoria Black Million · E-commerce Million
-Link da reunião: {link}
-
-Começamos às {hora}, combinado?</div></div><div class="step wpp"><div class="sh"><div class="t"><span class="ch wpp">💬 Mensagem 5</span><b>Na hora da reunião</b></div><span class="h">no horário marcado · <button class="copy" type="button">Copiar</button></span></div><div class="msg">*{nome}*, já estou na sala te esperando 🙂
-{link}</div><p class="tip">Passou 10 minutos e ele não entrou? Vá para a cadência B (faltou na consultoria) do script de follow-up.</p></div></section>
-<section id="c"><h2>Quando o lead não responde</h2>
-<p class="when">Se ele não confirmou com "SIM", o fluxo segue normal. Mas se não respondeu <b>nenhuma</b> mensagem, mande o cancelamento 2 a 3 horas antes e não faça a reunião. O lead tem que querer mais do que a gente.</p>
-<div class="step wpp"><div class="sh"><div class="t"><span class="ch wpp">💬 Cancelamento</span><b>2 a 3 h antes, sem nenhuma resposta</b></div><span class="h">2–3 h antes · <button class="copy" type="button">Copiar</button></span></div><div class="msg">*{nome}*, como não tivemos retorno, estamos cancelando o seu horário de hoje às {hora} com {closer} para acelerar a sua operação no marketplace.
-
-Se aconteceu algum imprevisto, me avisa aqui que escolhemos outro horário.
-
-Se ainda quiser manter a consultoria de hoje, responda *SIM* em até 20 minutos. Aguardo a sua confirmação 👍</div><p class="tip">Respondeu SIM: mantenha a reunião e avise o closer. Não respondeu: libere o horário, registre como <b>Follow-up</b> no Script SDR e siga a cadência A do script de follow-up.</p></div>
-<div class="box">Depois de cada contato, atualize o resultado no Script SDR. Agendamento confirmado conta no ranking de agendamentos do placar.</div>
+Se ainda quiser manter, responda *SIM* em até 20 minutos.</div><p class="tip">Respondeu SIM: mantém a reunião. Não respondeu: libere o horário e registre como Follow-up no Script SDR.</p></div>
 </section>
-<footer><span>E-commerce Million · Ação Black Million</span><span>Use com o Script SDR e o Script de follow-up</span></footer>
+<footer><span>E-commerce Million · Ação Black Million</span><span>Use com o Script SDR</span></footer>
 </div>
 <script>
 document.querySelectorAll('.copy').forEach(function(b){b.addEventListener('click',function(){var m=b.closest('.step').querySelector('.msg');if(!m)return;var t=m.innerText.trim();
